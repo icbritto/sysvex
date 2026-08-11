@@ -38,10 +38,10 @@ export class StockMovement {
   @Column('numeric', { precision: 14, scale: 4, transformer: DecimalTransformer })
   quantity: number;
 
-  @Column({ name: 'reference_type', nullable: true })
+  @Column({ type: 'varchar', name: 'reference_type', nullable: true })
   referenceType: string | null;
 
-  @Column({ name: 'reference_id', nullable: true })
+  @Column({ type: 'varchar', name: 'reference_id', nullable: true })
   referenceId: string | null;
 
   @CreateDateColumn({ name: 'created_at' })

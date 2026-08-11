@@ -28,7 +28,7 @@ export class FinanceEntry {
   @JoinColumn({ name: 'partner_id' })
   partner: Partner | null;
 
-  @Column({ name: 'partner_id', nullable: true })
+  @Column({ type: 'varchar', name: 'partner_id', nullable: true })
   partnerId: string | null;
 
   @Column('numeric', { precision: 14, scale: 2, transformer: DecimalTransformer })
@@ -43,10 +43,10 @@ export class FinanceEntry {
   @Column({ name: 'paid_date', type: 'date', nullable: true })
   paidDate: string | null;
 
-  @Column({ name: 'reference_type', nullable: true })
+  @Column({ type: 'varchar', name: 'reference_type', nullable: true })
   referenceType: string | null;
 
-  @Column({ name: 'reference_id', nullable: true })
+  @Column({ type: 'varchar', name: 'reference_id', nullable: true })
   referenceId: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
