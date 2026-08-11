@@ -27,9 +27,9 @@ export default function AppShell() {
         </Link>
         <div className="app-topbar__user">
           {user && (
-            <span>
+            <Link to="/account" style={{ color: '#fff', textDecoration: 'none' }}>
               {user.fullName} · {ROLE_LABELS[user.role] ?? user.role}
-            </span>
+            </Link>
           )}
           <button className="app-topbar__logout" onClick={handleLogout}>
             Sair
