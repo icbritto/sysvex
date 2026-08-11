@@ -5,10 +5,14 @@ import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuditLogService } from '../audit/audit-log.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly usersRepo: Repository<User>,
+    private readonly auditLogService: AuditLogService,
+  ) {}
 
   findAll(): Promise<User[]> {
     return this.usersRepo.find({ order: { fullName: 'ASC' } });
@@ -45,10 +49,22 @@ export class UsersService {
     return this.usersRepo.save(user);
   }
 
-  async update(id: string, dto: UpdateUserDto): Promise<User> {
+  async update(id: string, dto: UpdateUserDto, actor?: { id: string; username: string }): Promise<User> {
     const user = await this.findById(id);
+    const previousRole = user.role;
     Object.assign(user, dto);
-    return this.usersRepo.save(user);
+    const saved = await this.usersRepo.save(user);
+    if (actor && dto.role && dto.role !== previousRole) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'USER_ROLE_CHANGED',
+        targetType: 'User',
+        targetId: saved.id,
+        details: `${saved.username}: ${previousRole} -> ${saved.role}`,
+      });
+    }
+    return saved;
   }
 
   async updatePasswordHash(id: string, passwordHash: string): Promise<void> {

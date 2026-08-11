@@ -12,6 +12,10 @@ import { SalesModule } from './sales/sales.module';
 import { ProductionModule } from './production/production.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { FinanceModule } from './finance/finance.module';
+import { AppsModule } from './apps/apps.module';
+import { AuditModule } from './audit/audit.module';
+import { SecurityModule } from './security/security.module';
+import { SystemModule } from './system/system.module';
 
 @Module({
   imports: [
@@ -27,6 +31,10 @@ import { FinanceModule } from './finance/finance.module';
     ProductionModule,
     InventoryModule,
     FinanceModule,
+    AppsModule,
+    AuditModule,
+    SecurityModule,
+    SystemModule,
   ],
 })
 export class AppModule {}

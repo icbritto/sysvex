@@ -6,12 +6,14 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from './jwt.strategy';
 import { UsersService } from '../users/users.service';
+import { SecurityService } from '../security/security.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly securityService: SecurityService,
   ) {}
 
   @Post('login')
@@ -24,7 +26,8 @@ export class AuthController {
   async me(@CurrentUser() currentUser: AuthenticatedUser) {
     const user = await this.usersService.findById(currentUser.id);
     const { passwordHash: _passwordHash, ...safe } = user;
-    return safe;
+    const effectiveRoles = await this.securityService.getEffectiveRoles(user.id, user.role);
+    return { ...safe, effectiveRoles };
   }
 
   @UseGuards(JwtAuthGuard)
