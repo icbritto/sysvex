@@ -80,7 +80,7 @@ export default function SecurityCompliancePage() {
   const [users, setUsers] = useState<UserOption[]>([]);
   const [grants, setGrants] = useState<EmergencyGrant[]>([]);
   const [targetUserId, setTargetUserId] = useState('');
-  const [grantedRole, setGrantedRole] = useState<UserRole>('SALES');
+  const [grantedRole, setGrantedRole] = useState<UserRole>('SX_SALES');
   const [reason, setReason] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [grantError, setGrantError] = useState<string | null>(null);

@@ -22,7 +22,7 @@ export default function UsersPage() {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<User['role']>('SALES');
+  const [role, setRole] = useState<User['role']>('SX_SALES');
 
   const load = () => {
     apiClient.get<User[]>('/users').then((res) => setUsers(res.data));
@@ -35,7 +35,7 @@ export default function UsersPage() {
     setEmail('');
     setFullName('');
     setPassword('');
-    setRole('SALES');
+    setRole('SX_SALES');
     setError(null);
   };
 

@@ -21,19 +21,19 @@ export class SalesController {
     return this.salesService.findById(id);
   }
 
-  @Roles(UserRole.SALES)
+  @Roles(UserRole.SX_SALES)
   @Post()
   create(@Body() dto: CreateSalesOrderDto) {
     return this.salesService.create(dto);
   }
 
-  @Roles(UserRole.SALES)
+  @Roles(UserRole.SX_SALES)
   @Patch(':id/confirm')
   confirm(@Param('id') id: string) {
     return this.salesService.confirm(id);
   }
 
-  @Roles(UserRole.SALES)
+  @Roles(UserRole.SX_SALES)
   @Patch(':id/cancel')
   cancel(@Param('id') id: string) {
     return this.salesService.cancel(id);

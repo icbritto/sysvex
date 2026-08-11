@@ -21,19 +21,19 @@ export class PurchasingController {
     return this.purchasingService.findById(id);
   }
 
-  @Roles(UserRole.PURCHASING)
+  @Roles(UserRole.SX_PURCHASING)
   @Post()
   create(@Body() dto: CreatePurchaseOrderDto) {
     return this.purchasingService.create(dto);
   }
 
-  @Roles(UserRole.PURCHASING)
+  @Roles(UserRole.SX_PURCHASING)
   @Patch(':id/receive')
   receive(@Param('id') id: string) {
     return this.purchasingService.receive(id);
   }
 
-  @Roles(UserRole.PURCHASING)
+  @Roles(UserRole.SX_PURCHASING)
   @Patch(':id/cancel')
   cancel(@Param('id') id: string) {
     return this.purchasingService.cancel(id);

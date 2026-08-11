@@ -22,7 +22,7 @@ export class RolesGuard implements CanActivate {
       return false;
     }
     const effectiveRoles: UserRole[] = user.effectiveRoles ?? [user.role];
-    if (effectiveRoles.includes(UserRole.ADMIN)) {
+    if (effectiveRoles.includes(UserRole.SX_ADMIN)) {
       return true;
     }
     if (!effectiveRoles.some((role) => requiredRoles.includes(role))) {

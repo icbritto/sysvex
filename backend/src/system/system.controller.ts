@@ -14,7 +14,7 @@ import { FinanceEntry } from '../finance/finance-entry.entity';
 import * as packageJson from '../../package.json';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.SX_SYSTEM)
+@Roles(UserRole.SX_ADMIN, UserRole.SX_SYSTEM)
 @Controller('system')
 export class SystemController {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}

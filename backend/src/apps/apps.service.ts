@@ -24,7 +24,7 @@ const DEFAULT_APPS: DefaultApp[] = [
     title: 'Financeiro',
     icon: '💰',
     color: '#0f6bab',
-    allowedRoles: [UserRole.FINANCE, UserRole.ADMIN],
+    allowedRoles: [UserRole.SX_FINANCE, UserRole.SX_ADMIN],
     sortOrder: 1,
   },
   {
@@ -32,7 +32,7 @@ const DEFAULT_APPS: DefaultApp[] = [
     title: 'Compras',
     icon: '🛒',
     color: '#c0388b',
-    allowedRoles: [UserRole.PURCHASING, UserRole.ADMIN],
+    allowedRoles: [UserRole.SX_PURCHASING, UserRole.SX_ADMIN],
     sortOrder: 2,
   },
   {
@@ -40,7 +40,7 @@ const DEFAULT_APPS: DefaultApp[] = [
     title: 'Vendas',
     icon: '🧾',
     color: '#c9701c',
-    allowedRoles: [UserRole.SALES, UserRole.ADMIN],
+    allowedRoles: [UserRole.SX_SALES, UserRole.SX_ADMIN],
     sortOrder: 3,
   },
   {
@@ -48,7 +48,7 @@ const DEFAULT_APPS: DefaultApp[] = [
     title: 'Estoque & Produção',
     icon: '📦',
     color: '#6a3fa0',
-    allowedRoles: [UserRole.PRODUCTION, UserRole.ADMIN],
+    allowedRoles: [UserRole.SX_PRODUCTION, UserRole.SX_ADMIN],
     sortOrder: 4,
   },
   {
@@ -56,7 +56,7 @@ const DEFAULT_APPS: DefaultApp[] = [
     title: 'Administração',
     icon: '👤',
     color: '#b3261e',
-    allowedRoles: [UserRole.ADMIN, UserRole.SX_SECURITY],
+    allowedRoles: [UserRole.SX_ADMIN, UserRole.SX_SECURITY],
     sortOrder: 5,
   },
   {
@@ -64,7 +64,7 @@ const DEFAULT_APPS: DefaultApp[] = [
     title: 'Segurança & Compliance',
     icon: '🛡️',
     color: '#1a7f8e',
-    allowedRoles: [UserRole.SX_SECURITY, UserRole.ADMIN],
+    allowedRoles: [UserRole.SX_SECURITY, UserRole.SX_ADMIN],
     sortOrder: 6,
   },
   {
@@ -72,7 +72,7 @@ const DEFAULT_APPS: DefaultApp[] = [
     title: 'Administração de Sistema',
     icon: '🖥️',
     color: '#3a4750',
-    allowedRoles: [UserRole.SX_SYSTEM, UserRole.ADMIN],
+    allowedRoles: [UserRole.SX_SYSTEM, UserRole.SX_ADMIN],
     sortOrder: 7,
   },
 ];

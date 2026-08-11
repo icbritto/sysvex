@@ -30,7 +30,7 @@ async function seed() {
       email: process.env.SEED_ADMIN_EMAIL ?? 'admin@sysvex.local',
       fullName: 'Administrador SYSVEX',
       password: adminPassword,
-      role: UserRole.ADMIN,
+      role: UserRole.SX_ADMIN,
     });
     // eslint-disable-next-line no-console
     console.log(`Usuário admin criado: ${adminUsername} / ${adminPassword} (troque a senha após o primeiro login).`);

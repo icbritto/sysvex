@@ -11,9 +11,9 @@ import { AuthenticatedUser } from '../auth/jwt.strategy';
 import { UserRole } from '../users/user.entity';
 
 // Endpoints de segurança/compliance (matriz de acesso, acesso emergencial e
-// auditoria) são restritos a ADMIN e SX_SECURITY.
+// auditoria) são restritos a SX_ADMIN e SX_SECURITY.
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.SX_SECURITY)
+@Roles(UserRole.SX_ADMIN, UserRole.SX_SECURITY)
 @Controller('security')
 export class SecurityController {
   constructor(
