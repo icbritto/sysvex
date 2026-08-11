@@ -21,14 +21,14 @@ export class AppsController {
   }
 
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SX_SECURITY)
+  @Roles(UserRole.SX_ADMIN, UserRole.SX_SECURITY)
   @Get('admin')
   findAllForAdmin() {
     return this.appsService.findAllForAdmin();
   }
 
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SX_SECURITY)
+  @Roles(UserRole.SX_ADMIN, UserRole.SX_SECURITY)
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateAppDto, @CurrentUser() user: AuthenticatedUser) {
     return this.appsService.update(id, dto, { id: user.id, username: user.username });

@@ -122,17 +122,20 @@ docker compose exec backend node dist/seed/seed.js
 
 ## Roles de usuário
 
-| Role         | Pode fazer                                                   |
-|--------------|----------------------------------------------------------------|
-| `ADMIN`      | Tudo, incluindo gestão de usuários                              |
-| `FINANCE`    | Lançamentos financeiros, marcar pago/recebido, fluxo de caixa/DRE |
-| `PURCHASING` | Pedidos de compra, recebimento de mercadoria                   |
-| `SALES`      | Pedidos de venda, confirmação de venda                         |
-| `PRODUCTION` | Ordens de produção, ficha técnica                               |
+| Role             | Pode fazer                                                        |
+|------------------|--------------------------------------------------------------------|
+| `SX_ADMIN`       | Tudo, incluindo gestão de usuários                                  |
+| `SX_FINANCE`     | Lançamentos financeiros, marcar pago/recebido, fluxo de caixa/DRE   |
+| `SX_PURCHASING`  | Pedidos de compra, recebimento de mercadoria                       |
+| `SX_SALES`       | Pedidos de venda, confirmação de venda                             |
+| `SX_PRODUCTION`  | Ordens de produção, ficha técnica                                   |
+| `SX_SYSTEM`      | Painel de status real do ambiente (Administração de Sistema)       |
+| `SX_SECURITY`    | Matriz de acesso, SoD, acesso emergencial e auditoria (Segurança & Compliance) |
 
-Todas as roles têm acesso de leitura aos dados para visualizar a operação
-como um todo; as ações de escrita específicas de cada área são restritas por
-role (além do Admin, que sempre pode tudo).
+Todas as roles seguem o padrão `SX_*`. Todas têm acesso de leitura aos
+dados para visualizar a operação como um todo; as ações de escrita
+específicas de cada área são restritas por role (além do `SX_ADMIN`, que
+sempre pode tudo).
 
 ## Roadmap sugerido (pós-MVP)
 

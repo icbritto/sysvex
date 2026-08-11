@@ -4,11 +4,11 @@ import { useAuth } from '../auth/AuthContext';
 import { recordVisit } from '../hooks/useAppUsage';
 
 export const ROLE_LABELS: Record<string, string> = {
-  ADMIN: 'Administrador',
-  FINANCE: 'Financeiro',
-  PURCHASING: 'Compras',
-  SALES: 'Vendas',
-  PRODUCTION: 'Produção',
+  SX_ADMIN: 'Administrador',
+  SX_FINANCE: 'Financeiro',
+  SX_PURCHASING: 'Compras',
+  SX_SALES: 'Vendas',
+  SX_PRODUCTION: 'Produção',
   SX_SYSTEM: 'Administração de Sistema',
   SX_SECURITY: 'Segurança & Compliance',
 };

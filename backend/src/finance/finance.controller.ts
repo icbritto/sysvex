@@ -17,19 +17,19 @@ export class FinanceController {
     return this.financeService.findAll(type, status);
   }
 
-  @Roles(UserRole.FINANCE)
+  @Roles(UserRole.SX_FINANCE)
   @Post('entries')
   create(@Body() dto: CreateFinanceEntryDto) {
     return this.financeService.create(dto);
   }
 
-  @Roles(UserRole.FINANCE)
+  @Roles(UserRole.SX_FINANCE)
   @Patch('entries/:id/pay')
   markPaid(@Param('id') id: string) {
     return this.financeService.markPaid(id);
   }
 
-  @Roles(UserRole.FINANCE)
+  @Roles(UserRole.SX_FINANCE)
   @Patch('entries/:id/cancel')
   cancel(@Param('id') id: string) {
     return this.financeService.cancel(id);

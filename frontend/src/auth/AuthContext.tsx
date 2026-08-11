@@ -1,7 +1,14 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import apiClient, { clearToken, extractErrorMessage, getToken, setToken } from '../api/client';
 
-export type UserRole = 'ADMIN' | 'FINANCE' | 'PURCHASING' | 'SALES' | 'PRODUCTION' | 'SX_SYSTEM' | 'SX_SECURITY';
+export type UserRole =
+  | 'SX_ADMIN'
+  | 'SX_FINANCE'
+  | 'SX_PURCHASING'
+  | 'SX_SALES'
+  | 'SX_PRODUCTION'
+  | 'SX_SYSTEM'
+  | 'SX_SECURITY';
 
 export interface AuthUser {
   id: string;

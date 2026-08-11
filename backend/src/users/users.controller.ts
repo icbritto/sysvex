@@ -9,11 +9,11 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
 import { UserRole } from './user.entity';
 
-// Administração de usuários e roles é restrita a ADMIN e SX_SECURITY,
+// Administração de usuários e roles é restrita a SX_ADMIN e SX_SECURITY,
 // refletindo o conceito de "Business User" com IDs e roles próprias do
 // SAP S/4HANA e a responsabilidade de gestão de acessos da role de segurança.
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.SX_SECURITY)
+@Roles(UserRole.SX_ADMIN, UserRole.SX_SECURITY)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

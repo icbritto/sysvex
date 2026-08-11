@@ -1,11 +1,11 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  FINANCE = 'FINANCE',
-  PURCHASING = 'PURCHASING',
-  SALES = 'SALES',
-  PRODUCTION = 'PRODUCTION',
+  SX_ADMIN = 'SX_ADMIN',
+  SX_FINANCE = 'SX_FINANCE',
+  SX_PURCHASING = 'SX_PURCHASING',
+  SX_SALES = 'SX_SALES',
+  SX_PRODUCTION = 'SX_PRODUCTION',
   SX_SYSTEM = 'SX_SYSTEM',
   SX_SECURITY = 'SX_SECURITY',
 }
@@ -27,7 +27,7 @@ export class User {
   @Column({ name: 'password_hash' })
   passwordHash: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.SALES })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.SX_SALES })
   role: UserRole;
 
   @Column({ default: true })

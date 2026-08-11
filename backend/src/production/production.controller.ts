@@ -21,19 +21,19 @@ export class ProductionController {
     return this.productionService.findById(id);
   }
 
-  @Roles(UserRole.PRODUCTION)
+  @Roles(UserRole.SX_PRODUCTION)
   @Post()
   create(@Body() dto: CreateProductionOrderDto) {
     return this.productionService.create(dto);
   }
 
-  @Roles(UserRole.PRODUCTION)
+  @Roles(UserRole.SX_PRODUCTION)
   @Patch(':id/complete')
   complete(@Param('id') id: string) {
     return this.productionService.complete(id);
   }
 
-  @Roles(UserRole.PRODUCTION)
+  @Roles(UserRole.SX_PRODUCTION)
   @Patch(':id/cancel')
   cancel(@Param('id') id: string) {
     return this.productionService.cancel(id);
