@@ -6,6 +6,8 @@ export enum UserRole {
   PURCHASING = 'PURCHASING',
   SALES = 'SALES',
   PRODUCTION = 'PRODUCTION',
+  SX_SYSTEM = 'SX_SYSTEM',
+  SX_SECURITY = 'SX_SECURITY',
 }
 
 @Entity('users')

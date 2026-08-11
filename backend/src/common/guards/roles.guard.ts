@@ -21,10 +21,11 @@ export class RolesGuard implements CanActivate {
     if (!user) {
       return false;
     }
-    if (user.role === UserRole.ADMIN) {
+    const effectiveRoles: UserRole[] = user.effectiveRoles ?? [user.role];
+    if (effectiveRoles.includes(UserRole.ADMIN)) {
       return true;
     }
-    if (!requiredRoles.includes(user.role)) {
+    if (!effectiveRoles.some((role) => requiredRoles.includes(role))) {
       throw new ForbiddenException('Seu usuário não tem permissão (role) para esta ação.');
     }
     return true;

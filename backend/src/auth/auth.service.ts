@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
+import { SecurityService } from '../security/security.service';
 
 export interface LoginResult {
   accessToken: string;
@@ -12,6 +13,7 @@ export interface LoginResult {
     fullName: string;
     email: string;
     role: string;
+    effectiveRoles: string[];
   };
 }
 
@@ -20,6 +22,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly securityService: SecurityService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<User> {
@@ -41,6 +44,7 @@ export class AuthService {
       username: user.username,
       role: user.role,
     });
+    const effectiveRoles = await this.securityService.getEffectiveRoles(user.id, user.role);
     return {
       accessToken,
       user: {
@@ -49,6 +53,7 @@ export class AuthService {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
+        effectiveRoles,
       },
     };
   }

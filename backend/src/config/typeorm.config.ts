@@ -10,6 +10,9 @@ import { SalesOrderItem } from '../sales/sales-order-item.entity';
 import { ProductionOrder } from '../production/production-order.entity';
 import { StockMovement } from '../inventory/stock-movement.entity';
 import { FinanceEntry } from '../finance/finance-entry.entity';
+import { App } from '../apps/app.entity';
+import { EmergencyAccessGrant } from '../security/emergency-access-grant.entity';
+import { AuditLog } from '../audit/audit-log.entity';
 
 export const typeOrmEntities = [
   User,
@@ -23,6 +26,9 @@ export const typeOrmEntities = [
   ProductionOrder,
   StockMovement,
   FinanceEntry,
+  App,
+  EmergencyAccessGrant,
+  AuditLog,
 ];
 
 export function buildTypeOrmConfig(): TypeOrmModuleOptions {

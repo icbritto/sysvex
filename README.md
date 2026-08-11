@@ -36,7 +36,23 @@ Produção).
   calculam o custo de produção, e um ledger completo de movimentações de
   estoque.
 - **Administração** — usuários com login próprio e role (Admin, Financeiro,
-  Compras, Vendas, Produção), controlando o que cada um pode fazer.
+  Compras, Vendas, Produção, Administração de Sistema, Segurança &
+  Compliance), controlando o que cada um pode fazer.
+- **Segurança & Compliance** (role `SX_SECURITY`) — matriz de acesso que
+  liga cada linha de negócio (App) às roles autorizadas a vê-la, com
+  ativação/desativação por App; análise de conflitos de segregação de
+  funções (SoD) sobre essa matriz; concessão de acesso emergencial
+  (firefighter) por tempo limitado, com efeito imediato e revogação; e um
+  log de auditoria dos eventos sensíveis (troca de role, mudança de
+  permissão de App, concessão/revogação de acesso emergencial).
+- **Administração de Sistema** (role `SX_SYSTEM`) — painel de status real
+  do ambiente (conectividade com o banco, versão, uptime, contagem de
+  registros por módulo).
+
+A página inicial ("Launchpad") lista as linhas de negócio como Apps
+independentes: cada App pode ser ativado/desativado e restrito a roles
+específicas pela Matriz de Acesso em Segurança & Compliance — só aparece
+para quem tem permissão.
 
 ## Arquitetura
 

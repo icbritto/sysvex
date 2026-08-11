@@ -16,6 +16,8 @@ import CashFlowPage from './pages/finance/CashFlowPage';
 import DrePage from './pages/finance/DrePage';
 import UsersPage from './pages/admin/UsersPage';
 import MyAccountPage from './pages/account/MyAccountPage';
+import SecurityCompliancePage from './pages/security/SecurityCompliancePage';
+import SystemStatusPage from './pages/system/SystemStatusPage';
 
 export default function App() {
   return (
@@ -36,6 +38,8 @@ export default function App() {
             <Route path="/finance/cash-flow" element={<CashFlowPage />} />
             <Route path="/finance/dre" element={<DrePage />} />
             <Route path="/admin/users" element={<UsersPage />} />
+            <Route path="/security/compliance" element={<SecurityCompliancePage />} />
+            <Route path="/system/status" element={<SystemStatusPage />} />
             <Route path="/account" element={<MyAccountPage />} />
           </Route>
         </Route>

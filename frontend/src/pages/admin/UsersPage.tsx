@@ -1,23 +1,17 @@
 import { FormEvent, useEffect, useState } from 'react';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
+import { ROLE_LABELS } from '../../layout/AppShell';
+import { UserRole } from '../../auth/AuthContext';
 
 interface User {
   id: string;
   username: string;
   email: string;
   fullName: string;
-  role: 'ADMIN' | 'FINANCE' | 'PURCHASING' | 'SALES' | 'PRODUCTION';
+  role: UserRole;
   active: boolean;
 }
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: 'Administrador',
-  FINANCE: 'Financeiro',
-  PURCHASING: 'Compras',
-  SALES: 'Vendas',
-  PRODUCTION: 'Produção',
-};
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);

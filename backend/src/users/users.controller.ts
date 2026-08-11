@@ -5,12 +5,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/jwt.strategy';
 import { UserRole } from './user.entity';
 
-// Administração de usuários e roles é restrita a ADMIN, refletindo o
-// conceito de "Business User" com IDs e roles próprias do SAP S/4HANA.
+// Administração de usuários e roles é restrita a ADMIN e SX_SECURITY,
+// refletindo o conceito de "Business User" com IDs e roles próprias do
+// SAP S/4HANA e a responsabilidade de gestão de acessos da role de segurança.
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.SX_SECURITY)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -31,8 +34,8 @@ export class UsersController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.toSafeUser(await this.usersService.update(id, dto));
+  async update(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.toSafeUser(await this.usersService.update(id, dto, { id: actor.id, username: actor.username }));
   }
 
   @Delete(':id')
