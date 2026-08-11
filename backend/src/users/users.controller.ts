@@ -1,0 +1,47 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from './user.entity';
+
+// Administração de usuários e roles é restrita a ADMIN, refletindo o
+// conceito de "Business User" com IDs e roles próprias do SAP S/4HANA.
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  findAll() {
+    return this.usersService.findAll().then((users) => users.map(this.toSafeUser));
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.toSafeUser(await this.usersService.findById(id));
+  }
+
+  @Post()
+  async create(@Body() dto: CreateUserDto) {
+    return this.toSafeUser(await this.usersService.create(dto));
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.toSafeUser(await this.usersService.update(id, dto));
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
+
+  private toSafeUser(user: import('./user.entity').User) {
+    const { passwordHash: _passwordHash, ...safe } = user;
+    return safe;
+  }
+}
