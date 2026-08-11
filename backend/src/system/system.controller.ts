@@ -1,6 +1,8 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -11,7 +13,14 @@ import { PurchaseOrder } from '../purchasing/purchase-order.entity';
 import { SalesOrder } from '../sales/sales-order.entity';
 import { ProductionOrder } from '../production/production-order.entity';
 import { FinanceEntry } from '../finance/finance-entry.entity';
-import * as packageJson from '../../package.json';
+
+// Lido em runtime (não como `import ... from '../../package.json'`) para
+// não puxar um arquivo fora de src/ para dentro da compilação do TS — isso
+// faz o tsc recalcular o rootDir e quebra a estrutura de saída do dist/.
+function readAppVersion(): string {
+  const raw = readFileSync(join(__dirname, '../../package.json'), 'utf-8');
+  return (JSON.parse(raw) as { version: string }).version;
+}
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.SX_ADMIN, UserRole.SX_SYSTEM)
@@ -45,7 +54,7 @@ export class SystemController {
       ]);
 
     return {
-      appVersion: packageJson.version,
+      appVersion: readAppVersion(),
       environment: process.env.NODE_ENV ?? 'development',
       serverTime: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),
