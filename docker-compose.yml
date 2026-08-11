@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-sysvex}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sysvex}
+      POSTGRES_DB: ${DB_NAME:-sysvex}
+    volumes:
+      - sysvex_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-sysvex}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-sysvex}
+      DB_PASSWORD: ${DB_PASSWORD:-sysvex}
+      DB_NAME: ${DB_NAME:-sysvex}
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-true}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no arquivo .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME:-admin}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@sysvex.local}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?defina SEED_ADMIN_PASSWORD no arquivo .env}
+      SEED_SAMPLE_DATA: ${SEED_SAMPLE_DATA:-true}
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '${HTTP_PORT:-8080}:80'
+
+volumes:
+  sysvex_db_data:
