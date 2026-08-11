@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import apiClient, { TOKEN_STORAGE_KEY, extractErrorMessage } from '../api/client';
+import apiClient, { clearToken, extractErrorMessage, getToken, setToken } from '../api/client';
 
 export interface AuthUser {
   id: string;
@@ -12,7 +12,7 @@ export interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, keepSignedIn: boolean) => Promise<void>;
   logout: () => void;
 }
 
@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const token = getToken();
     if (!token) {
       setLoading(false);
       return;
@@ -31,14 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     apiClient
       .get<AuthUser>('/auth/me')
       .then((res) => setUser(res.data))
-      .catch(() => localStorage.removeItem(TOKEN_STORAGE_KEY))
+      .catch(() => clearToken())
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, keepSignedIn: boolean) => {
     try {
       const res = await apiClient.post('/auth/login', { username, password });
-      localStorage.setItem(TOKEN_STORAGE_KEY, res.data.accessToken);
+      setToken(res.data.accessToken, keepSignedIn);
       setUser(res.data.user);
     } catch (err) {
       throw new Error(extractErrorMessage(err));
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    clearToken();
     setUser(null);
   };
 
