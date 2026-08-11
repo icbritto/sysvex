@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
@@ -51,5 +51,15 @@ export class AuthService {
         role: user.role,
       },
     };
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await this.usersService.findById(userId);
+    const passwordMatches = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!passwordMatches) {
+      throw new BadRequestException('Senha atual incorreta.');
+    }
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.usersService.updatePasswordHash(userId, passwordHash);
   }
 }

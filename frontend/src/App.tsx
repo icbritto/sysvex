@@ -15,6 +15,7 @@ import FinanceEntriesPage from './pages/finance/FinanceEntriesPage';
 import CashFlowPage from './pages/finance/CashFlowPage';
 import DrePage from './pages/finance/DrePage';
 import UsersPage from './pages/admin/UsersPage';
+import MyAccountPage from './pages/account/MyAccountPage';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/finance/cash-flow" element={<CashFlowPage />} />
             <Route path="/finance/dre" element={<DrePage />} />
             <Route path="/admin/users" element={<UsersPage />} />
+            <Route path="/account" element={<MyAccountPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

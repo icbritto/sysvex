@@ -51,6 +51,10 @@ export class UsersService {
     return this.usersRepo.save(user);
   }
 
+  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    await this.usersRepo.update(id, { passwordHash });
+  }
+
   async remove(id: string): Promise<void> {
     const user = await this.findById(id);
     await this.usersRepo.remove(user);

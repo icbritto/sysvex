@@ -83,7 +83,8 @@ npm run dev          # http://localhost:5173
 
 Login inicial (definido no seed): usuário `admin`, senha a que você definir
 em `SEED_ADMIN_PASSWORD` no `.env` do backend (padrão `ChangeMe123!` — troque
-antes de usar em produção).
+antes de usar em produção). Depois de logado, cada usuário pode trocar a
+própria senha em **Minha Conta** (clique no seu nome, no topo da tela).
 
 ## Publicando na sua LXC (Proxmox, Ubuntu 24.04)
 
