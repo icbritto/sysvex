@@ -122,46 +122,6 @@ export default function AppShell() {
       <header className="app-topbar" ref={headerRef}>
         <div className="app-topbar__row">
           <div className="app-topbar__row-left">
-            <div className="app-topbar__search">
-              <form onSubmit={handleSearchSubmit}>
-                <span className="app-topbar__search-icon">🔍</span>
-                <input
-                  type="search"
-                  placeholder="Buscar um processo ou página…"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setActiveMenu('search');
-                  }}
-                  onFocus={() => setActiveMenu('search')}
-                />
-              </form>
-              {activeMenu === 'search' && searchQuery.trim() !== '' && (
-                <div className="app-topbar__search-results">
-                  {searchResults.length === 0 ? (
-                    <div className="app-topbar__search-empty">Nenhum resultado para "{searchQuery}".</div>
-                  ) : (
-                    searchResults.map((tile) => (
-                      <button
-                        type="button"
-                        key={tile.to}
-                        className="app-topbar__search-result"
-                        onClick={() => goTo(tile.to)}
-                      >
-                        <span className="app-topbar__search-result-icon" style={{ background: tile.groupColor }}>
-                          {tile.icon}
-                        </span>
-                        <span>
-                          <span className="app-topbar__search-result-title">{tile.title}</span>
-                          <span className="app-topbar__search-result-group">{tile.groupTitle}</span>
-                        </span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-
             <div className="app-topbar__hamburger-wrap">
               <button
                 type="button"
@@ -244,7 +204,48 @@ export default function AppShell() {
             </Link>
           </div>
 
-          <div className="app-topbar__avatar-wrap">
+          <div className="app-topbar__row-right">
+            <div className="app-topbar__search">
+              <form onSubmit={handleSearchSubmit}>
+                <span className="app-topbar__search-icon">🔍</span>
+                <input
+                  type="search"
+                  placeholder="Buscar um processo ou página…"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setActiveMenu('search');
+                  }}
+                  onFocus={() => setActiveMenu('search')}
+                />
+              </form>
+              {activeMenu === 'search' && searchQuery.trim() !== '' && (
+                <div className="app-topbar__search-results">
+                  {searchResults.length === 0 ? (
+                    <div className="app-topbar__search-empty">Nenhum resultado para "{searchQuery}".</div>
+                  ) : (
+                    searchResults.map((tile) => (
+                      <button
+                        type="button"
+                        key={tile.to}
+                        className="app-topbar__search-result"
+                        onClick={() => goTo(tile.to)}
+                      >
+                        <span className="app-topbar__search-result-icon" style={{ background: tile.groupColor }}>
+                          {tile.icon}
+                        </span>
+                        <span>
+                          <span className="app-topbar__search-result-title">{tile.title}</span>
+                          <span className="app-topbar__search-result-group">{tile.groupTitle}</span>
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="app-topbar__avatar-wrap">
             {user && (
               <button
                 type="button"
@@ -276,6 +277,7 @@ export default function AppShell() {
                 </button>
               </div>
             )}
+            </div>
           </div>
         </div>
 

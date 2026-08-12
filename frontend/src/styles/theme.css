@@ -56,6 +56,13 @@ a {
   min-width: 0;
 }
 
+.app-topbar__row-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
 .app-topbar__hamburger-wrap {
   position: relative;
 }
