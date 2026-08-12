@@ -51,9 +51,13 @@ export default function AppShell() {
         {apps.length > 0 && (
           <nav className="app-topbar__tabs">
             {apps.map((app) => (
-              <a key={app.key} className="app-topbar__tab" href={`/#${app.key}`}>
+              <Link
+                key={app.key}
+                className="app-topbar__tab"
+                to={{ pathname: '/', hash: app.key }}
+              >
                 {app.title}
-              </a>
+              </Link>
             ))}
           </nav>
         )}
