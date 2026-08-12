@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { recordVisit } from '../hooks/useAppUsage';
+import { recordVisit, useAppUsage } from '../hooks/useAppUsage';
 import { LAUNCHPAD_GROUPS, GroupTile } from '../launchpadGroups';
 
 export const ROLE_LABELS: Record<string, string> = {
@@ -14,16 +14,24 @@ export const ROLE_LABELS: Record<string, string> = {
   SX_SECURITY: 'Segurança & Compliance',
 };
 
+function getInitials(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? '';
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+  return (first + last).toUpperCase();
+}
+
 export default function AppShell() {
   const { user, apps, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { favorites } = useAppUsage();
 
-  const [openTabKey, setOpenTabKey] = useState<string | null>(null);
+  // Só um menu do topo fica aberto por vez: null | 'hamburger' | 'avatar' | 'search' | <key do App>
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const navRef = useRef<HTMLElement>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (location.pathname !== '/' && location.pathname !== '/login') {
@@ -32,36 +40,44 @@ export default function AppShell() {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
-    setOpenTabKey(null);
-    setSearchOpen(false);
+    setActiveMenu(null);
   }, [location.pathname, location.hash]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setOpenTabKey(null);
-      }
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setSearchOpen(false);
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setActiveMenu(null);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const visibleGroups = useMemo(() => {
+    const visibleKeys = apps.map((app) => app.key);
+    return LAUNCHPAD_GROUPS.filter((group) => visibleKeys.includes(group.key)).sort(
+      (a, b) => visibleKeys.indexOf(a.key) - visibleKeys.indexOf(b.key),
+    );
+  }, [apps]);
+
   const tilesByGroupKey = useMemo(() => {
     const map = new Map<string, GroupTile[]>();
-    LAUNCHPAD_GROUPS.forEach((group) => map.set(group.key, group.tiles));
+    visibleGroups.forEach((group) => map.set(group.key, group.tiles));
     return map;
-  }, []);
+  }, [visibleGroups]);
 
-  const visibleKeys = useMemo(() => new Set(apps.map((app) => app.key)), [apps]);
+  const searchableTiles = useMemo(
+    () => visibleGroups.flatMap((group) => group.tiles.map((tile) => ({ ...tile, groupTitle: group.title, groupColor: group.color }))),
+    [visibleGroups],
+  );
 
-  const searchableTiles = useMemo(() => {
-    return LAUNCHPAD_GROUPS.filter((group) => visibleKeys.has(group.key)).flatMap((group) =>
-      group.tiles.map((tile) => ({ ...tile, groupTitle: group.title, groupColor: group.color })),
-    );
-  }, [visibleKeys]);
+  const tileByPath = useMemo(() => {
+    const map = new Map<string, (typeof searchableTiles)[number]>();
+    searchableTiles.forEach((tile) => map.set(tile.to, tile));
+    return map;
+  }, [searchableTiles]);
+
+  const favoriteTiles = favorites.map((path) => tileByPath.get(path)).filter((tile): tile is NonNullable<typeof tile> => !!tile);
 
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -74,7 +90,7 @@ export default function AppShell() {
   const goTo = (to: string) => {
     navigate(to);
     setSearchQuery('');
-    setSearchOpen(false);
+    setActiveMenu(null);
   };
 
   const handleSearchSubmit = (e: FormEvent) => {
@@ -89,77 +105,181 @@ export default function AppShell() {
     navigate('/login');
   };
 
+  const toggleGroupExpanded = (key: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="app-shell">
-      <header className="app-topbar">
+      <header className="app-topbar" ref={headerRef}>
         <div className="app-topbar__row">
-          <Link to="/" className="app-topbar__brand">
-            <span className="app-topbar__logo">S</span>
-            SYSVEX
-          </Link>
+          <div className="app-topbar__row-left">
+            <button
+              type="button"
+              className="app-topbar__hamburger"
+              onClick={() => setActiveMenu(activeMenu === 'hamburger' ? null : 'hamburger')}
+              aria-label="Menu de navegação"
+            >
+              ☰
+            </button>
+            <Link to="/" className="app-topbar__brand">
+              <span className="app-topbar__logo">S</span>
+              SYSVEX
+            </Link>
 
-          <div className="app-topbar__search" ref={searchRef}>
-            <form onSubmit={handleSearchSubmit}>
-              <span className="app-topbar__search-icon">🔍</span>
-              <input
-                type="search"
-                placeholder="Buscar um processo ou página…"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchOpen(true);
-                }}
-                onFocus={() => setSearchOpen(true)}
-              />
-            </form>
-            {searchOpen && searchQuery.trim() !== '' && (
-              <div className="app-topbar__search-results">
-                {searchResults.length === 0 ? (
-                  <div className="app-topbar__search-empty">Nenhum resultado para "{searchQuery}".</div>
-                ) : (
-                  searchResults.map((tile) => (
-                    <button
-                      type="button"
-                      key={tile.to}
-                      className="app-topbar__search-result"
-                      onClick={() => goTo(tile.to)}
-                    >
-                      <span className="app-topbar__search-result-icon" style={{ background: tile.groupColor }}>
-                        {tile.icon}
-                      </span>
-                      <span>
-                        <span className="app-topbar__search-result-title">{tile.title}</span>
-                        <span className="app-topbar__search-result-group">{tile.groupTitle}</span>
-                      </span>
-                    </button>
-                  ))
+            <div className="app-topbar__search">
+              <form onSubmit={handleSearchSubmit}>
+                <span className="app-topbar__search-icon">🔍</span>
+                <input
+                  type="search"
+                  placeholder="Buscar um processo ou página…"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setActiveMenu('search');
+                  }}
+                  onFocus={() => setActiveMenu('search')}
+                />
+              </form>
+              {activeMenu === 'search' && searchQuery.trim() !== '' && (
+                <div className="app-topbar__search-results">
+                  {searchResults.length === 0 ? (
+                    <div className="app-topbar__search-empty">Nenhum resultado para "{searchQuery}".</div>
+                  ) : (
+                    searchResults.map((tile) => (
+                      <button
+                        type="button"
+                        key={tile.to}
+                        className="app-topbar__search-result"
+                        onClick={() => goTo(tile.to)}
+                      >
+                        <span className="app-topbar__search-result-icon" style={{ background: tile.groupColor }}>
+                          {tile.icon}
+                        </span>
+                        <span>
+                          <span className="app-topbar__search-result-title">{tile.title}</span>
+                          <span className="app-topbar__search-result-group">{tile.groupTitle}</span>
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {activeMenu === 'hamburger' && (
+              <div className="app-topbar__hamburger-panel">
+                <Link to="/" className="app-topbar__hamburger-home" onClick={() => setActiveMenu(null)}>
+                  <span>🏠</span> Página Inicial
+                </Link>
+
+                {favoriteTiles.length > 0 && (
+                  <div className="app-topbar__hamburger-section">
+                    <div className="app-topbar__hamburger-section-title">Favoritos</div>
+                    {favoriteTiles.map((tile) => (
+                      <Link
+                        key={tile.to}
+                        to={tile.to}
+                        className="app-topbar__hamburger-leaf"
+                        onClick={() => setActiveMenu(null)}
+                      >
+                        <span>{tile.icon}</span> {tile.title}
+                      </Link>
+                    ))}
+                  </div>
                 )}
+
+                <div className="app-topbar__hamburger-section">
+                  <div className="app-topbar__hamburger-section-title">Linhas de Negócio</div>
+                  {visibleGroups.map((group) => {
+                    const expanded = expandedGroups.has(group.key);
+                    return (
+                      <div key={group.key}>
+                        <button
+                          type="button"
+                          className="app-topbar__hamburger-branch"
+                          onClick={() => toggleGroupExpanded(group.key)}
+                        >
+                          <span
+                            className={`app-topbar__hamburger-caret ${expanded ? 'app-topbar__hamburger-caret--open' : ''}`}
+                          >
+                            ▸
+                          </span>
+                          {group.title}
+                        </button>
+                        {expanded &&
+                          group.tiles.map((tile) => (
+                            <Link
+                              key={tile.to}
+                              to={tile.to}
+                              className="app-topbar__hamburger-leaf app-topbar__hamburger-leaf--indent"
+                              onClick={() => setActiveMenu(null)}
+                            >
+                              <span>{tile.icon}</span> {tile.title}
+                            </Link>
+                          ))}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
 
-          <div className="app-topbar__user">
+          <div className="app-topbar__avatar-wrap">
             {user && (
-              <Link to="/account" style={{ color: '#fff', textDecoration: 'none' }}>
-                {user.fullName} · {ROLE_LABELS[user.role] ?? user.role}
-              </Link>
+              <button
+                type="button"
+                className="app-topbar__avatar"
+                onClick={() => setActiveMenu(activeMenu === 'avatar' ? null : 'avatar')}
+              >
+                {getInitials(user.fullName)}
+              </button>
             )}
-            <button className="app-topbar__logout" onClick={handleLogout}>
-              Sair
-            </button>
+            {activeMenu === 'avatar' && user && (
+              <div className="app-topbar__user-dropdown">
+                <div className="app-topbar__user-dropdown-header">
+                  <div className="app-topbar__user-dropdown-avatar">{getInitials(user.fullName)}</div>
+                  <div>
+                    <div className="app-topbar__user-dropdown-name">{user.fullName}</div>
+                    <div className="app-topbar__user-dropdown-email">{user.email}</div>
+                  </div>
+                </div>
+                <div className="app-topbar__user-dropdown-role">{ROLE_LABELS[user.role] ?? user.role}</div>
+                <Link to="/account" className="app-topbar__user-dropdown-item" onClick={() => setActiveMenu(null)}>
+                  ⚙️ Minha Conta
+                </Link>
+                <button
+                  type="button"
+                  className="app-topbar__user-dropdown-item app-topbar__user-dropdown-item--danger"
+                  onClick={handleLogout}
+                >
+                  ⏻ Sair
+                </button>
+              </div>
+            )}
           </div>
         </div>
+
         {apps.length > 0 && (
-          <nav className="app-topbar__tabs" ref={navRef}>
+          <nav className="app-topbar__tabs">
             {apps.map((app) => {
               const tiles = tilesByGroupKey.get(app.key) ?? [];
-              const isOpen = openTabKey === app.key;
+              const isOpen = activeMenu === app.key;
               return (
                 <div className="app-topbar__tab-wrap" key={app.key}>
                   <button
                     type="button"
                     className={`app-topbar__tab ${isOpen ? 'app-topbar__tab--open' : ''}`}
-                    onClick={() => setOpenTabKey(isOpen ? null : app.key)}
+                    onClick={() => setActiveMenu(isOpen ? null : app.key)}
                   >
                     {app.title}
                     {tiles.length > 0 && <span className="app-topbar__tab-caret">▾</span>}
@@ -169,7 +289,7 @@ export default function AppShell() {
                       <Link
                         className="app-topbar__dropdown-item app-topbar__dropdown-item--all"
                         to={{ pathname: '/', hash: app.key }}
-                        onClick={() => setOpenTabKey(null)}
+                        onClick={() => setActiveMenu(null)}
                       >
                         Ver tudo em {app.title}
                       </Link>
@@ -178,7 +298,7 @@ export default function AppShell() {
                           key={tile.to}
                           className="app-topbar__dropdown-item"
                           to={tile.to}
-                          onClick={() => setOpenTabKey(null)}
+                          onClick={() => setActiveMenu(null)}
                         >
                           <span>{tile.icon}</span> {tile.title}
                         </Link>
