@@ -18,6 +18,7 @@ import UsersPage from './pages/admin/UsersPage';
 import MyAccountPage from './pages/account/MyAccountPage';
 import SecurityCompliancePage from './pages/security/SecurityCompliancePage';
 import SystemStatusPage from './pages/system/SystemStatusPage';
+import BusinessLineOverviewPage from './pages/BusinessLineOverviewPage';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route element={<RequireAuth />}>
           <Route element={<AppShell />}>
             <Route path="/" element={<Launchpad />} />
+            <Route path="/lines/:key" element={<BusinessLineOverviewPage />} />
             <Route path="/partners" element={<PartnersPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:productId/bom" element={<BomPage />} />

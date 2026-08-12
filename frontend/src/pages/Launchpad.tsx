@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import apiClient from '../api/client';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useAppUsage } from '../hooks/useAppUsage';
+import { useProcessCounts } from '../hooks/useProcessCounts';
 import { LAUNCHPAD_GROUPS } from '../launchpadGroups';
 
 interface Tile {
@@ -34,44 +34,9 @@ function capitalize(text: string): string {
 
 export default function Launchpad() {
   const { user, apps } = useAuth();
-  const location = useLocation();
-  const [counts, setCounts] = useState<Record<string, number>>({});
+  const counts = useProcessCounts();
   const [usageTab, setUsageTab] = useState<UsageTab>('favorites');
   const { favorites, recents, mostUsed, toggleFavorite, isFavorite } = useAppUsage();
-
-  useEffect(() => {
-    async function loadCounts() {
-      const results: Record<string, number> = {};
-      const jobs: Array<[string, Promise<unknown>]> = [
-        ['partners', apiClient.get('/partners')],
-        ['products', apiClient.get('/products')],
-        ['lowStock', apiClient.get('/products/low-stock')],
-        ['purchaseOrders', apiClient.get('/purchase-orders')],
-        ['salesOrders', apiClient.get('/sales-orders')],
-        ['productionOrders', apiClient.get('/production-orders')],
-        ['openFinance', apiClient.get('/finance/entries', { params: { status: 'OPEN' } })],
-      ];
-      await Promise.all(
-        jobs.map(async ([key, promise]) => {
-          try {
-            const res = (await promise) as { data: unknown[] };
-            results[key] = Array.isArray(res.data) ? res.data.length : 0;
-          } catch {
-            results[key] = 0;
-          }
-        }),
-      );
-      setCounts(results);
-    }
-    loadCounts();
-  }, []);
-
-  useEffect(() => {
-    if (location.hash) {
-      const el = document.getElementById(location.hash.slice(1));
-      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [location.hash, apps]);
 
   const visibleKeys = apps.map((app) => app.key);
   const groups: Group[] = LAUNCHPAD_GROUPS.filter((group) => visibleKeys.includes(group.key))

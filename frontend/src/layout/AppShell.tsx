@@ -122,19 +122,6 @@ export default function AppShell() {
       <header className="app-topbar" ref={headerRef}>
         <div className="app-topbar__row">
           <div className="app-topbar__row-left">
-            <button
-              type="button"
-              className="app-topbar__hamburger"
-              onClick={() => setActiveMenu(activeMenu === 'hamburger' ? null : 'hamburger')}
-              aria-label="Menu de navegação"
-            >
-              ☰
-            </button>
-            <Link to="/" className="app-topbar__brand">
-              <span className="app-topbar__logo">S</span>
-              SYSVEX
-            </Link>
-
             <div className="app-topbar__search">
               <form onSubmit={handleSearchSubmit}>
                 <span className="app-topbar__search-icon">🔍</span>
@@ -175,63 +162,86 @@ export default function AppShell() {
               )}
             </div>
 
-            {activeMenu === 'hamburger' && (
-              <div className="app-topbar__hamburger-panel">
-                <Link to="/" className="app-topbar__hamburger-home" onClick={() => setActiveMenu(null)}>
-                  <span>🏠</span> Página Inicial
-                </Link>
+            <div className="app-topbar__hamburger-wrap">
+              <button
+                type="button"
+                className="app-topbar__hamburger"
+                onClick={() => setActiveMenu(activeMenu === 'hamburger' ? null : 'hamburger')}
+                aria-label="Menu de navegação"
+              >
+                ☰
+              </button>
+              {activeMenu === 'hamburger' && (
+                <div className="app-topbar__hamburger-panel">
+                  <Link to="/" className="app-topbar__hamburger-home" onClick={() => setActiveMenu(null)}>
+                    <span>🏠</span> Página Inicial
+                  </Link>
 
-                {favoriteTiles.length > 0 && (
-                  <div className="app-topbar__hamburger-section">
-                    <div className="app-topbar__hamburger-section-title">Favoritos</div>
-                    {favoriteTiles.map((tile) => (
-                      <Link
-                        key={tile.to}
-                        to={tile.to}
-                        className="app-topbar__hamburger-leaf"
-                        onClick={() => setActiveMenu(null)}
-                      >
-                        <span>{tile.icon}</span> {tile.title}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                <div className="app-topbar__hamburger-section">
-                  <div className="app-topbar__hamburger-section-title">Linhas de Negócio</div>
-                  {visibleGroups.map((group) => {
-                    const expanded = expandedGroups.has(group.key);
-                    return (
-                      <div key={group.key}>
-                        <button
-                          type="button"
-                          className="app-topbar__hamburger-branch"
-                          onClick={() => toggleGroupExpanded(group.key)}
+                  {favoriteTiles.length > 0 && (
+                    <div className="app-topbar__hamburger-section">
+                      <div className="app-topbar__hamburger-section-title">Favoritos</div>
+                      {favoriteTiles.map((tile) => (
+                        <Link
+                          key={tile.to}
+                          to={tile.to}
+                          className="app-topbar__hamburger-leaf"
+                          onClick={() => setActiveMenu(null)}
                         >
-                          <span
-                            className={`app-topbar__hamburger-caret ${expanded ? 'app-topbar__hamburger-caret--open' : ''}`}
-                          >
-                            ▸
-                          </span>
-                          {group.title}
-                        </button>
-                        {expanded &&
-                          group.tiles.map((tile) => (
+                          <span>{tile.icon}</span> {tile.title}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="app-topbar__hamburger-section">
+                    <div className="app-topbar__hamburger-section-title">Linhas de Negócio</div>
+                    {visibleGroups.map((group) => {
+                      const expanded = expandedGroups.has(group.key);
+                      return (
+                        <div key={group.key}>
+                          <div className="app-topbar__hamburger-branch-row">
                             <Link
-                              key={tile.to}
-                              to={tile.to}
-                              className="app-topbar__hamburger-leaf app-topbar__hamburger-leaf--indent"
+                              to={`/lines/${group.key}`}
+                              className="app-topbar__hamburger-branch"
                               onClick={() => setActiveMenu(null)}
                             >
-                              <span>{tile.icon}</span> {tile.title}
+                              {group.title}
                             </Link>
-                          ))}
-                      </div>
-                    );
-                  })}
+                            <button
+                              type="button"
+                              className="app-topbar__hamburger-branch-toggle"
+                              onClick={() => toggleGroupExpanded(group.key)}
+                              aria-label={`Mostrar processos de ${group.title}`}
+                            >
+                              <span
+                                className={`app-topbar__hamburger-caret ${expanded ? 'app-topbar__hamburger-caret--open' : ''}`}
+                              >
+                                ▸
+                              </span>
+                            </button>
+                          </div>
+                          {expanded &&
+                            group.tiles.map((tile) => (
+                              <Link
+                                key={tile.to}
+                                to={tile.to}
+                                className="app-topbar__hamburger-leaf app-topbar__hamburger-leaf--indent"
+                                onClick={() => setActiveMenu(null)}
+                              >
+                                <span>{tile.icon}</span> {tile.title}
+                              </Link>
+                            ))}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+            <Link to="/" className="app-topbar__brand">
+              <span className="app-topbar__logo">S</span>
+              SYSVEX
+            </Link>
           </div>
 
           <div className="app-topbar__avatar-wrap">
@@ -275,24 +285,22 @@ export default function AppShell() {
               const tiles = tilesByGroupKey.get(app.key) ?? [];
               const isOpen = activeMenu === app.key;
               return (
-                <div className="app-topbar__tab-wrap" key={app.key}>
-                  <button
-                    type="button"
-                    className={`app-topbar__tab ${isOpen ? 'app-topbar__tab--open' : ''}`}
-                    onClick={() => setActiveMenu(isOpen ? null : app.key)}
-                  >
+                <div className={`app-topbar__tab-wrap ${isOpen ? 'app-topbar__tab-wrap--open' : ''}`} key={app.key}>
+                  <Link to={`/lines/${app.key}`} className="app-topbar__tab">
                     {app.title}
-                    {tiles.length > 0 && <span className="app-topbar__tab-caret">▾</span>}
-                  </button>
+                  </Link>
+                  {tiles.length > 0 && (
+                    <button
+                      type="button"
+                      className="app-topbar__tab-caret-btn"
+                      onClick={() => setActiveMenu(isOpen ? null : app.key)}
+                      aria-label={`Mostrar processos de ${app.title}`}
+                    >
+                      <span className="app-topbar__tab-caret">▾</span>
+                    </button>
+                  )}
                   {isOpen && tiles.length > 0 && (
                     <div className="app-topbar__dropdown">
-                      <Link
-                        className="app-topbar__dropdown-item app-topbar__dropdown-item--all"
-                        to={{ pathname: '/', hash: app.key }}
-                        onClick={() => setActiveMenu(null)}
-                      >
-                        Ver tudo em {app.title}
-                      </Link>
                       {tiles.map((tile) => (
                         <Link
                           key={tile.to}
