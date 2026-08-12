@@ -480,15 +480,11 @@ a {
 }
 
 .app-topbar__logo {
-  width: 28px;
-  height: 28px;
-  background: #fff;
-  color: var(--sysvex-primary);
+  width: 30px;
+  height: 30px;
   border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
+  object-fit: contain;
+  background: #fff;
 }
 
 .app-content {
@@ -934,16 +930,10 @@ table.data-table {
 }
 
 .login-card__logo {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 6px;
-  background: var(--sysvex-primary);
-  color: #fff;
-  font-weight: 800;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
 }
 
 .login-card h1 {

@@ -199,7 +199,7 @@ export default function AppShell() {
               )}
             </div>
             <Link to="/" className="app-topbar__brand">
-              <span className="app-topbar__logo">S</span>
+              <img src="/logo.png" alt="" className="app-topbar__logo" />
               SYSVEX
             </Link>
           </div>
