@@ -119,9 +119,21 @@ a {
 .app-content {
   flex: 1;
   padding: 24px 28px 48px;
-  max-width: 1180px;
+  max-width: 1400px;
   width: 100%;
   margin: 0 auto;
+}
+
+.launchpad-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: 28px;
+}
+
+@media (min-width: 900px) {
+  .launchpad-columns {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .page-header {

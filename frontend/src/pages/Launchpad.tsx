@@ -204,33 +204,35 @@ export default function Launchpad() {
         <div className="launchpad-banner__greeting">Olá, {firstName}, bom te ver!</div>
       </div>
 
-      {groups.map((group) => (
-        <div className="launchpad-group" id={group.key} key={group.key}>
-          <h2>{group.title}</h2>
-          <div className="tile-grid">
-            {group.tiles.map((tile) => (
-              <div className="tile-wrap" key={tile.to}>
-                <Link className="tile tile--colored" style={{ background: group.color }} to={tile.to}>
-                  <span className="tile__icon">{tile.icon}</span>
-                  <div>
-                    {tile.kpiValue !== '' && <div className="tile__kpi">{tile.kpiValue}</div>}
-                    <div className="tile__title">{tile.title}</div>
-                    {tile.kpiLabel && <div className="tile__subtitle">{tile.kpiLabel}</div>}
-                  </div>
-                </Link>
-                <button
-                  type="button"
-                  className={`tile-favorite ${isFavorite(tile.to) ? 'tile-favorite--active' : ''}`}
-                  onClick={() => toggleFavorite(tile.to)}
-                  title={isFavorite(tile.to) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                >
-                  {isFavorite(tile.to) ? '★' : '☆'}
-                </button>
-              </div>
-            ))}
+      <div className="launchpad-columns">
+        {groups.map((group) => (
+          <div className="launchpad-group" id={group.key} key={group.key}>
+            <h2>{group.title}</h2>
+            <div className="tile-grid">
+              {group.tiles.map((tile) => (
+                <div className="tile-wrap" key={tile.to}>
+                  <Link className="tile tile--colored" style={{ background: group.color }} to={tile.to}>
+                    <span className="tile__icon">{tile.icon}</span>
+                    <div>
+                      {tile.kpiValue !== '' && <div className="tile__kpi">{tile.kpiValue}</div>}
+                      <div className="tile__title">{tile.title}</div>
+                      {tile.kpiLabel && <div className="tile__subtitle">{tile.kpiLabel}</div>}
+                    </div>
+                  </Link>
+                  <button
+                    type="button"
+                    className={`tile-favorite ${isFavorite(tile.to) ? 'tile-favorite--active' : ''}`}
+                    onClick={() => toggleFavorite(tile.to)}
+                    title={isFavorite(tile.to) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                  >
+                    {isFavorite(tile.to) ? '★' : '☆'}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       <div className="launchpad-group">
         <h2>Apps</h2>
