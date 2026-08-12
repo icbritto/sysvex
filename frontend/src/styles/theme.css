@@ -56,6 +56,10 @@ a {
   min-width: 0;
 }
 
+.app-topbar__hamburger-wrap {
+  position: relative;
+}
+
 .app-topbar__hamburger {
   background: none;
   border: none;
@@ -73,9 +77,8 @@ a {
 
 .app-topbar__hamburger-panel {
   position: absolute;
-  top: 100%;
-  left: 20px;
-  margin-top: 1px;
+  top: calc(100% + 6px);
+  left: 0;
   background: #fff;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
@@ -116,24 +119,29 @@ a {
   color: var(--sysvex-text-muted);
 }
 
-.app-topbar__hamburger-branch {
+.app-topbar__hamburger-branch-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 8px 16px;
+  align-items: stretch;
+}
+
+.app-topbar__hamburger-branch-row:hover {
+  background: #f1f5f8;
+}
+
+.app-topbar__hamburger-branch {
+  flex: 1;
+  padding: 8px 4px 8px 16px;
   font-size: 13px;
   font-weight: 600;
   color: var(--sysvex-text);
-  cursor: pointer;
-  font-family: inherit;
+  text-decoration: none;
 }
 
-.app-topbar__hamburger-branch:hover {
-  background: #f1f5f8;
+.app-topbar__hamburger-branch-toggle {
+  background: none;
+  border: none;
+  padding: 8px 16px 8px 4px;
+  cursor: pointer;
 }
 
 .app-topbar__hamburger-caret {
@@ -278,34 +286,43 @@ a {
 
 .app-topbar__tab-wrap {
   position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+}
+
+.app-topbar__tab-wrap:hover,
+.app-topbar__tab-wrap--open {
+  border-bottom-color: rgba(255, 255, 255, 0.4);
 }
 
 .app-topbar__tab {
-  background: none;
-  border: none;
   color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   font-size: 12.5px;
-  font-family: inherit;
   font-weight: 600;
   white-space: nowrap;
-  padding: 9px 12px;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  padding: 9px 4px 9px 12px;
 }
 
-.app-topbar__tab:hover,
-.app-topbar__tab--open {
+.app-topbar__tab-caret-btn {
+  background: none;
+  border: none;
+  padding: 9px 12px 9px 2px;
+  cursor: pointer;
+}
+
+.app-topbar__tab-wrap:hover .app-topbar__tab,
+.app-topbar__tab-wrap--open .app-topbar__tab,
+.app-topbar__tab-wrap:hover .app-topbar__tab-caret,
+.app-topbar__tab-wrap--open .app-topbar__tab-caret {
   color: #fff;
-  border-bottom-color: rgba(255, 255, 255, 0.4);
 }
 
 .app-topbar__tab-caret {
   font-size: 10px;
   opacity: 0.8;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .app-topbar__dropdown {
