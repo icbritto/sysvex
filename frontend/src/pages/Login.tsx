@@ -65,7 +65,7 @@ export default function Login() {
             <div className="login-card__body">
               <div className="login-card__brand">
                 <span className="login-card__brand-label">SYSVEX ID</span>
-                <span className="login-card__logo">S</span>
+                <img src="/logo.png" alt="SYSVEX" className="login-card__logo" />
               </div>
 
               <h1>Entrar</h1>
@@ -95,7 +95,7 @@ export default function Login() {
             <div className="login-card__body">
               <div className="login-card__brand">
                 <span className="login-card__brand-label">SYSVEX ID</span>
-                <span className="login-card__logo">S</span>
+                <img src="/logo.png" alt="SYSVEX" className="login-card__logo" />
               </div>
 
               <h1>Entrar</h1>
