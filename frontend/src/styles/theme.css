@@ -42,7 +42,7 @@ a {
 .app-topbar__row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 20px;
   padding: 0 20px;
   height: 52px;
 }
@@ -51,23 +51,173 @@ a {
   display: flex;
   gap: 4px;
   padding: 0 20px;
-  overflow-x: auto;
+  overflow: visible;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.app-topbar__tab-wrap {
+  position: relative;
+}
+
 .app-topbar__tab {
+  background: none;
+  border: none;
   color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   font-size: 12.5px;
+  font-family: inherit;
   font-weight: 600;
   white-space: nowrap;
   padding: 9px 12px;
   border-bottom: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.app-topbar__tab:hover {
+.app-topbar__tab:hover,
+.app-topbar__tab--open {
   color: #fff;
   border-bottom-color: rgba(255, 255, 255, 0.4);
+}
+
+.app-topbar__tab-caret {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.app-topbar__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 1px;
+  background: #fff;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  min-width: 230px;
+  z-index: 60;
+  overflow: hidden;
+  padding: 6px 0;
+}
+
+.app-topbar__dropdown-item {
+  display: block;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: var(--sysvex-text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app-topbar__dropdown-item:hover {
+  background: #f1f5f8;
+}
+
+.app-topbar__dropdown-item--all {
+  font-weight: 600;
+  color: var(--sysvex-primary);
+  border-bottom: 1px solid var(--sysvex-border);
+  margin-bottom: 4px;
+  padding-bottom: 10px;
+}
+
+.app-topbar__search {
+  position: relative;
+  flex: 1;
+  max-width: 380px;
+}
+
+.app-topbar__search form {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 0 10px;
+}
+
+.app-topbar__search-icon {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.app-topbar__search input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #fff;
+  padding: 7px 8px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.app-topbar__search input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.app-topbar__search input:focus {
+  outline: none;
+}
+
+.app-topbar__search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+  z-index: 60;
+  overflow: hidden;
+  padding: 6px 0;
+}
+
+.app-topbar__search-empty {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--sysvex-text-muted);
+}
+
+.app-topbar__search-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.app-topbar__search-result:hover {
+  background: #f1f5f8;
+}
+
+.app-topbar__search-result-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.app-topbar__search-result-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sysvex-text);
+}
+
+.app-topbar__search-result-group {
+  display: block;
+  font-size: 11px;
+  color: var(--sysvex-text-muted);
 }
 
 .app-topbar__brand {

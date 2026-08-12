@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import apiClient from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { useAppUsage } from '../hooks/useAppUsage';
+import { LAUNCHPAD_GROUPS } from '../launchpadGroups';
 
 interface Tile {
   to: string;
@@ -72,114 +73,19 @@ export default function Launchpad() {
     }
   }, [location.hash, apps]);
 
-  const allGroups: Group[] = [
-    {
-      key: 'financeiro',
-      title: 'Financeiro',
-      color: '#0f6bab',
-      tiles: [
-        {
-          to: '/finance/entries',
-          icon: '💰',
-          title: 'Contas a Pagar/Receber',
-          kpiLabel: 'Em aberto',
-          kpiValue: String(counts.openFinance ?? '–'),
-        },
-        { to: '/finance/cash-flow', icon: '📊', title: 'Fluxo de Caixa', kpiLabel: '', kpiValue: '' },
-        { to: '/finance/dre', icon: '📈', title: 'DRE Simplificado', kpiLabel: '', kpiValue: '' },
-      ],
-    },
-    {
-      key: 'compras',
-      title: 'Compras',
-      color: '#c0388b',
-      tiles: [
-        {
-          to: '/purchase-orders',
-          icon: '🛒',
-          title: 'Pedidos de Compra',
-          kpiLabel: 'Total',
-          kpiValue: String(counts.purchaseOrders ?? '–'),
-        },
-        {
-          to: '/partners?type=SUPPLIER',
-          icon: '🏭',
-          title: 'Fornecedores',
-          kpiLabel: '',
-          kpiValue: '',
-        },
-      ],
-    },
-    {
-      key: 'vendas',
-      title: 'Vendas',
-      color: '#c9701c',
-      tiles: [
-        {
-          to: '/sales-orders',
-          icon: '🧾',
-          title: 'Pedidos de Venda',
-          kpiLabel: 'Total',
-          kpiValue: String(counts.salesOrders ?? '–'),
-        },
-        { to: '/partners?type=CUSTOMER', icon: '🧑‍🤝‍🧑', title: 'Clientes', kpiLabel: '', kpiValue: '' },
-      ],
-    },
-    {
-      key: 'estoque_producao',
-      title: 'Estoque & Produção',
-      color: '#6a3fa0',
-      tiles: [
-        {
-          to: '/products',
-          icon: '📦',
-          title: 'Produtos & Insumos',
-          kpiLabel: 'Cadastrados',
-          kpiValue: String(counts.products ?? '–'),
-        },
-        {
-          to: '/products?lowStock=1',
-          icon: '⚠️',
-          title: 'Estoque Baixo',
-          kpiLabel: 'Alertas',
-          kpiValue: String(counts.lowStock ?? '–'),
-        },
-        {
-          to: '/production-orders',
-          icon: '🍬',
-          title: 'Ordens de Produção',
-          kpiLabel: 'Total',
-          kpiValue: String(counts.productionOrders ?? '–'),
-        },
-        { to: '/inventory/movements', icon: '📋', title: 'Movimentações de Estoque', kpiLabel: '', kpiValue: '' },
-      ],
-    },
-    {
-      key: 'administracao',
-      title: 'Administração',
-      color: '#b3261e',
-      tiles: [{ to: '/admin/users', icon: '👤', title: 'Usuários & Roles', kpiLabel: '', kpiValue: '' }],
-    },
-    {
-      key: 'seguranca_compliance',
-      title: 'Segurança & Compliance',
-      color: '#1a7f8e',
-      tiles: [
-        { to: '/security/compliance', icon: '🛡️', title: 'Segurança & Compliance', kpiLabel: '', kpiValue: '' },
-      ],
-    },
-    {
-      key: 'administracao_sistema',
-      title: 'Administração de Sistema',
-      color: '#3a4750',
-      tiles: [{ to: '/system/status', icon: '🖥️', title: 'Status do Sistema', kpiLabel: '', kpiValue: '' }],
-    },
-  ];
-
   const visibleKeys = apps.map((app) => app.key);
-  const groups = allGroups
-    .filter((group) => visibleKeys.includes(group.key))
-    .sort((a, b) => visibleKeys.indexOf(a.key) - visibleKeys.indexOf(b.key));
+  const groups: Group[] = LAUNCHPAD_GROUPS.filter((group) => visibleKeys.includes(group.key))
+    .sort((a, b) => visibleKeys.indexOf(a.key) - visibleKeys.indexOf(b.key))
+    .map((group) => ({
+      ...group,
+      tiles: group.tiles.map((tile) => ({
+        to: tile.to,
+        icon: tile.icon,
+        title: tile.title,
+        kpiLabel: tile.kpiLabel ?? '',
+        kpiValue: tile.kpiCountKey ? String(counts[tile.kpiCountKey] ?? '–') : '',
+      })),
+    }));
 
   const tileByPath = useMemo(() => {
     const map = new Map<string, { tile: Tile; groupColor: string }>();
