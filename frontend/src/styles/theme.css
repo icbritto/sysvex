@@ -343,7 +343,7 @@ a {
 .app-topbar__tabs {
   display: flex;
   gap: 4px;
-  padding: 0 20px;
+  padding: 6px 20px;
   overflow: visible;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -352,28 +352,32 @@ a {
   position: relative;
   display: flex;
   align-items: center;
-  border-bottom: 2px solid transparent;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background-color 0.12s ease;
 }
 
 .app-topbar__tab-wrap:hover,
 .app-topbar__tab-wrap--open {
-  border-bottom-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .app-topbar__tab {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   font-size: 12.5px;
   font-weight: 600;
   white-space: nowrap;
-  padding: 9px 4px 9px 12px;
+  padding: 8px 4px 8px 12px;
 }
 
 .app-topbar__tab-caret-btn {
   background: none;
   border: none;
-  padding: 9px 12px 9px 2px;
+  padding: 8px 10px 8px 4px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .app-topbar__tab-wrap:hover .app-topbar__tab,
@@ -384,9 +388,16 @@ a {
 }
 
 .app-topbar__tab-caret {
-  font-size: 10px;
-  opacity: 0.8;
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 11px;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.85);
+  transition: transform 0.12s ease, color 0.12s ease;
+  display: inline-block;
+}
+
+.app-topbar__tab-wrap--open .app-topbar__tab-caret {
+  color: var(--sysvex-accent);
+  transform: rotate(180deg);
 }
 
 .app-topbar__dropdown {
