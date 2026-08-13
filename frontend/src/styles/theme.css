@@ -1,16 +1,54 @@
 :root {
-  --sysvex-primary: #134e6f;
-  --sysvex-primary-dark: #0d3a53;
-  --sysvex-accent: #1a7f8e;
-  --sysvex-bg: #f2f4f7;
+  color-scheme: light;
+  --sysvex-bg: #f8fafc;
   --sysvex-surface: #ffffff;
-  --sysvex-border: #dde3ea;
-  --sysvex-text: #1f2b3a;
-  --sysvex-text-muted: #5b6b7c;
-  --sysvex-danger: #b3261e;
-  --sysvex-success: #1e7d4f;
-  --sysvex-warning: #b7791f;
+  --sysvex-surface-hover: #f1f5f9;
+  --sysvex-surface-sunken: #eef2f6;
+  --sysvex-text: #0f172a;
+  --sysvex-text-muted: #64748b;
+  --sysvex-primary: #1e293b;
+  --sysvex-primary-dark: #0f172a;
+  --sysvex-accent: #059669;
+  --sysvex-success: #059669;
+  --sysvex-success-ink: #047857;
+  --sysvex-warning: #d97706;
+  --sysvex-warning-ink: #b45309;
+  --sysvex-danger: #e11d48;
+  --sysvex-danger-ink: #be123c;
+  --sysvex-highlight: #7c3aed;
+  --sysvex-border: #e2e8f0;
+  --sysvex-overlay: rgba(15, 23, 42, 0.45);
+  --sysvex-shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.06), 0 12px 28px rgba(15, 23, 42, 0.1);
+  --sysvex-shadow-md: 0 12px 24px rgba(15, 23, 42, 0.16);
+  --sysvex-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.18);
+  --sysvex-shadow-hover: 0 6px 16px rgba(15, 23, 42, 0.18);
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --sysvex-bg: #12151b;
+  --sysvex-surface: #1b2430;
+  --sysvex-surface-hover: #263143;
+  --sysvex-surface-sunken: #161c26;
+  --sysvex-text: #f8fafc;
+  --sysvex-text-muted: #94a3b8;
+  --sysvex-primary: #2563eb;
+  --sysvex-primary-dark: #1d4ed8;
+  --sysvex-accent: #38bdf8;
+  --sysvex-success: #34d399;
+  --sysvex-success-ink: #34d399;
+  --sysvex-warning: #fbbf24;
+  --sysvex-warning-ink: #fbbf24;
+  --sysvex-danger: #fb7185;
+  --sysvex-danger-ink: #fb7185;
+  --sysvex-highlight: #8b5cf6;
+  --sysvex-border: #334155;
+  --sysvex-overlay: rgba(0, 0, 0, 0.6);
+  --sysvex-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.4);
+  --sysvex-shadow-md: 0 12px 24px rgba(0, 0, 0, 0.45);
+  --sysvex-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --sysvex-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -86,9 +124,9 @@ a {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  background: #fff;
+  background: var(--sysvex-surface);
   border-radius: 0 0 8px 8px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--sysvex-shadow-md);
   width: 280px;
   max-height: 75vh;
   overflow-y: auto;
@@ -103,7 +141,7 @@ a {
   padding: 12px 16px;
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--sysvex-primary);
+  color: var(--sysvex-accent);
   text-decoration: none;
   border-bottom: 1px solid var(--sysvex-border);
   margin-bottom: 4px;
@@ -132,7 +170,7 @@ a {
 }
 
 .app-topbar__hamburger-branch-row:hover {
-  background: #f1f5f8;
+  background: var(--sysvex-surface-hover);
 }
 
 .app-topbar__hamburger-branch {
@@ -173,7 +211,7 @@ a {
 }
 
 .app-topbar__hamburger-leaf:hover {
-  background: #f1f5f8;
+  background: var(--sysvex-surface-hover);
 }
 
 .app-topbar__hamburger-leaf--indent {
@@ -185,6 +223,25 @@ a {
 .app-topbar__avatar-wrap {
   position: relative;
   flex-shrink: 0;
+}
+
+.app-topbar__theme-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-topbar__theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .app-topbar__avatar {
@@ -210,9 +267,9 @@ a {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: #fff;
+  background: var(--sysvex-surface);
   border-radius: 8px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--sysvex-shadow-md);
   width: 260px;
   z-index: 65;
   overflow: hidden;
@@ -276,11 +333,11 @@ a {
 }
 
 .app-topbar__user-dropdown-item:hover {
-  background: #f1f5f8;
+  background: var(--sysvex-surface-hover);
 }
 
 .app-topbar__user-dropdown-item--danger {
-  color: var(--sysvex-danger);
+  color: var(--sysvex-danger-ink);
 }
 
 .app-topbar__tabs {
@@ -337,9 +394,9 @@ a {
   top: 100%;
   left: 0;
   margin-top: 1px;
-  background: #fff;
+  background: var(--sysvex-surface);
   border-radius: 0 0 8px 8px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sysvex-shadow-md);
   min-width: 230px;
   z-index: 60;
   overflow: hidden;
@@ -356,12 +413,12 @@ a {
 }
 
 .app-topbar__dropdown-item:hover {
-  background: #f1f5f8;
+  background: var(--sysvex-surface-hover);
 }
 
 .app-topbar__dropdown-item--all {
   font-weight: 600;
-  color: var(--sysvex-primary);
+  color: var(--sysvex-accent);
   border-bottom: 1px solid var(--sysvex-border);
   margin-bottom: 4px;
   padding-bottom: 10px;
@@ -409,9 +466,9 @@ a {
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: #fff;
+  background: var(--sysvex-surface);
   border-radius: 8px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--sysvex-shadow-md);
   z-index: 60;
   overflow: hidden;
   padding: 6px 0;
@@ -437,7 +494,7 @@ a {
 }
 
 .app-topbar__search-result:hover {
-  background: #f1f5f8;
+  background: var(--sysvex-surface-hover);
 }
 
 .app-topbar__search-result-icon {
@@ -565,7 +622,7 @@ a {
 }
 
 .tile:hover {
-  box-shadow: 0 4px 14px rgba(19, 78, 111, 0.15);
+  box-shadow: var(--sysvex-shadow-hover);
   transform: translateY(-1px);
   border-color: var(--sysvex-accent);
 }
@@ -583,7 +640,7 @@ a {
 .tile__kpi {
   font-size: 22px;
   font-weight: 700;
-  color: var(--sysvex-primary);
+  color: var(--sysvex-accent);
 }
 
 .tile__subtitle {
@@ -620,7 +677,7 @@ a {
 }
 
 .tile--colored:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--sysvex-shadow-hover);
   border-color: transparent;
 }
 
@@ -647,7 +704,7 @@ a {
 
 .tile-favorite:hover,
 .tile-favorite--active {
-  color: #ffd54a;
+  color: var(--sysvex-warning);
 }
 
 .apps-tabs {
@@ -728,7 +785,7 @@ table.data-table {
 }
 
 .data-table th {
-  background: #eaeff4;
+  background: var(--sysvex-surface-sunken);
   font-weight: 600;
   color: var(--sysvex-text-muted);
   text-transform: uppercase;
@@ -737,7 +794,7 @@ table.data-table {
 }
 
 .data-table tbody tr:hover {
-  background: #f7f9fb;
+  background: var(--sysvex-surface-hover);
 }
 
 .table-wrap {
@@ -768,19 +825,19 @@ table.data-table {
 }
 
 .btn--secondary {
-  background: #fff;
-  color: var(--sysvex-primary);
+  background: var(--sysvex-surface);
+  color: var(--sysvex-accent);
   border-color: var(--sysvex-border);
 }
 .btn--secondary:hover {
-  background: #f1f5f8;
+  background: var(--sysvex-surface-hover);
 }
 
 .btn--danger {
   background: var(--sysvex-danger);
 }
 .btn--danger:hover {
-  background: #8f1e18;
+  background: color-mix(in srgb, var(--sysvex-danger), black 15%);
 }
 
 .btn--sm {
@@ -794,20 +851,24 @@ table.data-table {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  background: #e4e9ee;
+  background: var(--sysvex-surface-sunken);
   color: var(--sysvex-text-muted);
 }
 .badge--success {
-  background: #e2f3e9;
-  color: var(--sysvex-success);
+  background: color-mix(in srgb, var(--sysvex-success) 18%, var(--sysvex-surface));
+  color: var(--sysvex-success-ink);
 }
 .badge--warning {
-  background: #fbf0dc;
-  color: var(--sysvex-warning);
+  background: color-mix(in srgb, var(--sysvex-warning) 20%, var(--sysvex-surface));
+  color: var(--sysvex-warning-ink);
 }
 .badge--danger {
-  background: #fbe4e2;
-  color: var(--sysvex-danger);
+  background: color-mix(in srgb, var(--sysvex-danger) 16%, var(--sysvex-surface));
+  color: var(--sysvex-danger-ink);
+}
+.badge--special {
+  background: color-mix(in srgb, var(--sysvex-highlight) 18%, var(--sysvex-surface));
+  color: var(--sysvex-highlight);
 }
 
 .form-grid {
@@ -837,6 +898,8 @@ table.data-table {
   border-radius: 5px;
   font-size: 13px;
   font-family: inherit;
+  background: var(--sysvex-surface);
+  color: var(--sysvex-text);
 }
 
 .form-field input:focus,
@@ -859,18 +922,18 @@ table.data-table {
   margin-bottom: 14px;
 }
 .alert--error {
-  background: #fbe4e2;
-  color: var(--sysvex-danger);
+  background: color-mix(in srgb, var(--sysvex-danger) 16%, var(--sysvex-surface));
+  color: var(--sysvex-danger-ink);
 }
 .alert--success {
-  background: #e2f3e9;
-  color: var(--sysvex-success);
+  background: color-mix(in srgb, var(--sysvex-success) 16%, var(--sysvex-surface));
+  color: var(--sysvex-success-ink);
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 25, 35, 0.45);
+  background: var(--sysvex-overlay);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -880,12 +943,12 @@ table.data-table {
 }
 
 .modal {
-  background: #fff;
+  background: var(--sysvex-surface);
   border-radius: 8px;
   padding: 22px;
   width: 100%;
   max-width: 620px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sysvex-shadow-lg);
 }
 
 .modal h2 {
@@ -898,16 +961,16 @@ table.data-table {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f2f4f7;
+  background: var(--sysvex-bg);
   padding: 24px;
 }
 
 .login-card {
-  background: #fff;
+  background: var(--sysvex-surface);
   border-radius: 12px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 2px 4px rgba(15, 25, 35, 0.06), 0 12px 28px rgba(15, 25, 35, 0.1);
+  box-shadow: var(--sysvex-shadow-sm);
   overflow: hidden;
 }
 
@@ -949,7 +1012,7 @@ table.data-table {
 }
 
 .login-card__footer {
-  background: #f7f9fb;
+  background: var(--sysvex-surface-sunken);
   border-top: 1px solid var(--sysvex-border);
   padding: 16px 32px;
   display: flex;
@@ -974,6 +1037,8 @@ table.data-table {
   border-radius: 5px;
   font-size: 14px;
   font-family: inherit;
+  background: var(--sysvex-surface);
+  color: var(--sysvex-text);
 }
 
 .login-field input:focus {
@@ -1001,7 +1066,7 @@ table.data-table {
   background: none;
   border: none;
   padding: 0;
-  color: var(--sysvex-primary);
+  color: var(--sysvex-accent);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -1053,13 +1118,13 @@ table.data-table {
 .login-checkbox input {
   width: 15px;
   height: 15px;
-  accent-color: var(--sysvex-primary);
+  accent-color: var(--sysvex-accent);
 }
 
 .login-hint {
   font-size: 12px;
   color: var(--sysvex-text-muted);
-  background: #f1f5f8;
+  background: var(--sysvex-surface-hover);
   border-radius: 5px;
   padding: 8px 10px;
   margin-top: -6px;

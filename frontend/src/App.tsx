@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
+import { ThemeProvider } from './theme/ThemeContext';
 import RequireAuth from './auth/RequireAuth';
 import AppShell from './layout/AppShell';
 import Login from './pages/Login';
@@ -22,31 +23,33 @@ import BusinessLineOverviewPage from './pages/BusinessLineOverviewPage';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route element={<RequireAuth />}>
-          <Route element={<AppShell />}>
-            <Route path="/" element={<Launchpad />} />
-            <Route path="/lines/:key" element={<BusinessLineOverviewPage />} />
-            <Route path="/partners" element={<PartnersPage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/products/:productId/bom" element={<BomPage />} />
-            <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
-            <Route path="/sales-orders" element={<SalesOrdersPage />} />
-            <Route path="/production-orders" element={<ProductionOrdersPage />} />
-            <Route path="/inventory/movements" element={<StockMovementsPage />} />
-            <Route path="/finance/entries" element={<FinanceEntriesPage />} />
-            <Route path="/finance/cash-flow" element={<CashFlowPage />} />
-            <Route path="/finance/dre" element={<DrePage />} />
-            <Route path="/admin/users" element={<UsersPage />} />
-            <Route path="/security/compliance" element={<SecurityCompliancePage />} />
-            <Route path="/system/status" element={<SystemStatusPage />} />
-            <Route path="/account" element={<MyAccountPage />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<RequireAuth />}>
+            <Route element={<AppShell />}>
+              <Route path="/" element={<Launchpad />} />
+              <Route path="/lines/:key" element={<BusinessLineOverviewPage />} />
+              <Route path="/partners" element={<PartnersPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products/:productId/bom" element={<BomPage />} />
+              <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+              <Route path="/sales-orders" element={<SalesOrdersPage />} />
+              <Route path="/production-orders" element={<ProductionOrdersPage />} />
+              <Route path="/inventory/movements" element={<StockMovementsPage />} />
+              <Route path="/finance/entries" element={<FinanceEntriesPage />} />
+              <Route path="/finance/cash-flow" element={<CashFlowPage />} />
+              <Route path="/finance/dre" element={<DrePage />} />
+              <Route path="/admin/users" element={<UsersPage />} />
+              <Route path="/security/compliance" element={<SecurityCompliancePage />} />
+              <Route path="/system/status" element={<SystemStatusPage />} />
+              <Route path="/account" element={<MyAccountPage />} />
+            </Route>
           </Route>
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AuthProvider>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
