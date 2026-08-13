@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useAppUsage } from '../hooks/useAppUsage';
 import { useProcessCounts } from '../hooks/useProcessCounts';
 import { LAUNCHPAD_GROUPS } from '../launchpadGroups';
+import { StarIcon, TileIcon } from '../icons';
 
 interface Tile {
   to: string;
@@ -83,7 +84,9 @@ export default function Launchpad() {
               {group.tiles.map((tile) => (
                 <div className="tile-wrap" key={tile.to}>
                   <Link className="tile tile--colored" style={{ background: group.color }} to={tile.to}>
-                    <span className="tile__icon">{tile.icon}</span>
+                    <span className="tile__icon">
+                      <TileIcon name={tile.icon} size={22} />
+                    </span>
                     <div>
                       {tile.kpiValue !== '' && <div className="tile__kpi">{tile.kpiValue}</div>}
                       <div className="tile__title">{tile.title}</div>
@@ -96,7 +99,7 @@ export default function Launchpad() {
                     onClick={() => toggleFavorite(tile.to)}
                     title={isFavorite(tile.to) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                   >
-                    {isFavorite(tile.to) ? '★' : '☆'}
+                    <StarIcon size={15} filled={isFavorite(tile.to)} />
                   </button>
                 </div>
               ))}
@@ -130,7 +133,7 @@ export default function Launchpad() {
             {usageTiles.map(({ tile, groupColor }) => (
               <Link className="apps-mini-tile" to={tile.to} key={tile.to}>
                 <span className="apps-mini-tile__icon" style={{ background: groupColor }}>
-                  {tile.icon}
+                  <TileIcon name={tile.icon} size={18} />
                 </span>
                 <span className="apps-mini-tile__title">{tile.title}</span>
               </Link>

@@ -31,9 +31,9 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     title: 'Financeiro',
     color: '#0f6bab',
     tiles: [
-      { to: '/finance/entries', icon: '💰', title: 'Contas a Pagar/Receber', kpiLabel: 'Em aberto', kpiCountKey: 'openFinance' },
-      { to: '/finance/cash-flow', icon: '📊', title: 'Fluxo de Caixa' },
-      { to: '/finance/dre', icon: '📈', title: 'DRE Simplificado' },
+      { to: '/finance/entries', icon: 'wallet', title: 'Contas a Pagar/Receber', kpiLabel: 'Em aberto', kpiCountKey: 'openFinance' },
+      { to: '/finance/cash-flow', icon: 'cashflow', title: 'Fluxo de Caixa' },
+      { to: '/finance/dre', icon: 'trending-up', title: 'DRE Simplificado' },
     ],
   },
   {
@@ -41,8 +41,8 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     title: 'Compras',
     color: '#c0388b',
     tiles: [
-      { to: '/purchase-orders', icon: '🛒', title: 'Pedidos de Compra', kpiLabel: 'Total', kpiCountKey: 'purchaseOrders' },
-      { to: '/partners?type=SUPPLIER', icon: '🏭', title: 'Fornecedores' },
+      { to: '/purchase-orders', icon: 'cart', title: 'Pedidos de Compra', kpiLabel: 'Total', kpiCountKey: 'purchaseOrders' },
+      { to: '/partners?type=SUPPLIER', icon: 'factory', title: 'Fornecedores' },
     ],
   },
   {
@@ -50,8 +50,8 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     title: 'Vendas',
     color: '#c9701c',
     tiles: [
-      { to: '/sales-orders', icon: '🧾', title: 'Pedidos de Venda', kpiLabel: 'Total', kpiCountKey: 'salesOrders' },
-      { to: '/partners?type=CUSTOMER', icon: '🧑‍🤝‍🧑', title: 'Clientes' },
+      { to: '/sales-orders', icon: 'receipt', title: 'Pedidos de Venda', kpiLabel: 'Total', kpiCountKey: 'salesOrders' },
+      { to: '/partners?type=CUSTOMER', icon: 'users', title: 'Clientes' },
     ],
   },
   {
@@ -59,28 +59,28 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     title: 'Estoque & Produção',
     color: '#6a3fa0',
     tiles: [
-      { to: '/products', icon: '📦', title: 'Produtos & Insumos', kpiLabel: 'Cadastrados', kpiCountKey: 'products' },
-      { to: '/products?lowStock=1', icon: '⚠️', title: 'Estoque Baixo', kpiLabel: 'Alertas', kpiCountKey: 'lowStock' },
-      { to: '/production-orders', icon: '🍬', title: 'Ordens de Produção', kpiLabel: 'Total', kpiCountKey: 'productionOrders' },
-      { to: '/inventory/movements', icon: '📋', title: 'Movimentações de Estoque' },
+      { to: '/products', icon: 'package', title: 'Produtos & Insumos', kpiLabel: 'Cadastrados', kpiCountKey: 'products' },
+      { to: '/products?lowStock=1', icon: 'alert-triangle', title: 'Estoque Baixo', kpiLabel: 'Alertas', kpiCountKey: 'lowStock' },
+      { to: '/production-orders', icon: 'layers', title: 'Ordens de Produção', kpiLabel: 'Total', kpiCountKey: 'productionOrders' },
+      { to: '/inventory/movements', icon: 'clipboard-list', title: 'Movimentações de Estoque' },
     ],
   },
   {
     key: 'administracao',
     title: 'Administração',
     color: '#b3261e',
-    tiles: [{ to: '/admin/users', icon: '👤', title: 'Usuários & Roles' }],
+    tiles: [{ to: '/admin/users', icon: 'user', title: 'Usuários & Roles' }],
   },
   {
     key: 'seguranca_compliance',
     title: 'Segurança & Compliance',
     color: '#1a7f8e',
-    tiles: [{ to: '/security/compliance', icon: '🛡️', title: 'Segurança & Compliance' }],
+    tiles: [{ to: '/security/compliance', icon: 'shield-check', title: 'Segurança & Compliance' }],
   },
   {
     key: 'administracao_sistema',
     title: 'Administração de Sistema',
     color: '#3a4750',
-    tiles: [{ to: '/system/status', icon: '🖥️', title: 'Status do Sistema' }],
+    tiles: [{ to: '/system/status', icon: 'monitor', title: 'Status do Sistema' }],
   },
 ];

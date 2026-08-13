@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useProcessCounts } from '../hooks/useProcessCounts';
 import { LAUNCHPAD_GROUPS } from '../launchpadGroups';
+import { TileIcon } from '../icons';
 
 export default function BusinessLineOverviewPage() {
   const { key } = useParams<{ key: string }>();
@@ -26,7 +27,9 @@ export default function BusinessLineOverviewPage() {
         <div className="tile-grid">
           {group.tiles.map((tile) => (
             <Link className="tile" to={tile.to} key={tile.to}>
-              <span className="tile__icon">{tile.icon}</span>
+              <span className="tile__icon">
+                <TileIcon name={tile.icon} size={22} />
+              </span>
               <div>
                 {tile.kpiCountKey && <div className="tile__kpi">{String(counts[tile.kpiCountKey] ?? '–')}</div>}
                 <div className="tile__title">{tile.title}</div>

@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
+import { ArrowLeftIcon } from '../../icons';
 
 interface Product {
   id: string;
@@ -59,7 +60,7 @@ export default function BomPage() {
   return (
     <div>
       <Link to="/products" className="page-header__back">
-        ← Produtos & Insumos
+        <ArrowLeftIcon size={12} style={{ verticalAlign: -1.5 }} /> Produtos & Insumos
       </Link>
       <div className="page-header">
         <h1>Ficha Técnica{product ? ` — ${product.name}` : ''}</h1>
