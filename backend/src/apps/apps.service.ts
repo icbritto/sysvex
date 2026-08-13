@@ -22,7 +22,7 @@ const DEFAULT_APPS: DefaultApp[] = [
   {
     key: 'financeiro',
     title: 'Financeiro',
-    icon: '💰',
+    icon: 'wallet',
     color: '#0f6bab',
     allowedRoles: [UserRole.SX_FINANCE, UserRole.SX_ADMIN],
     sortOrder: 1,
@@ -30,7 +30,7 @@ const DEFAULT_APPS: DefaultApp[] = [
   {
     key: 'compras',
     title: 'Compras',
-    icon: '🛒',
+    icon: 'cart',
     color: '#c0388b',
     allowedRoles: [UserRole.SX_PURCHASING, UserRole.SX_ADMIN],
     sortOrder: 2,
@@ -38,7 +38,7 @@ const DEFAULT_APPS: DefaultApp[] = [
   {
     key: 'vendas',
     title: 'Vendas',
-    icon: '🧾',
+    icon: 'receipt',
     color: '#c9701c',
     allowedRoles: [UserRole.SX_SALES, UserRole.SX_ADMIN],
     sortOrder: 3,
@@ -46,7 +46,7 @@ const DEFAULT_APPS: DefaultApp[] = [
   {
     key: 'estoque_producao',
     title: 'Estoque & Produção',
-    icon: '📦',
+    icon: 'package',
     color: '#6a3fa0',
     allowedRoles: [UserRole.SX_PRODUCTION, UserRole.SX_ADMIN],
     sortOrder: 4,
@@ -54,7 +54,7 @@ const DEFAULT_APPS: DefaultApp[] = [
   {
     key: 'administracao',
     title: 'Administração',
-    icon: '👤',
+    icon: 'user',
     color: '#b3261e',
     allowedRoles: [UserRole.SX_ADMIN, UserRole.SX_SECURITY],
     sortOrder: 5,
@@ -62,7 +62,7 @@ const DEFAULT_APPS: DefaultApp[] = [
   {
     key: 'seguranca_compliance',
     title: 'Segurança & Compliance',
-    icon: '🛡️',
+    icon: 'shield-check',
     color: '#1a7f8e',
     allowedRoles: [UserRole.SX_SECURITY, UserRole.SX_ADMIN],
     sortOrder: 6,
@@ -70,7 +70,7 @@ const DEFAULT_APPS: DefaultApp[] = [
   {
     key: 'administracao_sistema',
     title: 'Administração de Sistema',
-    icon: '🖥️',
+    icon: 'monitor',
     color: '#3a4750',
     allowedRoles: [UserRole.SX_SYSTEM, UserRole.SX_ADMIN],
     sortOrder: 7,
@@ -89,6 +89,11 @@ export class AppsService implements OnModuleInit {
       const existing = await this.appsRepo.findOne({ where: { key: defaultApp.key } });
       if (!existing) {
         await this.appsRepo.save(this.appsRepo.create(defaultApp));
+      } else if (existing.icon !== defaultApp.icon) {
+        // `icon` nunca foi exposto como editável em UpdateAppDto, então é
+        // seguro realinhar instâncias antigas com o vocabulário de ícones atual.
+        existing.icon = defaultApp.icon;
+        await this.appsRepo.save(existing);
       }
     }
   }

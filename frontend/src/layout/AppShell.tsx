@@ -4,6 +4,17 @@ import { useAuth } from '../auth/AuthContext';
 import { recordVisit, useAppUsage } from '../hooks/useAppUsage';
 import { LAUNCHPAD_GROUPS, GroupTile } from '../launchpadGroups';
 import { useTheme } from '../theme/ThemeContext';
+import {
+  ChevronDownIcon,
+  GearIcon,
+  HomeIcon,
+  MenuIcon,
+  MoonIcon,
+  PowerIcon,
+  SearchIcon,
+  SunIcon,
+  TileIcon,
+} from '../icons';
 
 export const ROLE_LABELS: Record<string, string> = {
   SX_ADMIN: 'Administrador',
@@ -131,12 +142,12 @@ export default function AppShell() {
                 onClick={() => setActiveMenu(activeMenu === 'hamburger' ? null : 'hamburger')}
                 aria-label="Menu de navegação"
               >
-                ☰
+                <MenuIcon size={17} />
               </button>
               {activeMenu === 'hamburger' && (
                 <div className="app-topbar__hamburger-panel">
                   <Link to="/" className="app-topbar__hamburger-home" onClick={() => setActiveMenu(null)}>
-                    <span>🏠</span> Página Inicial
+                    <HomeIcon size={15} /> Página Inicial
                   </Link>
 
                   {favoriteTiles.length > 0 && (
@@ -149,7 +160,7 @@ export default function AppShell() {
                           className="app-topbar__hamburger-leaf"
                           onClick={() => setActiveMenu(null)}
                         >
-                          <span>{tile.icon}</span> {tile.title}
+                          <TileIcon name={tile.icon} size={15} /> {tile.title}
                         </Link>
                       ))}
                     </div>
@@ -175,11 +186,10 @@ export default function AppShell() {
                               onClick={() => toggleGroupExpanded(group.key)}
                               aria-label={`Mostrar processos de ${group.title}`}
                             >
-                              <span
+                              <ChevronDownIcon
+                                size={13}
                                 className={`app-topbar__hamburger-caret ${expanded ? 'app-topbar__hamburger-caret--open' : ''}`}
-                              >
-                                ▸
-                              </span>
+                              />
                             </button>
                           </div>
                           {expanded &&
@@ -190,7 +200,7 @@ export default function AppShell() {
                                 className="app-topbar__hamburger-leaf app-topbar__hamburger-leaf--indent"
                                 onClick={() => setActiveMenu(null)}
                               >
-                                <span>{tile.icon}</span> {tile.title}
+                                <TileIcon name={tile.icon} size={14} /> {tile.title}
                               </Link>
                             ))}
                         </div>
@@ -209,7 +219,7 @@ export default function AppShell() {
           <div className="app-topbar__row-right">
             <div className="app-topbar__search">
               <form onSubmit={handleSearchSubmit}>
-                <span className="app-topbar__search-icon">🔍</span>
+                <SearchIcon size={13} className="app-topbar__search-icon" />
                 <input
                   type="search"
                   placeholder="Buscar um processo ou página…"
@@ -234,7 +244,7 @@ export default function AppShell() {
                         onClick={() => goTo(tile.to)}
                       >
                         <span className="app-topbar__search-result-icon" style={{ background: tile.groupColor }}>
-                          {tile.icon}
+                          <TileIcon name={tile.icon} size={14} />
                         </span>
                         <span>
                           <span className="app-topbar__search-result-title">{tile.title}</span>
@@ -254,7 +264,7 @@ export default function AppShell() {
               aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
               title={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
             >
-              {theme === 'dark' ? '☀️' : '🌙'}
+              {theme === 'dark' ? <SunIcon size={16} /> : <MoonIcon size={16} />}
             </button>
 
             <div className="app-topbar__avatar-wrap">
@@ -278,14 +288,14 @@ export default function AppShell() {
                 </div>
                 <div className="app-topbar__user-dropdown-role">{ROLE_LABELS[user.role] ?? user.role}</div>
                 <Link to="/account" className="app-topbar__user-dropdown-item" onClick={() => setActiveMenu(null)}>
-                  ⚙️ Minha Conta
+                  <GearIcon size={15} /> Minha Conta
                 </Link>
                 <button
                   type="button"
                   className="app-topbar__user-dropdown-item app-topbar__user-dropdown-item--danger"
                   onClick={handleLogout}
                 >
-                  ⏻ Sair
+                  <PowerIcon size={15} /> Sair
                 </button>
               </div>
             )}
@@ -310,7 +320,7 @@ export default function AppShell() {
                       onClick={() => setActiveMenu(isOpen ? null : app.key)}
                       aria-label={`Mostrar processos de ${app.title}`}
                     >
-                      <span className="app-topbar__tab-caret">▾</span>
+                      <ChevronDownIcon size={13} className="app-topbar__tab-caret" />
                     </button>
                   )}
                   {isOpen && tiles.length > 0 && (
@@ -322,7 +332,7 @@ export default function AppShell() {
                           to={tile.to}
                           onClick={() => setActiveMenu(null)}
                         >
-                          <span>{tile.icon}</span> {tile.title}
+                          <TileIcon name={tile.icon} size={15} /> {tile.title}
                         </Link>
                       ))}
                     </div>

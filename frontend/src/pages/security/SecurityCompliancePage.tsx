@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import { ROLE_LABELS } from '../../layout/AppShell';
 import { UserRole } from '../../auth/AuthContext';
+import { TileIcon } from '../../icons';
 
 const ALL_ROLES = Object.keys(ROLE_LABELS) as UserRole[];
 
@@ -186,7 +187,9 @@ export default function SecurityCompliancePage() {
                 {apps.map((app) => (
                   <tr key={app.id}>
                     <td>
-                      {app.icon} {app.title}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <TileIcon name={app.icon} size={15} /> {app.title}
+                      </span>
                     </td>
                     {ALL_ROLES.map((role) => (
                       <td key={role}>
