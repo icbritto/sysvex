@@ -68,7 +68,7 @@ type Tab = 'matrix' | 'emergency' | 'audit';
 function grantStatus(grant: EmergencyGrant): { label: string; className: string } {
   if (grant.revokedAt) return { label: 'Revogado', className: 'badge' };
   if (new Date(grant.expiresAt) <= new Date()) return { label: 'Expirado', className: 'badge' };
-  return { label: 'Ativo', className: 'badge badge--success' };
+  return { label: 'Ativo', className: 'badge badge--special' };
 }
 
 export default function SecurityCompliancePage() {

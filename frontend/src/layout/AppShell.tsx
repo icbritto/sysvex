@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { recordVisit, useAppUsage } from '../hooks/useAppUsage';
 import { LAUNCHPAD_GROUPS, GroupTile } from '../launchpadGroups';
+import { useTheme } from '../theme/ThemeContext';
 
 export const ROLE_LABELS: Record<string, string> = {
   SX_ADMIN: 'Administrador',
@@ -26,6 +27,7 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const { favorites } = useAppUsage();
+  const { theme, toggleTheme } = useTheme();
 
   // Só um menu do topo fica aberto por vez: null | 'hamburger' | 'avatar' | 'search' | <key do App>
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -244,6 +246,16 @@ export default function AppShell() {
                 </div>
               )}
             </div>
+
+            <button
+              type="button"
+              className="app-topbar__theme-toggle"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+              title={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
 
             <div className="app-topbar__avatar-wrap">
             {user && (
