@@ -1,54 +1,72 @@
 :root {
   color-scheme: light;
-  --sysvex-bg: #f8fafc;
+  /* Paleta "Morning Horizon" (SAP S/4HANA Cloud) */
+  --sysvex-bg: #f5f6f7;
   --sysvex-surface: #ffffff;
-  --sysvex-surface-hover: #f1f5f9;
-  --sysvex-surface-sunken: #eef2f6;
-  --sysvex-text: #0f172a;
-  --sysvex-text-muted: #64748b;
-  --sysvex-primary: #1e293b;
-  --sysvex-primary-dark: #0f172a;
-  --sysvex-accent: #059669;
-  --sysvex-success: #059669;
-  --sysvex-success-ink: #047857;
-  --sysvex-warning: #d97706;
-  --sysvex-warning-ink: #b45309;
-  --sysvex-danger: #e11d48;
-  --sysvex-danger-ink: #be123c;
+  --sysvex-surface-hover: #f2f3f5;
+  --sysvex-surface-sunken: #f5f6f7;
+  --sysvex-text: #1d2d3e;
+  --sysvex-text-muted: #6a6d70;
+  --sysvex-primary: #0a6ed1;
+  --sysvex-primary-dark: #085caf;
+  --sysvex-accent: #0a6ed1;
+  --sysvex-success: #257a3e;
+  --sysvex-success-ink: #1b6331;
+  --sysvex-warning: #e9730c;
+  --sysvex-warning-ink: #c15f09;
+  --sysvex-danger: #bb0000;
+  --sysvex-danger-ink: #a10000;
   --sysvex-highlight: #7c3aed;
-  --sysvex-border: #e2e8f0;
-  --sysvex-overlay: rgba(15, 23, 42, 0.45);
-  --sysvex-shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.06), 0 12px 28px rgba(15, 23, 42, 0.1);
-  --sysvex-shadow-md: 0 12px 24px rgba(15, 23, 42, 0.16);
-  --sysvex-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.18);
-  --sysvex-shadow-hover: 0 6px 16px rgba(15, 23, 42, 0.18);
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --sysvex-border: #e5e7ea;
+  --sysvex-overlay: rgba(29, 45, 62, 0.45);
+  --sysvex-shadow-sm: 0 2px 4px rgba(29, 45, 62, 0.06), 0 12px 28px rgba(29, 45, 62, 0.1);
+  --sysvex-shadow-md: 0 12px 24px rgba(29, 45, 62, 0.14);
+  --sysvex-shadow-lg: 0 12px 32px rgba(29, 45, 62, 0.16);
+  --sysvex-shadow-hover: 0 6px 16px rgba(29, 45, 62, 0.16);
+  /* Barra superior/shell — branca no tema claro */
+  --sysvex-chrome-bg: #ffffff;
+  --sysvex-chrome-text: #1d2d3e;
+  --sysvex-chrome-text-muted: #6a6d70;
+  --sysvex-chrome-border: #e5e7ea;
+  --sysvex-chrome-hover: rgba(29, 45, 62, 0.08);
+  --sysvex-chrome-active: rgba(29, 45, 62, 0.14);
+  --sysvex-avatar-bg: #0a6ed1;
+  font-family: '72', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --sysvex-bg: #12151b;
-  --sysvex-surface: #1b2430;
-  --sysvex-surface-hover: #263143;
-  --sysvex-surface-sunken: #161c26;
-  --sysvex-text: #f8fafc;
-  --sysvex-text-muted: #94a3b8;
-  --sysvex-primary: #2563eb;
-  --sysvex-primary-dark: #1d4ed8;
-  --sysvex-accent: #38bdf8;
-  --sysvex-success: #34d399;
-  --sysvex-success-ink: #34d399;
-  --sysvex-warning: #fbbf24;
-  --sysvex-warning-ink: #fbbf24;
-  --sysvex-danger: #fb7185;
-  --sysvex-danger-ink: #fb7185;
-  --sysvex-highlight: #8b5cf6;
-  --sysvex-border: #334155;
+  /* Paleta "Evening Horizon" (SAP S/4HANA Cloud) */
+  --sysvex-bg: #191c20;
+  --sysvex-surface: #20242a;
+  --sysvex-surface-hover: #262b32;
+  --sysvex-surface-sunken: #1d2127;
+  --sysvex-text: #f5f6f7;
+  --sysvex-text-muted: #9da4ac;
+  --sysvex-primary: #5eb6ff;
+  --sysvex-primary-dark: #3b93e0;
+  --sysvex-accent: #5eb6ff;
+  --sysvex-success: #4cd787;
+  --sysvex-success-ink: #4cd787;
+  --sysvex-warning: #ffa940;
+  --sysvex-warning-ink: #ffa940;
+  --sysvex-danger: #ff6b6b;
+  --sysvex-danger-ink: #ff6b6b;
+  --sysvex-highlight: #a17ef5;
+  --sysvex-border: #333a42;
   --sysvex-overlay: rgba(0, 0, 0, 0.6);
   --sysvex-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.4);
   --sysvex-shadow-md: 0 12px 24px rgba(0, 0, 0, 0.45);
   --sysvex-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
   --sysvex-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.4);
+  /* Barra superior/shell — grafite quase preto no tema escuro */
+  --sysvex-chrome-bg: #1c2a38;
+  --sysvex-chrome-text: #f5f6f7;
+  --sysvex-chrome-text-muted: #a9b4c0;
+  --sysvex-chrome-border: #2e3b47;
+  --sysvex-chrome-hover: rgba(255, 255, 255, 0.12);
+  --sysvex-chrome-active: rgba(255, 255, 255, 0.2);
+  --sysvex-avatar-bg: #0a6ed1;
 }
 
 * {
@@ -72,8 +90,9 @@ a {
 }
 
 .app-topbar {
-  background: linear-gradient(135deg, var(--sysvex-primary-dark), var(--sysvex-primary));
-  color: #fff;
+  background: var(--sysvex-chrome-bg);
+  color: var(--sysvex-chrome-text);
+  border-bottom: 1px solid var(--sysvex-chrome-border);
   flex-shrink: 0;
 }
 
@@ -108,7 +127,7 @@ a {
 .app-topbar__hamburger {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--sysvex-chrome-text);
   cursor: pointer;
   padding: 6px;
   border-radius: 4px;
@@ -119,7 +138,7 @@ a {
 }
 
 .app-topbar__hamburger:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--sysvex-chrome-hover);
 }
 
 .app-topbar__hamburger-panel {
@@ -231,9 +250,9 @@ a {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
+  background: none;
   border: none;
-  color: #fff;
+  color: var(--sysvex-chrome-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -242,14 +261,14 @@ a {
 }
 
 .app-topbar__theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sysvex-chrome-hover);
 }
 
 .app-topbar__avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--sysvex-avatar-bg);
   border: none;
   color: #fff;
   font-size: 12.5px;
@@ -261,7 +280,7 @@ a {
 }
 
 .app-topbar__avatar:hover {
-  background: rgba(255, 255, 255, 0.3);
+  filter: brightness(0.9);
 }
 
 .app-topbar__user-dropdown {
@@ -288,7 +307,7 @@ a {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--sysvex-primary);
+  background: var(--sysvex-avatar-bg);
   color: #fff;
   font-size: 15px;
   font-weight: 700;
@@ -346,7 +365,7 @@ a {
   gap: 4px;
   padding: 6px 20px;
   overflow: visible;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid var(--sysvex-chrome-border);
 }
 
 .app-topbar__tab-wrap {
@@ -354,17 +373,17 @@ a {
   display: flex;
   align-items: center;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: none;
   transition: background-color 0.12s ease;
 }
 
 .app-topbar__tab-wrap:hover,
 .app-topbar__tab-wrap--open {
-  background: rgba(255, 255, 255, 0.22);
+  background: var(--sysvex-chrome-hover);
 }
 
 .app-topbar__tab {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--sysvex-chrome-text-muted);
   text-decoration: none;
   font-size: 12.5px;
   font-weight: 600;
@@ -385,12 +404,12 @@ a {
 .app-topbar__tab-wrap--open .app-topbar__tab,
 .app-topbar__tab-wrap:hover .app-topbar__tab-caret,
 .app-topbar__tab-wrap--open .app-topbar__tab-caret {
-  color: #fff;
+  color: var(--sysvex-accent);
 }
 
 .app-topbar__tab-caret {
   opacity: 0.9;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--sysvex-chrome-text-muted);
   transition: transform 0.12s ease, color 0.12s ease;
   flex-shrink: 0;
 }
@@ -446,7 +465,7 @@ a {
 .app-topbar__search form {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--sysvex-chrome-hover);
   border-radius: 6px;
   padding: 0 10px;
 }
@@ -460,14 +479,14 @@ a {
   flex: 1;
   background: none;
   border: none;
-  color: #fff;
+  color: var(--sysvex-chrome-text);
   padding: 7px 8px;
   font-size: 13px;
   font-family: inherit;
 }
 
 .app-topbar__search input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--sysvex-chrome-text-muted);
 }
 
 .app-topbar__search input:focus {
@@ -517,8 +536,14 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--tile-color);
   color: #fff;
   flex-shrink: 0;
+}
+
+[data-theme='dark'] .app-topbar__search-result-icon {
+  background: var(--tile-color-dark);
+  color: #1d2d3e;
 }
 
 .app-topbar__search-result-title {
@@ -541,7 +566,7 @@ a {
   font-weight: 600;
   letter-spacing: 0.5px;
   text-decoration: none;
-  color: #fff;
+  color: var(--sysvex-chrome-text);
   cursor: pointer;
   background: none;
   border: none;
@@ -686,7 +711,13 @@ a {
 
 .tile--colored {
   border: none;
+  background: var(--tile-color);
   color: #fff;
+}
+
+[data-theme='dark'] .tile--colored {
+  background: var(--tile-color-dark);
+  color: #1d2d3e;
 }
 
 .tile--colored:hover {
@@ -695,11 +726,15 @@ a {
 }
 
 .tile--colored .tile__kpi {
-  color: #fff;
+  color: inherit;
 }
 
 .tile--colored .tile__subtitle {
   color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme='dark'] .tile--colored .tile__subtitle {
+  color: rgba(29, 45, 62, 0.72);
 }
 
 .tile-favorite {
@@ -713,6 +748,10 @@ a {
   line-height: 1;
   padding: 2px;
   display: flex;
+}
+
+[data-theme='dark'] .tile-favorite {
+  color: rgba(29, 45, 62, 0.45);
 }
 
 .tile-favorite:hover,
@@ -767,7 +806,13 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--tile-color);
   color: #fff;
+}
+
+[data-theme='dark'] .apps-mini-tile__icon {
+  background: var(--tile-color-dark);
+  color: #1d2d3e;
 }
 
 .apps-mini-tile__title {
