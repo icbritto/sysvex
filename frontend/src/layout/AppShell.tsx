@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { recordVisit, useAppUsage } from '../hooks/useAppUsage';
@@ -80,7 +80,15 @@ export default function AppShell() {
   }, [visibleGroups]);
 
   const searchableTiles = useMemo(
-    () => visibleGroups.flatMap((group) => group.tiles.map((tile) => ({ ...tile, groupTitle: group.title, groupColor: group.color }))),
+    () =>
+      visibleGroups.flatMap((group) =>
+        group.tiles.map((tile) => ({
+          ...tile,
+          groupTitle: group.title,
+          groupColor: group.color,
+          groupColorDark: group.colorDark,
+        })),
+      ),
     [visibleGroups],
   );
 
@@ -243,7 +251,10 @@ export default function AppShell() {
                         className="app-topbar__search-result"
                         onClick={() => goTo(tile.to)}
                       >
-                        <span className="app-topbar__search-result-icon" style={{ background: tile.groupColor }}>
+                        <span
+                          className="app-topbar__search-result-icon"
+                          style={{ '--tile-color': tile.groupColor, '--tile-color-dark': tile.groupColorDark } as CSSProperties}
+                        >
                           <TileIcon name={tile.icon} size={14} />
                         </span>
                         <span>

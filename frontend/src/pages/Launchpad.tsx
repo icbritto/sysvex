@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { CSSProperties, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useAppUsage } from '../hooks/useAppUsage';
@@ -18,6 +18,7 @@ interface Group {
   key: string;
   title: string;
   color: string;
+  colorDark: string;
   tiles: Tile[];
 }
 
@@ -54,8 +55,10 @@ export default function Launchpad() {
     }));
 
   const tileByPath = useMemo(() => {
-    const map = new Map<string, { tile: Tile; groupColor: string }>();
-    groups.forEach((group) => group.tiles.forEach((tile) => map.set(tile.to, { tile, groupColor: group.color })));
+    const map = new Map<string, { tile: Tile; groupColor: string; groupColorDark: string }>();
+    groups.forEach((group) =>
+      group.tiles.forEach((tile) => map.set(tile.to, { tile, groupColor: group.color, groupColorDark: group.colorDark })),
+    );
     return map;
   }, [groups]);
 
@@ -83,7 +86,11 @@ export default function Launchpad() {
             <div className="tile-grid">
               {group.tiles.map((tile) => (
                 <div className="tile-wrap" key={tile.to}>
-                  <Link className="tile tile--colored" style={{ background: group.color }} to={tile.to}>
+                  <Link
+                    className="tile tile--colored"
+                    style={{ '--tile-color': group.color, '--tile-color-dark': group.colorDark } as CSSProperties}
+                    to={tile.to}
+                  >
                     <span className="tile__icon">
                       <TileIcon name={tile.icon} size={22} />
                     </span>
@@ -130,9 +137,12 @@ export default function Launchpad() {
           </div>
         ) : (
           <div className="apps-tile-grid">
-            {usageTiles.map(({ tile, groupColor }) => (
+            {usageTiles.map(({ tile, groupColor, groupColorDark }) => (
               <Link className="apps-mini-tile" to={tile.to} key={tile.to}>
-                <span className="apps-mini-tile__icon" style={{ background: groupColor }}>
+                <span
+                  className="apps-mini-tile__icon"
+                  style={{ '--tile-color': groupColor, '--tile-color-dark': groupColorDark } as CSSProperties}
+                >
                   <TileIcon name={tile.icon} size={18} />
                 </span>
                 <span className="apps-mini-tile__title">{tile.title}</span>

@@ -19,6 +19,7 @@ export interface LaunchpadGroup {
   key: string;
   title: string;
   color: string;
+  colorDark: string;
   tiles: GroupTile[];
 }
 
@@ -29,7 +30,8 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
   {
     key: 'financeiro',
     title: 'Financeiro',
-    color: '#0f6bab',
+    color: '#1b69de',
+    colorDark: '#8dc8f7',
     tiles: [
       { to: '/finance/entries', icon: 'wallet', title: 'Contas a Pagar/Receber', kpiLabel: 'Em aberto', kpiCountKey: 'openFinance' },
       { to: '/finance/cash-flow', icon: 'cashflow', title: 'Fluxo de Caixa' },
@@ -39,7 +41,8 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
   {
     key: 'compras',
     title: 'Compras',
-    color: '#c0388b',
+    color: '#e5257c',
+    colorDark: '#f6a6c4',
     tiles: [
       { to: '/purchase-orders', icon: 'cart', title: 'Pedidos de Compra', kpiLabel: 'Total', kpiCountKey: 'purchaseOrders' },
       { to: '/partners?type=SUPPLIER', icon: 'factory', title: 'Fornecedores' },
@@ -48,7 +51,8 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
   {
     key: 'vendas',
     title: 'Vendas',
-    color: '#c9701c',
+    color: '#de8300',
+    colorDark: '#ffc46b',
     tiles: [
       { to: '/sales-orders', icon: 'receipt', title: 'Pedidos de Venda', kpiLabel: 'Total', kpiCountKey: 'salesOrders' },
       { to: '/partners?type=CUSTOMER', icon: 'users', title: 'Clientes' },
@@ -57,7 +61,8 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
   {
     key: 'estoque_producao',
     title: 'Estoque & Produção',
-    color: '#6a3fa0',
+    color: '#6f42c1',
+    colorDark: '#c9a6f0',
     tiles: [
       { to: '/products', icon: 'package', title: 'Produtos & Insumos', kpiLabel: 'Cadastrados', kpiCountKey: 'products' },
       { to: '/products?lowStock=1', icon: 'alert-triangle', title: 'Estoque Baixo', kpiLabel: 'Alertas', kpiCountKey: 'lowStock' },
@@ -68,19 +73,22 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
   {
     key: 'administracao',
     title: 'Administração',
-    color: '#b3261e',
+    color: '#c0392b',
+    colorDark: '#ffae94',
     tiles: [{ to: '/admin/users', icon: 'user', title: 'Usuários & Roles' }],
   },
   {
     key: 'seguranca_compliance',
     title: 'Segurança & Compliance',
-    color: '#1a7f8e',
+    color: '#00857a',
+    colorDark: '#7ee8d6',
     tiles: [{ to: '/security/compliance', icon: 'shield-check', title: 'Segurança & Compliance' }],
   },
   {
     key: 'administracao_sistema',
     title: 'Administração de Sistema',
-    color: '#3a4750',
+    color: '#5b738b',
+    colorDark: '#aab8c8',
     tiles: [{ to: '/system/status', icon: 'monitor', title: 'Status do Sistema' }],
   },
 ];
