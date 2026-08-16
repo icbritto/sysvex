@@ -4,6 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
 import { SecurityService } from '../security/security.service';
+import { AuditLogService } from '../audit/audit-log.service';
 
 export interface LoginResult {
   accessToken: string;
@@ -23,6 +24,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly securityService: SecurityService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<User> {
@@ -45,6 +47,13 @@ export class AuthService {
       role: user.role,
     });
     const effectiveRoles = await this.securityService.getEffectiveRoles(user.id, user.role);
+    await this.auditLogService.record({
+      actorUserId: user.id,
+      actorUsername: user.username,
+      action: 'LOGIN',
+      targetType: 'User',
+      targetId: user.id,
+    });
     return {
       accessToken,
       user: {
@@ -56,6 +65,16 @@ export class AuthService {
         effectiveRoles,
       },
     };
+  }
+
+  async logout(userId: string, username: string): Promise<void> {
+    await this.auditLogService.record({
+      actorUserId: userId,
+      actorUsername: username,
+      action: 'LOGOUT',
+      targetType: 'User',
+      targetId: userId,
+    });
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {

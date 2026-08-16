@@ -36,4 +36,11 @@ export class AuthController {
     await this.authService.changePassword(currentUser.id, dto.currentPassword, dto.newPassword);
     return { success: true };
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@CurrentUser() currentUser: AuthenticatedUser) {
+    await this.authService.logout(currentUser.id, currentUser.username);
+    return { success: true };
+  }
 }

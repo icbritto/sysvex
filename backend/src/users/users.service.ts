@@ -30,7 +30,7 @@ export class UsersService {
     return this.usersRepo.findOne({ where: { username } });
   }
 
-  async create(dto: CreateUserDto): Promise<User> {
+  async create(dto: CreateUserDto, actor?: { id: string; username: string }): Promise<User> {
     const existing = await this.usersRepo.findOne({
       where: [{ username: dto.username }, { email: dto.email }],
     });
@@ -46,7 +46,18 @@ export class UsersService {
       active: dto.active ?? true,
       passwordHash,
     });
-    return this.usersRepo.save(user);
+    const saved = await this.usersRepo.save(user);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'USER_CREATED',
+        targetType: 'User',
+        targetId: saved.id,
+        details: `${saved.username} (${saved.role})`,
+      });
+    }
+    return saved;
   }
 
   async update(id: string, dto: UpdateUserDto, actor?: { id: string; username: string }): Promise<User> {
@@ -63,6 +74,15 @@ export class UsersService {
         targetId: saved.id,
         details: `${saved.username}: ${previousRole} -> ${saved.role}`,
       });
+    } else if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'USER_UPDATED',
+        targetType: 'User',
+        targetId: saved.id,
+        details: saved.username,
+      });
     }
     return saved;
   }
@@ -71,8 +91,18 @@ export class UsersService {
     await this.usersRepo.update(id, { passwordHash });
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, actor?: { id: string; username: string }): Promise<void> {
     const user = await this.findById(id);
     await this.usersRepo.remove(user);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'USER_DELETED',
+        targetType: 'User',
+        targetId: id,
+        details: user.username,
+      });
+    }
   }
 }

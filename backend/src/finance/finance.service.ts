@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { FinanceEntry, FinanceEntryStatus, FinanceEntryType } from './finance-entry.entity';
 import { CreateFinanceEntryDto } from './dto/create-finance-entry.dto';
+import { AuditLogService } from '../audit/audit-log.service';
+
+type Actor = { id: string; username: string };
 
 export interface CashFlowSummary {
   startDate: string;
@@ -24,7 +27,10 @@ export interface DreSummary {
 
 @Injectable()
 export class FinanceService {
-  constructor(@InjectRepository(FinanceEntry) private readonly repo: Repository<FinanceEntry>) {}
+  constructor(
+    @InjectRepository(FinanceEntry) private readonly repo: Repository<FinanceEntry>,
+    private readonly auditLogService: AuditLogService,
+  ) {}
 
   findAll(type?: FinanceEntryType, status?: FinanceEntryStatus): Promise<FinanceEntry[]> {
     const where: Record<string, unknown> = {};
@@ -33,7 +39,7 @@ export class FinanceService {
     return this.repo.find({ where, relations: ['partner'], order: { dueDate: 'ASC' } });
   }
 
-  create(dto: CreateFinanceEntryDto): Promise<FinanceEntry> {
+  async create(dto: CreateFinanceEntryDto, actor?: Actor): Promise<FinanceEntry> {
     const entry = this.repo.create({
       type: dto.type,
       description: dto.description,
@@ -41,7 +47,18 @@ export class FinanceService {
       amount: dto.amount,
       dueDate: dto.dueDate,
     });
-    return this.repo.save(entry);
+    const saved = await this.repo.save(entry);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'FINANCE_ENTRY_CREATED',
+        targetType: 'FinanceEntry',
+        targetId: saved.id,
+        details: `${saved.description} - R$ ${saved.amount.toFixed(2)}`,
+      });
+    }
+    return saved;
   }
 
   async createWithManager(
@@ -69,23 +86,45 @@ export class FinanceService {
     return repo.save(entry);
   }
 
-  async markPaid(id: string, paidDate?: string): Promise<FinanceEntry> {
+  async markPaid(id: string, paidDate?: string, actor?: Actor): Promise<FinanceEntry> {
     const entry = await this.repo.findOne({ where: { id } });
     if (!entry) {
       throw new NotFoundException('Lançamento financeiro não encontrado.');
     }
     entry.status = FinanceEntryStatus.PAID;
     entry.paidDate = paidDate ?? new Date().toISOString().slice(0, 10);
-    return this.repo.save(entry);
+    const saved = await this.repo.save(entry);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'FINANCE_ENTRY_PAID',
+        targetType: 'FinanceEntry',
+        targetId: saved.id,
+        details: `${saved.description} - R$ ${saved.amount.toFixed(2)}`,
+      });
+    }
+    return saved;
   }
 
-  async cancel(id: string): Promise<FinanceEntry> {
+  async cancel(id: string, actor?: Actor): Promise<FinanceEntry> {
     const entry = await this.repo.findOne({ where: { id } });
     if (!entry) {
       throw new NotFoundException('Lançamento financeiro não encontrado.');
     }
     entry.status = FinanceEntryStatus.CANCELLED;
-    return this.repo.save(entry);
+    const saved = await this.repo.save(entry);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'FINANCE_ENTRY_CANCELLED',
+        targetType: 'FinanceEntry',
+        targetId: saved.id,
+        details: saved.description,
+      });
+    }
+    return saved;
   }
 
   async getCashFlow(startDate: string, endDate: string): Promise<CashFlowSummary> {

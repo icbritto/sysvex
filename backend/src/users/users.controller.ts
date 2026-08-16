@@ -29,8 +29,8 @@ export class UsersController {
   }
 
   @Post()
-  async create(@Body() dto: CreateUserDto) {
-    return this.toSafeUser(await this.usersService.create(dto));
+  async create(@Body() dto: CreateUserDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.toSafeUser(await this.usersService.create(dto, { id: actor.id, username: actor.username }));
   }
 
   @Patch(':id')
@@ -39,8 +39,8 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() actor: AuthenticatedUser) {
+    return this.usersService.remove(id, { id: actor.id, username: actor.username });
   }
 
   private toSafeUser(user: import('./user.entity').User) {

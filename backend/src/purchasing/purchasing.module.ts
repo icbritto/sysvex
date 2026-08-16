@@ -6,9 +6,15 @@ import { PurchasingService } from './purchasing.service';
 import { PurchasingController } from './purchasing.controller';
 import { InventoryModule } from '../inventory/inventory.module';
 import { FinanceModule } from '../finance/finance.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PurchaseOrder, PurchaseOrderItem]), InventoryModule, FinanceModule],
+  imports: [
+    TypeOrmModule.forFeature([PurchaseOrder, PurchaseOrderItem]),
+    InventoryModule,
+    FinanceModule,
+    AuditModule,
+  ],
   controllers: [PurchasingController],
   providers: [PurchasingService],
 })

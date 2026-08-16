@@ -79,6 +79,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    // Best-effort: registra o logout no log de auditoria antes de derrubar o
+    // token. Não bloqueia a saída do usuário se a chamada falhar.
+    apiClient.post('/auth/logout').catch(() => {});
     clearToken();
     setUser(null);
     setApps([]);

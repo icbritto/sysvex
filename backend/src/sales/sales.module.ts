@@ -6,9 +6,10 @@ import { SalesService } from './sales.service';
 import { SalesController } from './sales.controller';
 import { InventoryModule } from '../inventory/inventory.module';
 import { FinanceModule } from '../finance/finance.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SalesOrder, SalesOrderItem]), InventoryModule, FinanceModule],
+  imports: [TypeOrmModule.forFeature([SalesOrder, SalesOrderItem]), InventoryModule, FinanceModule, AuditModule],
   controllers: [SalesController],
   providers: [SalesService],
 })

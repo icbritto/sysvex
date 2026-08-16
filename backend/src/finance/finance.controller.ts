@@ -6,6 +6,8 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/user.entity';
 import { FinanceEntryStatus, FinanceEntryType } from './finance-entry.entity';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/jwt.strategy';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('finance')
@@ -19,20 +21,20 @@ export class FinanceController {
 
   @Roles(UserRole.SX_FINANCE)
   @Post('entries')
-  create(@Body() dto: CreateFinanceEntryDto) {
-    return this.financeService.create(dto);
+  create(@Body() dto: CreateFinanceEntryDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.financeService.create(dto, { id: actor.id, username: actor.username });
   }
 
   @Roles(UserRole.SX_FINANCE)
   @Patch('entries/:id/pay')
-  markPaid(@Param('id') id: string) {
-    return this.financeService.markPaid(id);
+  markPaid(@Param('id') id: string, @CurrentUser() actor: AuthenticatedUser) {
+    return this.financeService.markPaid(id, undefined, { id: actor.id, username: actor.username });
   }
 
   @Roles(UserRole.SX_FINANCE)
   @Patch('entries/:id/cancel')
-  cancel(@Param('id') id: string) {
-    return this.financeService.cancel(id);
+  cancel(@Param('id') id: string, @CurrentUser() actor: AuthenticatedUser) {
+    return this.financeService.cancel(id, { id: actor.id, username: actor.username });
   }
 
   @Get('cash-flow')
