@@ -4,12 +4,16 @@ import { Repository } from 'typeorm';
 import { BomItem } from './bom-item.entity';
 import { CreateBomItemDto } from './dto/create-bom-item.dto';
 import { Product, ProductType } from '../products/product.entity';
+import { AuditLogService } from '../audit/audit-log.service';
+
+type Actor = { id: string; username: string };
 
 @Injectable()
 export class BomService {
   constructor(
     @InjectRepository(BomItem) private readonly repo: Repository<BomItem>,
     @InjectRepository(Product) private readonly productsRepo: Repository<Product>,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   findForProduct(finishedProductId: string): Promise<BomItem[]> {
@@ -20,7 +24,7 @@ export class BomService {
     });
   }
 
-  async create(dto: CreateBomItemDto): Promise<BomItem> {
+  async create(dto: CreateBomItemDto, actor?: Actor): Promise<BomItem> {
     const finishedProduct = await this.productsRepo.findOne({ where: { id: dto.finishedProductId } });
     const rawMaterial = await this.productsRepo.findOne({ where: { id: dto.rawMaterialId } });
     if (!finishedProduct || !rawMaterial) {
@@ -37,14 +41,35 @@ export class BomService {
       rawMaterialId: dto.rawMaterialId,
       quantity: dto.quantity,
     });
-    return this.repo.save(item);
+    const saved = await this.repo.save(item);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'BOM_ITEM_CREATED',
+        targetType: 'BomItem',
+        targetId: saved.id,
+        details: `${finishedProduct.name} <- ${rawMaterial.name} (${dto.quantity})`,
+      });
+    }
+    return saved;
   }
 
-  async remove(id: string): Promise<void> {
-    const item = await this.repo.findOne({ where: { id } });
+  async remove(id: string, actor?: Actor): Promise<void> {
+    const item = await this.repo.findOne({ where: { id }, relations: ['finishedProduct', 'rawMaterial'] });
     if (!item) {
       throw new NotFoundException('Item da ficha técnica não encontrado.');
     }
     await this.repo.remove(item);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'BOM_ITEM_DELETED',
+        targetType: 'BomItem',
+        targetId: id,
+        details: `${item.finishedProduct?.name ?? item.finishedProductId} <- ${item.rawMaterial?.name ?? item.rawMaterialId}`,
+      });
+    }
   }
 }

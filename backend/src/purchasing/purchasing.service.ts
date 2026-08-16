@@ -8,6 +8,9 @@ import { InventoryService } from '../inventory/inventory.service';
 import { MovementReason, MovementType } from '../inventory/stock-movement.entity';
 import { FinanceService } from '../finance/finance.service';
 import { FinanceEntryType } from '../finance/finance-entry.entity';
+import { AuditLogService } from '../audit/audit-log.service';
+
+type Actor = { id: string; username: string };
 
 @Injectable()
 export class PurchasingService {
@@ -16,6 +19,7 @@ export class PurchasingService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly inventoryService: InventoryService,
     private readonly financeService: FinanceService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   findAll(): Promise<PurchaseOrder[]> {
@@ -30,7 +34,7 @@ export class PurchasingService {
     return po;
   }
 
-  async create(dto: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
+  async create(dto: CreatePurchaseOrderDto, actor?: Actor): Promise<PurchaseOrder> {
     const totalAmount = dto.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
     const orderNumber = `PC-${Date.now()}`;
     const po = this.repo.create({
@@ -47,13 +51,24 @@ export class PurchasingService {
         }),
       ),
     });
-    return this.repo.save(po);
+    const saved = await this.repo.save(po);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'PURCHASE_ORDER_CREATED',
+        targetType: 'PurchaseOrder',
+        targetId: saved.id,
+        details: `${saved.orderNumber} - R$ ${saved.totalAmount.toFixed(2)}`,
+      });
+    }
+    return saved;
   }
 
   // Confirma o recebimento físico da mercadoria: dá entrada no estoque de
   // insumos e gera automaticamente o título de contas a pagar (AP).
-  async receive(id: string): Promise<PurchaseOrder> {
-    return this.dataSource.transaction(async (manager) => {
+  async receive(id: string, actor?: Actor): Promise<PurchaseOrder> {
+    const result = await this.dataSource.transaction(async (manager) => {
       const po = await manager.findOne(PurchaseOrder, { where: { id }, relations: ['items', 'supplier'] });
       if (!po) {
         throw new NotFoundException('Pedido de compra não encontrado.');
@@ -92,14 +107,36 @@ export class PurchasingService {
       po.status = PurchaseOrderStatus.RECEIVED;
       return manager.save(po);
     });
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'PURCHASE_ORDER_RECEIVED',
+        targetType: 'PurchaseOrder',
+        targetId: result.id,
+        details: result.orderNumber,
+      });
+    }
+    return result;
   }
 
-  async cancel(id: string): Promise<PurchaseOrder> {
+  async cancel(id: string, actor?: Actor): Promise<PurchaseOrder> {
     const po = await this.findById(id);
     if (po.status === PurchaseOrderStatus.RECEIVED) {
       throw new BadRequestException('Não é possível cancelar um pedido já recebido.');
     }
     po.status = PurchaseOrderStatus.CANCELLED;
-    return this.repo.save(po);
+    const saved = await this.repo.save(po);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'PURCHASE_ORDER_CANCELLED',
+        targetType: 'PurchaseOrder',
+        targetId: saved.id,
+        details: saved.orderNumber,
+      });
+    }
+    return saved;
   }
 }

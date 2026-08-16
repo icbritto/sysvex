@@ -8,6 +8,9 @@ import { InventoryService } from '../inventory/inventory.service';
 import { MovementReason, MovementType } from '../inventory/stock-movement.entity';
 import { FinanceService } from '../finance/finance.service';
 import { FinanceEntryType } from '../finance/finance-entry.entity';
+import { AuditLogService } from '../audit/audit-log.service';
+
+type Actor = { id: string; username: string };
 
 @Injectable()
 export class SalesService {
@@ -16,6 +19,7 @@ export class SalesService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly inventoryService: InventoryService,
     private readonly financeService: FinanceService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   findAll(): Promise<SalesOrder[]> {
@@ -30,7 +34,7 @@ export class SalesService {
     return so;
   }
 
-  async create(dto: CreateSalesOrderDto): Promise<SalesOrder> {
+  async create(dto: CreateSalesOrderDto, actor?: Actor): Promise<SalesOrder> {
     const totalAmount = dto.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
     const orderNumber = `PV-${Date.now()}`;
     const so = this.repo.create({
@@ -47,13 +51,24 @@ export class SalesService {
         }),
       ),
     });
-    return this.repo.save(so);
+    const saved = await this.repo.save(so);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'SALES_ORDER_CREATED',
+        targetType: 'SalesOrder',
+        targetId: saved.id,
+        details: `${saved.orderNumber} - R$ ${saved.totalAmount.toFixed(2)}`,
+      });
+    }
+    return saved;
   }
 
   // Confirma a venda: baixa o estoque do(s) produto(s) acabado(s) e gera
   // automaticamente o título de contas a receber (AR).
-  async confirm(id: string): Promise<SalesOrder> {
-    return this.dataSource.transaction(async (manager) => {
+  async confirm(id: string, actor?: Actor): Promise<SalesOrder> {
+    const result = await this.dataSource.transaction(async (manager) => {
       const so = await manager.findOne(SalesOrder, { where: { id }, relations: ['items', 'customer'] });
       if (!so) {
         throw new NotFoundException('Pedido de venda não encontrado.');
@@ -92,14 +107,36 @@ export class SalesService {
       so.status = SalesOrderStatus.CONFIRMED;
       return manager.save(so);
     });
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'SALES_ORDER_CONFIRMED',
+        targetType: 'SalesOrder',
+        targetId: result.id,
+        details: result.orderNumber,
+      });
+    }
+    return result;
   }
 
-  async cancel(id: string): Promise<SalesOrder> {
+  async cancel(id: string, actor?: Actor): Promise<SalesOrder> {
     const so = await this.findById(id);
     if (so.status === SalesOrderStatus.CONFIRMED) {
       throw new BadRequestException('Não é possível cancelar um pedido já confirmado.');
     }
     so.status = SalesOrderStatus.CANCELLED;
-    return this.repo.save(so);
+    const saved = await this.repo.save(so);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'SALES_ORDER_CANCELLED',
+        targetType: 'SalesOrder',
+        targetId: saved.id,
+        details: saved.orderNumber,
+      });
+    }
+    return saved;
   }
 }

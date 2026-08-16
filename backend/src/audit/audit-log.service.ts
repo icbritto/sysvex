@@ -21,7 +21,7 @@ export class AuditLogService {
     await this.auditLogRepo.save(entry);
   }
 
-  findRecent(limit = 200): Promise<AuditLog[]> {
+  findRecent(limit = 300): Promise<AuditLog[]> {
     return this.auditLogRepo.find({ order: { createdAt: 'DESC' }, take: limit });
   }
 }

@@ -7,6 +7,9 @@ import { BomItem } from '../bom/bom-item.entity';
 import { Product } from '../products/product.entity';
 import { InventoryService } from '../inventory/inventory.service';
 import { MovementReason, MovementType } from '../inventory/stock-movement.entity';
+import { AuditLogService } from '../audit/audit-log.service';
+
+type Actor = { id: string; username: string };
 
 @Injectable()
 export class ProductionService {
@@ -14,6 +17,7 @@ export class ProductionService {
     @InjectRepository(ProductionOrder) private readonly repo: Repository<ProductionOrder>,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly inventoryService: InventoryService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   findAll(): Promise<ProductionOrder[]> {
@@ -28,7 +32,7 @@ export class ProductionService {
     return order;
   }
 
-  create(dto: CreateProductionOrderDto): Promise<ProductionOrder> {
+  async create(dto: CreateProductionOrderDto, actor?: Actor): Promise<ProductionOrder> {
     const order = this.repo.create({
       orderNumber: `OP-${Date.now()}`,
       productId: dto.productId,
@@ -36,13 +40,24 @@ export class ProductionService {
       plannedDate: dto.plannedDate,
       status: ProductionStatus.PLANNED,
     });
-    return this.repo.save(order);
+    const saved = await this.repo.save(order);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'PRODUCTION_ORDER_CREATED',
+        targetType: 'ProductionOrder',
+        targetId: saved.id,
+        details: `${saved.orderNumber} - ${saved.quantity} un.`,
+      });
+    }
+    return saved;
   }
 
   // Apontamento de produção: consome os insumos previstos na ficha técnica
   // (BOM), dá entrada no produto acabado e calcula o custo de produção.
-  async complete(id: string): Promise<ProductionOrder> {
-    return this.dataSource.transaction(async (manager) => {
+  async complete(id: string, actor?: Actor): Promise<ProductionOrder> {
+    const result = await this.dataSource.transaction(async (manager) => {
       const order = await manager.findOne(ProductionOrder, { where: { id } });
       if (!order) {
         throw new NotFoundException('Ordem de produção não encontrada.');
@@ -94,14 +109,36 @@ export class ProductionService {
       order.totalCost = totalCost;
       return manager.save(order);
     });
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'PRODUCTION_ORDER_COMPLETED',
+        targetType: 'ProductionOrder',
+        targetId: result.id,
+        details: `${result.orderNumber} - custo total R$ ${result.totalCost?.toFixed(2)}`,
+      });
+    }
+    return result;
   }
 
-  async cancel(id: string): Promise<ProductionOrder> {
+  async cancel(id: string, actor?: Actor): Promise<ProductionOrder> {
     const order = await this.findById(id);
     if (order.status === ProductionStatus.COMPLETED) {
       throw new BadRequestException('Não é possível cancelar uma ordem de produção já concluída.');
     }
     order.status = ProductionStatus.CANCELLED;
-    return this.repo.save(order);
+    const saved = await this.repo.save(order);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'PRODUCTION_ORDER_CANCELLED',
+        targetType: 'ProductionOrder',
+        targetId: saved.id,
+        details: saved.orderNumber,
+      });
+    }
+    return saved;
   }
 }

@@ -50,10 +50,35 @@ interface AuditLogEntry {
 }
 
 const ACTION_LABELS: Record<string, string> = {
+  LOGIN: 'Login',
+  LOGOUT: 'Logout',
   APP_PERMISSION_UPDATED: 'Permissão de App alterada',
+  USER_CREATED: 'Usuário criado',
+  USER_UPDATED: 'Usuário editado',
   USER_ROLE_CHANGED: 'Role de usuário alterada',
+  USER_DELETED: 'Usuário excluído',
   EMERGENCY_ACCESS_GRANTED: 'Acesso emergencial concedido',
   EMERGENCY_ACCESS_REVOKED: 'Acesso emergencial revogado',
+  PARTNER_CREATED: 'Cliente/fornecedor criado',
+  PARTNER_UPDATED: 'Cliente/fornecedor editado',
+  PARTNER_DELETED: 'Cliente/fornecedor excluído',
+  PRODUCT_CREATED: 'Produto criado',
+  PRODUCT_UPDATED: 'Produto editado',
+  PRODUCT_DELETED: 'Produto excluído',
+  BOM_ITEM_CREATED: 'Item de ficha técnica adicionado',
+  BOM_ITEM_DELETED: 'Item de ficha técnica removido',
+  PURCHASE_ORDER_CREATED: 'Pedido de compra criado',
+  PURCHASE_ORDER_RECEIVED: 'Pedido de compra recebido',
+  PURCHASE_ORDER_CANCELLED: 'Pedido de compra cancelado',
+  SALES_ORDER_CREATED: 'Pedido de venda criado',
+  SALES_ORDER_CONFIRMED: 'Pedido de venda confirmado',
+  SALES_ORDER_CANCELLED: 'Pedido de venda cancelado',
+  PRODUCTION_ORDER_CREATED: 'Ordem de produção criada',
+  PRODUCTION_ORDER_COMPLETED: 'Ordem de produção concluída',
+  PRODUCTION_ORDER_CANCELLED: 'Ordem de produção cancelada',
+  FINANCE_ENTRY_CREATED: 'Lançamento financeiro criado',
+  FINANCE_ENTRY_PAID: 'Lançamento financeiro pago/recebido',
+  FINANCE_ENTRY_CANCELLED: 'Lançamento financeiro cancelado',
 };
 
 const DURATION_OPTIONS = [

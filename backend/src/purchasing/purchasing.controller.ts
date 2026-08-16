@@ -5,6 +5,8 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/user.entity';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/jwt.strategy';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('purchase-orders')
@@ -23,19 +25,19 @@ export class PurchasingController {
 
   @Roles(UserRole.SX_PURCHASING)
   @Post()
-  create(@Body() dto: CreatePurchaseOrderDto) {
-    return this.purchasingService.create(dto);
+  create(@Body() dto: CreatePurchaseOrderDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.purchasingService.create(dto, { id: actor.id, username: actor.username });
   }
 
   @Roles(UserRole.SX_PURCHASING)
   @Patch(':id/receive')
-  receive(@Param('id') id: string) {
-    return this.purchasingService.receive(id);
+  receive(@Param('id') id: string, @CurrentUser() actor: AuthenticatedUser) {
+    return this.purchasingService.receive(id, { id: actor.id, username: actor.username });
   }
 
   @Roles(UserRole.SX_PURCHASING)
   @Patch(':id/cancel')
-  cancel(@Param('id') id: string) {
-    return this.purchasingService.cancel(id);
+  cancel(@Param('id') id: string, @CurrentUser() actor: AuthenticatedUser) {
+    return this.purchasingService.cancel(id, { id: actor.id, username: actor.username });
   }
 }

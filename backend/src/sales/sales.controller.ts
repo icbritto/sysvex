@@ -5,6 +5,8 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/user.entity';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/jwt.strategy';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('sales-orders')
@@ -23,19 +25,19 @@ export class SalesController {
 
   @Roles(UserRole.SX_SALES)
   @Post()
-  create(@Body() dto: CreateSalesOrderDto) {
-    return this.salesService.create(dto);
+  create(@Body() dto: CreateSalesOrderDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.salesService.create(dto, { id: actor.id, username: actor.username });
   }
 
   @Roles(UserRole.SX_SALES)
   @Patch(':id/confirm')
-  confirm(@Param('id') id: string) {
-    return this.salesService.confirm(id);
+  confirm(@Param('id') id: string, @CurrentUser() actor: AuthenticatedUser) {
+    return this.salesService.confirm(id, { id: actor.id, username: actor.username });
   }
 
   @Roles(UserRole.SX_SALES)
   @Patch(':id/cancel')
-  cancel(@Param('id') id: string) {
-    return this.salesService.cancel(id);
+  cancel(@Param('id') id: string, @CurrentUser() actor: AuthenticatedUser) {
+    return this.salesService.cancel(id, { id: actor.id, username: actor.username });
   }
 }
