@@ -45,7 +45,6 @@ export class UpdateCompanySettingsDto {
   bankAccountHolder?: string;
 
   @IsString()
-  @MinLength(1)
   @IsOptional()
   bankAccountInfo?: string;
 }
