@@ -38,6 +38,17 @@ interface OrderData {
   supplier?: ReceiptPartner;
 }
 
+// No recibo de venda mostramos só o nome do produto para o cliente — sem o
+// SKU nem qualificadores internos de unidade (ex.: "Brigadeiro (unidade)"
+// vira apenas "Brigadeiro"). O recibo de compra mantém nome + SKU, que é
+// informação interna relevante para conferência do pedido.
+function describeItem(name: string, sku: string, kind: 'sales' | 'purchase'): string {
+  if (kind === 'sales') {
+    return name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  }
+  return `${name} (${sku})`;
+}
+
 interface CompanySettings {
   companyName: string;
   logoUrl: string;
@@ -191,9 +202,7 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
           <tbody>
             {order.items.map((item) => (
               <tr key={item.id}>
-                <td>
-                  {item.product.name} ({item.product.sku})
-                </td>
+                <td>{describeItem(item.product.name, item.product.sku, kind)}</td>
                 <td>
                   {item.quantity} {item.product.unit}
                 </td>

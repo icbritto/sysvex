@@ -164,9 +164,6 @@
 .receipt-paper--mobile .receipt-meta {
   grid-template-columns: 1fr;
 }
-.receipt-paper--mobile .receipt-partner {
-  text-align: center;
-}
 .receipt-paper--mobile .receipt-items {
   font-size: 12px;
 }
