@@ -74,7 +74,7 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
   }, [endpoint]);
 
   useEffect(() => {
-    if (!order || !settings) return;
+    if (!order || !settings || kind !== 'sales') return;
     const payload = buildPixPayload({
       pixKey: settings.pixKey,
       pixKeyType: settings.pixKeyType,
@@ -86,7 +86,7 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
     toDataURL(payload, { margin: 1, width: 200 })
       .then(setQrCode)
       .catch(() => setQrCode(null));
-  }, [order, settings]);
+  }, [order, settings, kind]);
 
   if (error) {
     return <div className="empty-state">{error}</div>;
@@ -176,29 +176,31 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
 
         <div className="receipt-total">Total: R$ {order.totalAmount.toFixed(2)}</div>
 
-        <div className="receipt-payment">
-          <h3>Pagamento via Pix</h3>
-          <div className="receipt-payment-grid">
-            {qrCode && <img src={qrCode} alt="QR Code Pix" className="receipt-qrcode" />}
-            <div className="receipt-payment-info">
-              <p>
-                <strong>Chave Pix ({PIX_KEY_TYPE_LABELS[settings.pixKeyType]}):</strong> {settings.pixKey}
-              </p>
-              <p>
-                <strong>Beneficiário:</strong> {settings.bankAccountHolder}
-              </p>
-              <p>
-                <strong>Banco:</strong> {settings.bankName}
-              </p>
-              <p>
-                <strong>Conta:</strong> {settings.bankAccountInfo}
-              </p>
+        {kind === 'sales' && (
+          <div className="receipt-payment">
+            <h3>Pagamento via Pix</h3>
+            <div className="receipt-payment-grid">
+              {qrCode && <img src={qrCode} alt="QR Code Pix" className="receipt-qrcode" />}
+              <div className="receipt-payment-info">
+                <p>
+                  <strong>Chave Pix ({PIX_KEY_TYPE_LABELS[settings.pixKeyType]}):</strong> {settings.pixKey}
+                </p>
+                <p>
+                  <strong>Beneficiário:</strong> {settings.bankAccountHolder}
+                </p>
+                <p>
+                  <strong>Banco:</strong> {settings.bankName}
+                </p>
+                <p>
+                  <strong>Conta:</strong> {settings.bankAccountInfo}
+                </p>
+              </div>
             </div>
+            <p className="receipt-payment-hint">
+              Escaneie o QR Code com o app do seu banco ou copie a chave Pix acima caso tenha dificuldades com a leitura.
+            </p>
           </div>
-          <p className="receipt-payment-hint">
-            Escaneie o QR Code com o app do seu banco ou copie a chave Pix acima caso tenha dificuldades com a leitura.
-          </p>
-        </div>
+        )}
 
         <p className="receipt-footer-note">Este documento é um recibo interno e não substitui a nota fiscal eletrônica (NF-e).</p>
       </div>
