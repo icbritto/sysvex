@@ -1,4 +1,5 @@
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { PixKeyType } from '../company-settings.entity';
 
 export class UpdateCompanySettingsDto {
   @IsString()
@@ -23,6 +24,10 @@ export class UpdateCompanySettingsDto {
   @IsString()
   @IsOptional()
   address?: string | null;
+
+  @IsEnum(PixKeyType)
+  @IsOptional()
+  pixKeyType?: PixKeyType;
 
   @IsString()
   @MinLength(1)

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import apiClient, { extractErrorMessage } from '../../api/client';
+import { PIX_KEY_TYPES, PIX_KEY_TYPE_LABELS, PIX_KEY_TYPE_PLACEHOLDERS, PixKeyType } from '../../constants/pixKeyTypes';
 
 interface CompanySettings {
   companyName: string;
@@ -7,6 +8,7 @@ interface CompanySettings {
   city: string;
   state: string;
   address: string | null;
+  pixKeyType: PixKeyType;
   pixKey: string;
   bankName: string;
   bankAccountHolder: string;
@@ -38,9 +40,19 @@ export default function CompanySettingsPage() {
     setSaved(false);
     setSaving(true);
     try {
+      const { companyName, logoUrl, city, state, address, pixKeyType, pixKey, bankName, bankAccountHolder, bankAccountInfo } =
+        settings;
       const res = await apiClient.patch<CompanySettings>('/settings/company', {
-        ...settings,
-        address: settings.address || null,
+        companyName,
+        logoUrl,
+        city,
+        state,
+        address: address || null,
+        pixKeyType,
+        pixKey,
+        bankName,
+        bankAccountHolder,
+        bankAccountInfo,
       });
       setSettings(res.data);
       setSaved(true);
@@ -95,8 +107,23 @@ export default function CompanySettingsPage() {
           <h3 style={{ fontSize: 13, margin: '20px 0 8px' }}>Recebimento via Pix</h3>
           <div className="form-grid">
             <div className="form-field">
+              <label>Tipo de chave *</label>
+              <select value={settings.pixKeyType} onChange={(e) => update({ pixKeyType: e.target.value as PixKeyType })}>
+                {PIX_KEY_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {PIX_KEY_TYPE_LABELS[type]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-field">
               <label>Chave Pix *</label>
-              <input value={settings.pixKey} onChange={(e) => update({ pixKey: e.target.value })} required />
+              <input
+                value={settings.pixKey}
+                onChange={(e) => update({ pixKey: e.target.value })}
+                placeholder={PIX_KEY_TYPE_PLACEHOLDERS[settings.pixKeyType]}
+                required
+              />
             </div>
             <div className="form-field">
               <label>Banco *</label>

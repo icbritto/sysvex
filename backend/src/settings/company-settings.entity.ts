@@ -1,5 +1,12 @@
 import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
+export enum PixKeyType {
+  PHONE = 'PHONE',
+  CPF = 'CPF',
+  CNPJ = 'CNPJ',
+  RANDOM = 'RANDOM',
+}
+
 @Entity('company_settings')
 export class CompanySettings {
   @PrimaryGeneratedColumn('uuid')
@@ -19,6 +26,9 @@ export class CompanySettings {
 
   @Column({ type: 'varchar', nullable: true })
   address: string | null;
+
+  @Column({ type: 'enum', enum: PixKeyType, name: 'pix_key_type', default: PixKeyType.CNPJ })
+  pixKeyType: PixKeyType;
 
   @Column({ name: 'pix_key', default: '00.000.000/0001-00' })
   pixKey: string;
