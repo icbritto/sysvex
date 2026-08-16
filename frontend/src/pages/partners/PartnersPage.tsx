@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
+import { formatCpfCnpj, formatPhone } from '../../utils/masks';
 
 interface Partner {
   id: string;
@@ -168,7 +169,7 @@ export default function PartnersPage() {
               </div>
               <div className="form-field">
                 <label>CPF/CNPJ</label>
-                <input value={document} onChange={(e) => setDocument(e.target.value)} />
+                <input value={document} onChange={(e) => setDocument(formatCpfCnpj(e.target.value))} inputMode="numeric" />
               </div>
               <div className="form-field">
                 <label>Email</label>
@@ -176,7 +177,7 @@ export default function PartnersPage() {
               </div>
               <div className="form-field">
                 <label>Telefone</label>
-                <input value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <input value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} inputMode="tel" />
               </div>
               <div className="form-field">
                 <label>Endereço</label>
