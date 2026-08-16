@@ -10,6 +10,7 @@ import {
 import { Partner } from '../partners/partner.entity';
 import { PurchaseOrderItem } from './purchase-order-item.entity';
 import { DecimalTransformer } from '../common/transformers/decimal.transformer';
+import { PaymentMethod } from '../common/payment-method.enum';
 
 export enum PurchaseOrderStatus {
   DRAFT = 'DRAFT',
@@ -38,6 +39,14 @@ export class PurchaseOrder {
 
   @Column({ type: 'enum', enum: PurchaseOrderStatus, default: PurchaseOrderStatus.DRAFT })
   status: PurchaseOrderStatus;
+
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+    name: 'payment_method',
+    default: PaymentMethod.PIX,
+  })
+  paymentMethod: PaymentMethod;
 
   @OneToMany(() => PurchaseOrderItem, (item) => item.purchaseOrder, { cascade: true, eager: true })
   items: PurchaseOrderItem[];

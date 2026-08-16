@@ -13,6 +13,7 @@ import { FinanceEntry } from '../finance/finance-entry.entity';
 import { App } from '../apps/app.entity';
 import { EmergencyAccessGrant } from '../security/emergency-access-grant.entity';
 import { AuditLog } from '../audit/audit-log.entity';
+import { CompanySettings } from '../settings/company-settings.entity';
 
 export const typeOrmEntities = [
   User,
@@ -29,6 +30,7 @@ export const typeOrmEntities = [
   App,
   EmergencyAccessGrant,
   AuditLog,
+  CompanySettings,
 ];
 
 export function buildTypeOrmConfig(): TypeOrmModuleOptions {

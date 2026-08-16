@@ -304,6 +304,7 @@ export const TILE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   user: UserIcon,
   'shield-check': ShieldCheckIcon,
   monitor: MonitorIcon,
+  gear: GearIcon,
 };
 
 export function TileIcon({ name, ...props }: IconProps & { name: string }) {

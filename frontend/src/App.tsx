@@ -20,6 +20,8 @@ import MyAccountPage from './pages/account/MyAccountPage';
 import SecurityCompliancePage from './pages/security/SecurityCompliancePage';
 import SystemStatusPage from './pages/system/SystemStatusPage';
 import BusinessLineOverviewPage from './pages/BusinessLineOverviewPage';
+import ReceiptPage from './pages/receipts/ReceiptPage';
+import CompanySettingsPage from './pages/admin/CompanySettingsPage';
 
 export default function App() {
   return (
@@ -28,6 +30,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<RequireAuth />}>
+            <Route path="/purchase-orders/:id/receipt" element={<ReceiptPage kind="purchase" />} />
+            <Route path="/sales-orders/:id/receipt" element={<ReceiptPage kind="sales" />} />
             <Route element={<AppShell />}>
               <Route path="/" element={<Launchpad />} />
               <Route path="/lines/:key" element={<BusinessLineOverviewPage />} />
@@ -42,6 +46,7 @@ export default function App() {
               <Route path="/finance/cash-flow" element={<CashFlowPage />} />
               <Route path="/finance/dre" element={<DrePage />} />
               <Route path="/admin/users" element={<UsersPage />} />
+              <Route path="/admin/company-settings" element={<CompanySettingsPage />} />
               <Route path="/security/compliance" element={<SecurityCompliancePage />} />
               <Route path="/system/status" element={<SystemStatusPage />} />
               <Route path="/account" element={<MyAccountPage />} />

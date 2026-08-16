@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { PurchaseOrder, PurchaseOrderStatus } from './purchase-order.entity';
+import { PaymentMethod } from '../common/payment-method.enum';
 import { PurchaseOrderItem } from './purchase-order-item.entity';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
 import { InventoryService } from '../inventory/inventory.service';
@@ -42,6 +43,7 @@ export class PurchasingService {
       supplierId: dto.supplierId,
       orderDate: dto.orderDate,
       status: PurchaseOrderStatus.DRAFT,
+      paymentMethod: dto.paymentMethod ?? PaymentMethod.PIX,
       totalAmount,
       items: dto.items.map((i) =>
         Object.assign(new PurchaseOrderItem(), {

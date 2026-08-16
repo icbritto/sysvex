@@ -16,6 +16,7 @@ import { AppsModule } from './apps/apps.module';
 import { AuditModule } from './audit/audit.module';
 import { SecurityModule } from './security/security.module';
 import { SystemModule } from './system/system.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { SystemModule } from './system/system.module';
     AuditModule,
     SecurityModule,
     SystemModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}
