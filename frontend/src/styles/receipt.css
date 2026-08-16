@@ -149,9 +149,9 @@
 }
 
 /* Formato para celular: layout estreito, de coluna única, pensado para
-   telas de smartphone e para impressão em impressoras de recibo/bobina
-   estreitas — ao contrário do formato padrão, que aproveita a largura
-   cheia da página ao imprimir. */
+   telas de smartphone e para impressão/PDF em página de 100mm x 150mm
+   (tamanho comum de bobina/etiqueta de recibo) — ao contrário do formato
+   padrão, que aproveita a largura cheia da página ao imprimir. */
 .receipt-paper--mobile {
   max-width: 380px;
   padding: 24px 20px;
@@ -181,6 +181,23 @@
   height: 170px;
 }
 
+/* Em telas estreitas, o cartão do recibo deve caber na largura do viewport
+   sem exigir zoom-out para vê-lo inteiro (nem zoom-in depois para ler). */
+@media (max-width: 430px) {
+  .receipt-screen {
+    padding: 10px 8px;
+  }
+  .receipt-paper--mobile {
+    max-width: 100%;
+    padding: 18px 14px;
+  }
+}
+
+@page receipt-mobile {
+  size: 100mm 150mm;
+  margin: 5mm;
+}
+
 @media print {
   .receipt-toolbar {
     display: none;
@@ -195,8 +212,10 @@
     padding: 0;
   }
   .receipt-paper--mobile {
-    max-width: 380px;
-    padding: 24px 20px;
+    page: receipt-mobile;
+    max-width: 100mm;
+    width: 100mm;
+    padding: 0;
     margin: 0 auto;
   }
 }
