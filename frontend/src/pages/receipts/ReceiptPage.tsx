@@ -191,9 +191,11 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
                 <p>
                   <strong>Banco:</strong> {settings.bankName}
                 </p>
-                <p>
-                  <strong>Conta:</strong> {settings.bankAccountInfo}
-                </p>
+                {settings.bankAccountInfo && (
+                  <p>
+                    <strong>Conta:</strong> {settings.bankAccountInfo}
+                  </p>
+                )}
               </div>
             </div>
             <p className="receipt-payment-hint">

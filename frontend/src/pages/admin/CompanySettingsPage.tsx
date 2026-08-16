@@ -134,8 +134,8 @@ export default function CompanySettingsPage() {
               <input value={settings.bankAccountHolder} onChange={(e) => update({ bankAccountHolder: e.target.value })} required />
             </div>
             <div className="form-field">
-              <label>Agência / Conta *</label>
-              <input value={settings.bankAccountInfo} onChange={(e) => update({ bankAccountInfo: e.target.value })} required />
+              <label>Agência / Conta</label>
+              <input value={settings.bankAccountInfo} onChange={(e) => update({ bankAccountInfo: e.target.value })} />
             </div>
           </div>
 
