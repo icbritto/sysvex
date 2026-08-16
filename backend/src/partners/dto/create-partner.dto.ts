@@ -1,10 +1,24 @@
-import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
-import { PartnerType } from '../partner.entity';
+import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, MinLength, ValidateIf } from 'class-validator';
+import { PartnerPersonType, PartnerType } from '../partner.entity';
 
 export class CreatePartnerDto {
+  @IsEnum(PartnerPersonType)
+  personType: PartnerPersonType;
+
+  @ValidateIf((o) => o.personType === PartnerPersonType.INDIVIDUAL)
   @IsString()
   @MinLength(2)
-  name: string;
+  name?: string;
+
+  @ValidateIf((o) => o.personType === PartnerPersonType.COMPANY)
+  @IsString()
+  @MinLength(2)
+  legalName?: string;
+
+  @ValidateIf((o) => o.personType === PartnerPersonType.COMPANY)
+  @IsString()
+  @MinLength(2)
+  tradeName?: string;
 
   @IsString()
   @IsOptional()

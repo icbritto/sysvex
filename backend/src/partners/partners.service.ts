@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Partner } from './partner.entity';
+import { Partner, PartnerPersonType } from './partner.entity';
 import { CreatePartnerDto } from './dto/create-partner.dto';
 import { UpdatePartnerDto } from './dto/update-partner.dto';
 import { AuditLogService } from '../audit/audit-log.service';
@@ -27,8 +27,25 @@ export class PartnersService {
     return partner;
   }
 
+  // Pessoa Jurídica não digita um "nome" — ele é derivado do Nome Fantasia,
+  // que é o que aparece em listagens, pedidos e recibos. Razão
+  // Social/Nome Fantasia também são normalizados para caixa alta aqui como
+  // segurança extra, independente da formatação já aplicada no front-end.
+  private normalize(dto: CreatePartnerDto | UpdatePartnerDto, existing?: Partner) {
+    const personType = dto.personType ?? existing?.personType;
+    if (personType === PartnerPersonType.COMPANY) {
+      const legalName = (dto.legalName ?? existing?.legalName ?? '').toUpperCase();
+      const tradeName = (dto.tradeName ?? existing?.tradeName ?? '').toUpperCase();
+      return { ...dto, legalName, tradeName, name: tradeName };
+    }
+    if (personType === PartnerPersonType.INDIVIDUAL) {
+      return { ...dto, legalName: null, tradeName: null };
+    }
+    return dto;
+  }
+
   async create(dto: CreatePartnerDto, actor?: Actor): Promise<Partner> {
-    const saved = await this.repo.save(this.repo.create(dto));
+    const saved = await this.repo.save(this.repo.create(this.normalize(dto)));
     if (actor) {
       await this.auditLogService.record({
         actorUserId: actor.id,
@@ -44,7 +61,7 @@ export class PartnersService {
 
   async update(id: string, dto: UpdatePartnerDto, actor?: Actor): Promise<Partner> {
     const partner = await this.findById(id);
-    Object.assign(partner, dto);
+    Object.assign(partner, this.normalize(dto, partner));
     const saved = await this.repo.save(partner);
     if (actor) {
       await this.auditLogService.record({

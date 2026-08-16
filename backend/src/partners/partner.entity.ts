@@ -6,6 +6,11 @@ export enum PartnerType {
   BOTH = 'BOTH',
 }
 
+export enum PartnerPersonType {
+  INDIVIDUAL = 'INDIVIDUAL',
+  COMPANY = 'COMPANY',
+}
+
 @Entity('partners')
 export class Partner {
   @PrimaryGeneratedColumn('uuid')
@@ -13,6 +18,17 @@ export class Partner {
 
   @Column()
   name: string;
+
+  @Column({ type: 'enum', enum: PartnerPersonType, default: PartnerPersonType.INDIVIDUAL })
+  personType: PartnerPersonType;
+
+  // Só preenchidos para Pessoa Jurídica; `name` (usado em listagens, pedidos
+  // e recibos) é derivado automaticamente do Nome Fantasia nesse caso.
+  @Column({ type: 'varchar', nullable: true })
+  legalName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  tradeName: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   document: string | null;
