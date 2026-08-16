@@ -146,7 +146,7 @@ export default function SalesOrdersPage() {
                   <StatusBadge status={o.status} />
                 </td>
                 <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <Link className="btn btn--secondary btn--sm" to={`/sales-orders/${o.id}/receipt`} target="_blank">
+                  <Link className="btn btn--secondary btn--sm" to={`/sales-orders/${o.id}/receipt`}>
                     Recibo
                   </Link>
                   {o.status === 'DRAFT' && (

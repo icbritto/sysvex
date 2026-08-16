@@ -72,19 +72,8 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
   const [mobileFormat, setMobileFormat] = useState(false);
 
   const endpoint = kind === 'sales' ? `/sales-orders/${id}` : `/purchase-orders/${id}`;
-  const listPath = kind === 'sales' ? '/sales-orders' : '/purchase-orders';
 
-  // O recibo é aberto em uma aba nova (target="_blank"), então essa aba não
-  // tem histórico anterior — navigate(-1) não tem para onde voltar. Tentamos
-  // fechar a aba; navegadores só permitem fechar abas abertas por script/link
-  // (window.closed vira true nesse caso). Se não fechar (ex.: link aberto
-  // direto na mesma aba), caímos para navegar até a listagem do pedido.
-  const handleBack = () => {
-    window.close();
-    if (!window.closed) {
-      navigate(listPath);
-    }
-  };
+  const handleBack = () => navigate(-1);
 
   useEffect(() => {
     setOrder(null);
