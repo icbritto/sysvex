@@ -25,8 +25,28 @@ function crc16(payload: string): string {
   return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
+export type PixKeyType = 'PHONE' | 'CPF' | 'CNPJ' | 'RANDOM';
+
+// O payload EMV exige a chave "crua": só dígitos para CPF/CNPJ e o celular
+// no formato +DDI DDD número sem nenhuma pontuação. A chave aleatória (UUID)
+// já nasce no formato exigido, então não sofre alteração.
+export function normalizePixKey(key: string, type: PixKeyType): string {
+  const digits = key.replace(/\D/g, '');
+  switch (type) {
+    case 'CPF':
+    case 'CNPJ':
+      return digits;
+    case 'PHONE':
+      return `+${digits.startsWith('55') ? digits : `55${digits}`}`;
+    case 'RANDOM':
+    default:
+      return key.trim();
+  }
+}
+
 export interface PixPayloadParams {
   pixKey: string;
+  pixKeyType?: PixKeyType;
   merchantName: string;
   merchantCity: string;
   amount?: number;
@@ -37,8 +57,9 @@ export function buildPixPayload(params: PixPayloadParams): string {
   const merchantName = sanitize(params.merchantName, 25);
   const merchantCity = sanitize(params.merchantCity, 15);
   const txid = sanitize(params.txid ?? '***', 25) || '***';
+  const pixKey = params.pixKeyType ? normalizePixKey(params.pixKey, params.pixKeyType) : params.pixKey;
 
-  const merchantAccountInfo = tlv('00', 'br.gov.bcb.pix') + tlv('01', params.pixKey);
+  const merchantAccountInfo = tlv('00', 'br.gov.bcb.pix') + tlv('01', pixKey);
 
   const parts = [
     tlv('00', '01'),

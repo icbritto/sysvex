@@ -4,6 +4,7 @@ import { toDataURL } from 'qrcode';
 import apiClient from '../../api/client';
 import { buildPixPayload } from '../../utils/pixPayload';
 import { PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
+import { PIX_KEY_TYPE_LABELS, PixKeyType } from '../../constants/pixKeyTypes';
 import '../../styles/receipt.css';
 
 interface ReceiptProduct {
@@ -43,6 +44,7 @@ interface CompanySettings {
   city: string;
   state: string;
   address: string | null;
+  pixKeyType: PixKeyType;
   pixKey: string;
   bankName: string;
   bankAccountHolder: string;
@@ -75,6 +77,7 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
     if (!order || !settings) return;
     const payload = buildPixPayload({
       pixKey: settings.pixKey,
+      pixKeyType: settings.pixKeyType,
       merchantName: settings.companyName,
       merchantCity: settings.city,
       amount: order.totalAmount,
@@ -179,7 +182,7 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
             {qrCode && <img src={qrCode} alt="QR Code Pix" className="receipt-qrcode" />}
             <div className="receipt-payment-info">
               <p>
-                <strong>Chave Pix:</strong> {settings.pixKey}
+                <strong>Chave Pix ({PIX_KEY_TYPE_LABELS[settings.pixKeyType]}):</strong> {settings.pixKey}
               </p>
               <p>
                 <strong>Beneficiário:</strong> {settings.bankAccountHolder}
