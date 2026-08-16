@@ -10,6 +10,7 @@ interface Partner {
   type: 'CUSTOMER' | 'SUPPLIER' | 'BOTH';
   email: string | null;
   phone: string | null;
+  address: string | null;
   active: boolean;
 }
 
@@ -26,6 +27,7 @@ export default function PartnersPage() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState('');
@@ -33,6 +35,7 @@ export default function PartnersPage() {
   const [type, setType] = useState<'CUSTOMER' | 'SUPPLIER' | 'BOTH'>('CUSTOMER');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -54,22 +57,48 @@ export default function PartnersPage() {
     setType('CUSTOMER');
     setEmail('');
     setPhone('');
+    setAddress('');
     setError(null);
+  };
+
+  const openCreateModal = () => {
+    resetForm();
+    setEditingId(null);
+    setShowModal(true);
+  };
+
+  const openEditModal = (partner: Partner) => {
+    setEditingId(partner.id);
+    setName(partner.name);
+    setDocument(partner.document ?? '');
+    setType(partner.type);
+    setEmail(partner.email ?? '');
+    setPhone(partner.phone ?? '');
+    setAddress(partner.address ?? '');
+    setError(null);
+    setShowModal(true);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    const payload = {
+      name,
+      document: document || null,
+      type,
+      email: email || null,
+      phone: phone || null,
+      address: address || null,
+    };
     try {
-      await apiClient.post('/partners', {
-        name,
-        document: document || undefined,
-        type,
-        email: email || undefined,
-        phone: phone || undefined,
-      });
+      if (editingId) {
+        await apiClient.patch(`/partners/${editingId}`, payload);
+      } else {
+        await apiClient.post('/partners', payload);
+      }
       setShowModal(false);
       resetForm();
+      setEditingId(null);
       load();
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -80,7 +109,7 @@ export default function PartnersPage() {
     <div>
       <div className="page-header">
         <h1>Clientes & Fornecedores</h1>
-        <button className="btn" onClick={() => setShowModal(true)}>
+        <button className="btn" onClick={openCreateModal}>
           + Novo
         </button>
       </div>
@@ -94,6 +123,7 @@ export default function PartnersPage() {
               <th>Documento</th>
               <th>Contato</th>
               <th>Status</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -104,6 +134,11 @@ export default function PartnersPage() {
                 <td>{p.document ?? '–'}</td>
                 <td>{p.email ?? p.phone ?? '–'}</td>
                 <td>{p.active ? 'Ativo' : 'Inativo'}</td>
+                <td>
+                  <button className="btn btn--secondary btn--sm" onClick={() => openEditModal(p)}>
+                    Editar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -112,7 +147,10 @@ export default function PartnersPage() {
       </div>
 
       {showModal && (
-        <Modal title="Novo Cliente/Fornecedor" onClose={() => setShowModal(false)}>
+        <Modal
+          title={editingId ? 'Editar Cliente/Fornecedor' : 'Novo Cliente/Fornecedor'}
+          onClose={() => setShowModal(false)}
+        >
           {error && <div className="alert alert--error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
@@ -139,6 +177,10 @@ export default function PartnersPage() {
               <div className="form-field">
                 <label>Telefone</label>
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </div>
+              <div className="form-field">
+                <label>Endereço</label>
+                <input value={address} onChange={(e) => setAddress(e.target.value)} />
               </div>
             </div>
             <div className="form-actions">

@@ -16,6 +16,7 @@ interface User {
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [username, setUsername] = useState('');
@@ -39,13 +40,35 @@ export default function UsersPage() {
     setError(null);
   };
 
+  const openCreateModal = () => {
+    resetForm();
+    setEditingId(null);
+    setShowModal(true);
+  };
+
+  const openEditModal = (user: User) => {
+    setEditingId(user.id);
+    setUsername(user.username);
+    setEmail(user.email);
+    setFullName(user.fullName);
+    setPassword('');
+    setRole(user.role);
+    setError(null);
+    setShowModal(true);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      await apiClient.post('/users', { username, email, fullName, password, role });
+      if (editingId) {
+        await apiClient.patch(`/users/${editingId}`, { username, email, fullName, role });
+      } else {
+        await apiClient.post('/users', { username, email, fullName, password, role });
+      }
       setShowModal(false);
       resetForm();
+      setEditingId(null);
       load();
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -61,7 +84,7 @@ export default function UsersPage() {
     <div>
       <div className="page-header">
         <h1>Usuários & Roles</h1>
-        <button className="btn" onClick={() => setShowModal(true)}>
+        <button className="btn" onClick={openCreateModal}>
           + Novo Usuário
         </button>
       </div>
@@ -86,7 +109,10 @@ export default function UsersPage() {
                 <td>{u.email}</td>
                 <td>{ROLE_LABELS[u.role]}</td>
                 <td>{u.active ? 'Ativo' : 'Inativo'}</td>
-                <td>
+                <td style={{ display: 'flex', gap: 8 }}>
+                  <button className="btn btn--secondary btn--sm" onClick={() => openEditModal(u)}>
+                    Editar
+                  </button>
                   <button className="btn btn--secondary btn--sm" onClick={() => toggleActive(u)}>
                     {u.active ? 'Desativar' : 'Ativar'}
                   </button>
@@ -99,7 +125,7 @@ export default function UsersPage() {
       </div>
 
       {showModal && (
-        <Modal title="Novo Usuário" onClose={() => setShowModal(false)}>
+        <Modal title={editingId ? 'Editar Usuário' : 'Novo Usuário'} onClose={() => setShowModal(false)}>
           {error && <div className="alert alert--error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
@@ -115,10 +141,18 @@ export default function UsersPage() {
                 <label>Email *</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
-              <div className="form-field">
-                <label>Senha inicial *</label>
-                <input type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required />
-              </div>
+              {!editingId && (
+                <div className="form-field">
+                  <label>Senha inicial *</label>
+                  <input
+                    type="password"
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
               <div className="form-field">
                 <label>Role *</label>
                 <select value={role} onChange={(e) => setRole(e.target.value as User['role'])}>
