@@ -58,6 +58,7 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
   const [settings, setSettings] = useState<CompanySettings | null>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mobileFormat, setMobileFormat] = useState(false);
 
   const endpoint = kind === 'sales' ? `/sales-orders/${id}` : `/purchase-orders/${id}`;
   const listPath = kind === 'sales' ? '/sales-orders' : '/purchase-orders';
@@ -119,12 +120,17 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
         <button className="btn btn--secondary" onClick={handleBack}>
           ← Voltar
         </button>
-        <button className="btn" onClick={() => window.print()}>
-          Imprimir / Salvar PDF
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn--secondary" onClick={() => setMobileFormat((v) => !v)}>
+            {mobileFormat ? 'Formato Padrão' : 'Formato para Celular'}
+          </button>
+          <button className="btn" onClick={() => window.print()}>
+            Imprimir / Salvar PDF
+          </button>
+        </div>
       </div>
 
-      <div className="receipt-paper">
+      <div className={`receipt-paper${mobileFormat ? ' receipt-paper--mobile' : ''}`}>
         <div className="receipt-header">
           <img src={settings.logoUrl} alt={settings.companyName} className="receipt-logo" />
           <div className="receipt-company">
@@ -156,11 +162,22 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
           </div>
         </div>
 
-        <div className="receipt-partner">
-          <strong>{partnerLabel}:</strong> {partner?.name}
-          {partner?.document && <span> — {partner.document}</span>}
-          {partner?.address && <div>{partner.address}</div>}
-        </div>
+        {kind === 'sales' ? (
+          <div className="receipt-partner">
+            <div>
+              <strong>{partnerLabel}:</strong> {partner?.name}
+            </div>
+            <div>
+              <strong>Endereço:</strong> {partner?.address ?? '—'}
+            </div>
+          </div>
+        ) : (
+          <div className="receipt-partner">
+            <strong>{partnerLabel}:</strong> {partner?.name}
+            {partner?.document && <span> — {partner.document}</span>}
+            {partner?.address && <div>{partner.address}</div>}
+          </div>
+        )}
 
         <table className="receipt-items">
           <thead>

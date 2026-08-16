@@ -148,6 +148,42 @@
   text-align: center;
 }
 
+/* Formato para celular: layout estreito, de coluna única, pensado para
+   telas de smartphone e para impressão em impressoras de recibo/bobina
+   estreitas — ao contrário do formato padrão, que aproveita a largura
+   cheia da página ao imprimir. */
+.receipt-paper--mobile {
+  max-width: 380px;
+  padding: 24px 20px;
+}
+.receipt-paper--mobile .receipt-header {
+  flex-direction: column;
+  text-align: center;
+  gap: 10px;
+}
+.receipt-paper--mobile .receipt-meta {
+  grid-template-columns: 1fr;
+}
+.receipt-paper--mobile .receipt-partner {
+  text-align: center;
+}
+.receipt-paper--mobile .receipt-items {
+  font-size: 12px;
+}
+.receipt-paper--mobile .receipt-items th,
+.receipt-paper--mobile .receipt-items td {
+  padding: 6px 4px;
+}
+.receipt-paper--mobile .receipt-payment-grid {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.receipt-paper--mobile .receipt-qrcode {
+  width: 170px;
+  height: 170px;
+}
+
 @media print {
   .receipt-toolbar {
     display: none;
@@ -160,5 +196,10 @@
     box-shadow: none;
     max-width: none;
     padding: 0;
+  }
+  .receipt-paper--mobile {
+    max-width: 380px;
+    padding: 24px 20px;
+    margin: 0 auto;
   }
 }

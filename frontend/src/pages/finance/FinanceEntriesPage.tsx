@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import StatusBadge from '../../components/StatusBadge';
+import { useNotify } from '../../notifications/NotificationContext';
 
 interface Partner {
   id: string;
@@ -20,6 +21,7 @@ interface FinanceEntry {
 }
 
 export default function FinanceEntriesPage() {
+  const notify = useNotify();
   const [entries, setEntries] = useState<FinanceEntry[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [filterType, setFilterType] = useState<'' | 'PAYABLE' | 'RECEIVABLE'>('');
@@ -76,7 +78,7 @@ export default function FinanceEntriesPage() {
       await apiClient.patch(`/finance/entries/${id}/pay`);
       load();
     } catch (err) {
-      alert(extractErrorMessage(err));
+      notify(extractErrorMessage(err));
     }
   };
 
@@ -85,7 +87,7 @@ export default function FinanceEntriesPage() {
       await apiClient.patch(`/finance/entries/${id}/cancel`);
       load();
     } catch (err) {
-      alert(extractErrorMessage(err));
+      notify(extractErrorMessage(err));
     }
   };
 
