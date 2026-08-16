@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toDataURL } from 'qrcode';
 import apiClient from '../../api/client';
@@ -70,10 +70,62 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mobileFormat, setMobileFormat] = useState(false);
+  const paperRef = useRef<HTMLDivElement>(null);
 
   const endpoint = kind === 'sales' ? `/sales-orders/${id}` : `/purchase-orders/${id}`;
 
   const handleBack = () => navigate(-1);
+
+  // No "Formato para Celular" a altura fixa de 150mm da página (definida em
+  // receipt.css) não cabe recibos com muitos itens, quebrando em 2 páginas.
+  // Antes de imprimir, medimos a altura real do conteúdo já na largura de
+  // impressão (100mm, sem padding extra — o respiro fica por conta da
+  // margem do @page) e sobrescrevemos a altura da página dinamicamente, para
+  // que o recibo sempre caiba em uma única página, do tamanho do conteúdo.
+  useEffect(() => {
+    const PAGE_MARGIN_MM = 5;
+    const PX_PER_MM = 96 / 25.4;
+    const styleId = 'receipt-print-page-size';
+
+    function handleBeforePrint() {
+      if (!mobileFormat || !paperRef.current) return;
+      const el = paperRef.current;
+      const previousWidth = el.style.width;
+      const previousMaxWidth = el.style.maxWidth;
+      const previousPadding = el.style.padding;
+
+      el.style.width = '100mm';
+      el.style.maxWidth = '100mm';
+      el.style.padding = '0';
+      const contentHeightPx = el.scrollHeight;
+
+      el.style.width = previousWidth;
+      el.style.maxWidth = previousMaxWidth;
+      el.style.padding = previousPadding;
+
+      const heightMm = Math.ceil(contentHeightPx / PX_PER_MM) + PAGE_MARGIN_MM * 2;
+
+      let styleTag = document.getElementById(styleId) as HTMLStyleElement | null;
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = styleId;
+        document.head.appendChild(styleTag);
+      }
+      styleTag.textContent = `@page receipt-mobile { size: 100mm ${heightMm}mm; margin: ${PAGE_MARGIN_MM}mm; }`;
+    }
+
+    function handleAfterPrint() {
+      document.getElementById(styleId)?.remove();
+    }
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+      document.getElementById(styleId)?.remove();
+    };
+  }, [mobileFormat]);
 
   useEffect(() => {
     setOrder(null);
@@ -130,7 +182,7 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
         </div>
       </div>
 
-      <div className={`receipt-paper${mobileFormat ? ' receipt-paper--mobile' : ''}`}>
+      <div ref={paperRef} className={`receipt-paper${mobileFormat ? ' receipt-paper--mobile' : ''}`}>
         <div className="receipt-header">
           <img src={settings.logoUrl} alt={settings.companyName} className="receipt-logo" />
           <div className="receipt-company">
