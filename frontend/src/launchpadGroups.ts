@@ -75,7 +75,10 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     title: 'Administração',
     color: '#c0392b',
     colorDark: '#ffae94',
-    tiles: [{ to: '/admin/users', icon: 'user', title: 'Usuários & Roles' }],
+    tiles: [
+      { to: '/admin/users', icon: 'user', title: 'Usuários & Roles' },
+      { to: '/admin/company-settings', icon: 'gear', title: 'Dados da Empresa' },
+    ],
   },
   {
     key: 'seguranca_compliance',

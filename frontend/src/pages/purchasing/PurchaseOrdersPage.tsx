@@ -1,7 +1,9 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import StatusBadge from '../../components/StatusBadge';
+import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 
 interface Partner {
   id: string;
@@ -29,6 +31,7 @@ interface PurchaseOrder {
   orderDate: string;
   status: 'DRAFT' | 'CONFIRMED' | 'RECEIVED' | 'CANCELLED';
   totalAmount: number;
+  paymentMethod: PaymentMethod;
 }
 
 const emptyItem = (): OrderItem => ({ productId: '', quantity: '1', unitPrice: '0' });
@@ -42,6 +45,7 @@ export default function PurchaseOrdersPage() {
 
   const [supplierId, setSupplierId] = useState('');
   const [orderDate, setOrderDate] = useState(new Date().toISOString().slice(0, 10));
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('PIX');
   const [items, setItems] = useState<OrderItem[]>([emptyItem()]);
 
   const load = () => {
@@ -63,6 +67,7 @@ export default function PurchaseOrdersPage() {
   const resetForm = () => {
     setSupplierId('');
     setOrderDate(new Date().toISOString().slice(0, 10));
+    setPaymentMethod('PIX');
     setItems([emptyItem()]);
     setError(null);
   };
@@ -74,6 +79,7 @@ export default function PurchaseOrdersPage() {
       await apiClient.post('/purchase-orders', {
         supplierId,
         orderDate,
+        paymentMethod,
         items: items.map((it) => ({
           productId: it.productId,
           quantity: Number(it.quantity),
@@ -137,10 +143,15 @@ export default function PurchaseOrdersPage() {
                 <td>
                   <StatusBadge status={o.status} />
                 </td>
-                <td>
+                <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {o.status === 'RECEIVED' && (
+                    <Link className="btn btn--secondary btn--sm" to={`/purchase-orders/${o.id}/receipt`} target="_blank">
+                      Recibo
+                    </Link>
+                  )}
                   {o.status === 'DRAFT' && (
                     <>
-                      <button className="btn btn--sm" onClick={() => handleReceive(o.id)} style={{ marginRight: 6 }}>
+                      <button className="btn btn--sm" onClick={() => handleReceive(o.id)}>
                         Receber
                       </button>
                       <button className="btn btn--danger btn--sm" onClick={() => handleCancel(o.id)}>
@@ -175,6 +186,16 @@ export default function PurchaseOrdersPage() {
               <div className="form-field">
                 <label>Data *</label>
                 <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} required />
+              </div>
+              <div className="form-field">
+                <label>Forma de pagamento *</label>
+                <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}>
+                  {PAYMENT_METHODS.map((pm) => (
+                    <option key={pm} value={pm}>
+                      {PAYMENT_METHOD_LABELS[pm]}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

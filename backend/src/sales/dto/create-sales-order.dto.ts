@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsDateString, IsNumber, IsUUID, Min, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsDateString, IsEnum, IsNumber, IsOptional, IsUUID, Min, ValidateNested } from 'class-validator';
+import { PaymentMethod } from '../../common/payment-method.enum';
 
 class SalesOrderItemDto {
   @IsUUID()
@@ -20,6 +21,10 @@ export class CreateSalesOrderDto {
 
   @IsDateString()
   orderDate: string;
+
+  @IsEnum(PaymentMethod)
+  @IsOptional()
+  paymentMethod?: PaymentMethod;
 
   @IsArray()
   @ArrayMinSize(1)

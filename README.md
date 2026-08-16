@@ -24,12 +24,15 @@ Produção).
 - **Financeiro** — contas a pagar/receber (geradas automaticamente a partir
   de compras e vendas, ou lançadas manualmente), fluxo de caixa e um DRE
   simplificado por período.
-- **Compras** — cadastro de fornecedores, pedidos de compra; ao "receber" um
-  pedido, o estoque de insumos entra automaticamente e um título de contas a
-  pagar é criado.
-- **Vendas** — cadastro de clientes, pedidos de venda; ao "confirmar" um
-  pedido, o estoque de produtos acabados é baixado (com checagem de saldo) e
-  um título de contas a receber é criado.
+- **Compras** — cadastro de fornecedores, pedidos de compra (com forma de
+  pagamento); ao "receber" um pedido, o estoque de insumos entra
+  automaticamente, um título de contas a pagar é criado e um **Recibo de
+  Compra** imprimível fica disponível.
+- **Vendas** — cadastro de clientes, pedidos de venda (com forma de
+  pagamento); ao "confirmar" um pedido, o estoque de produtos acabados é
+  baixado (com checagem de saldo) e um título de contas a receber é criado.
+  Todo pedido de venda, independente do status, tem um **Recibo de Venda**
+  imprimível com QR Code Pix para pagamento.
 - **Estoque & Produção** — cadastro de produtos (insumos e produtos
   acabados), ficha técnica (BOM) por produto acabado, ordens de produção que
   consomem os insumos da ficha técnica, dão entrada no produto acabado e
@@ -37,7 +40,9 @@ Produção).
   estoque.
 - **Administração** — usuários com login próprio e role (Admin, Financeiro,
   Compras, Vendas, Produção, Administração de Sistema, Segurança &
-  Compliance), controlando o que cada um pode fazer.
+  Compliance), controlando o que cada um pode fazer; e os **Dados da
+  Empresa** (razão social, cidade/UF, chave Pix e dados bancários) usados
+  na emissão dos recibos de compra e venda.
 - **Segurança & Compliance** (role `SX_SECURITY`) — matriz de acesso que
   liga cada linha de negócio (App) às roles autorizadas a vê-la, com
   ativação/desativação por App; análise de conflitos de segregação de
