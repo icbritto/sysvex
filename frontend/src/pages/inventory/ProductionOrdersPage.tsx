@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import StatusBadge from '../../components/StatusBadge';
+import { useNotify } from '../../notifications/NotificationContext';
 
 interface Product {
   id: string;
@@ -22,6 +23,7 @@ interface ProductionOrder {
 }
 
 export default function ProductionOrdersPage() {
+  const notify = useNotify();
   const [orders, setOrders] = useState<ProductionOrder[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -65,7 +67,7 @@ export default function ProductionOrdersPage() {
       await apiClient.patch(`/production-orders/${id}/complete`);
       load();
     } catch (err) {
-      alert(extractErrorMessage(err));
+      notify(extractErrorMessage(err));
     }
   };
 
@@ -74,7 +76,7 @@ export default function ProductionOrdersPage() {
       await apiClient.patch(`/production-orders/${id}/cancel`);
       load();
     } catch (err) {
-      alert(extractErrorMessage(err));
+      notify(extractErrorMessage(err));
     }
   };
 

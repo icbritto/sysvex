@@ -4,6 +4,7 @@ import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import StatusBadge from '../../components/StatusBadge';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
+import { useNotify } from '../../notifications/NotificationContext';
 
 interface Partner {
   id: string;
@@ -37,6 +38,7 @@ interface PurchaseOrder {
 const emptyItem = (): OrderItem => ({ productId: '', quantity: '1', unitPrice: '0' });
 
 export default function PurchaseOrdersPage() {
+  const notify = useNotify();
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [suppliers, setSuppliers] = useState<Partner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -99,7 +101,7 @@ export default function PurchaseOrdersPage() {
       await apiClient.patch(`/purchase-orders/${id}/receive`);
       load();
     } catch (err) {
-      alert(extractErrorMessage(err));
+      notify(extractErrorMessage(err));
     }
   };
 
@@ -108,7 +110,7 @@ export default function PurchaseOrdersPage() {
       await apiClient.patch(`/purchase-orders/${id}/cancel`);
       load();
     } catch (err) {
-      alert(extractErrorMessage(err));
+      notify(extractErrorMessage(err));
     }
   };
 
