@@ -25,7 +25,6 @@ export default function ProductsPage() {
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [sku, setSku] = useState('');
   const [name, setName] = useState('');
   const [type, setType] = useState<'RAW_MATERIAL' | 'FINISHED_GOOD'>('RAW_MATERIAL');
   const [unit, setUnit] = useState('un');
@@ -46,7 +45,6 @@ export default function ProductsPage() {
   useEffect(load, [onlyLowStock]);
 
   const resetForm = () => {
-    setSku('');
     setName('');
     setType('RAW_MATERIAL');
     setUnit('un');
@@ -62,7 +60,6 @@ export default function ProductsPage() {
     setError(null);
     try {
       await apiClient.post('/products', {
-        sku,
         name,
         type,
         unit,
@@ -137,8 +134,8 @@ export default function ProductsPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-field">
-                <label>SKU *</label>
-                <input value={sku} onChange={(e) => setSku(e.target.value)} required />
+                <label>SKU</label>
+                <input value="" disabled placeholder="Gerado automaticamente ao salvar" />
               </div>
               <div className="form-field">
                 <label>Nome *</label>

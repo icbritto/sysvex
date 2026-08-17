@@ -59,7 +59,6 @@ async function seed() {
     });
 
     const leiteCondensado = await productsService.create({
-      sku: 'MP-001',
       name: 'Leite condensado (lata 395g)',
       type: ProductType.RAW_MATERIAL,
       unit: 'un',
@@ -69,7 +68,6 @@ async function seed() {
     });
 
     const chocolatePo = await productsService.create({
-      sku: 'MP-002',
       name: 'Chocolate em pó (kg)',
       type: ProductType.RAW_MATERIAL,
       unit: 'kg',
@@ -79,7 +77,6 @@ async function seed() {
     });
 
     const manteiga = await productsService.create({
-      sku: 'MP-003',
       name: 'Manteiga (kg)',
       type: ProductType.RAW_MATERIAL,
       unit: 'kg',
@@ -89,7 +86,6 @@ async function seed() {
     });
 
     const brigadeiro = await productsService.create({
-      sku: 'PA-001',
       name: 'Brigadeiro gourmet (unidade)',
       type: ProductType.FINISHED_GOOD,
       unit: 'un',

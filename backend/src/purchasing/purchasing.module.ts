@@ -7,6 +7,7 @@ import { PurchasingController } from './purchasing.controller';
 import { InventoryModule } from '../inventory/inventory.module';
 import { FinanceModule } from '../finance/finance.module';
 import { AuditModule } from '../audit/audit.module';
+import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuditModule } from '../audit/audit.module';
     InventoryModule,
     FinanceModule,
     AuditModule,
+    CommonModule,
   ],
   controllers: [PurchasingController],
   providers: [PurchasingService],

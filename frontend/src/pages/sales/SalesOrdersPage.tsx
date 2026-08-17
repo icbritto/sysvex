@@ -9,6 +9,7 @@ import { useNotify } from '../../notifications/NotificationContext';
 interface Partner {
   id: string;
   name: string;
+  active: boolean;
 }
 
 interface Product {
@@ -56,7 +57,9 @@ export default function SalesOrdersPage() {
 
   useEffect(() => {
     load();
-    apiClient.get<Partner[]>('/partners').then((res) => setCustomers(res.data.filter((p: any) => p.type !== 'SUPPLIER')));
+    apiClient
+      .get<Partner[]>('/partners')
+      .then((res) => setCustomers(res.data.filter((p: any) => p.type !== 'SUPPLIER' && p.active)));
     apiClient.get<Product[]>('/products').then((res) => setProducts(res.data.filter((p: any) => p.type === 'FINISHED_GOOD')));
   }, []);
 

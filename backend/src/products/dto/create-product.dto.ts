@@ -4,10 +4,6 @@ import { ProductType } from '../product.entity';
 export class CreateProductDto {
   @IsString()
   @MinLength(2)
-  sku: string;
-
-  @IsString()
-  @MinLength(2)
   name: string;
 
   @IsEnum(ProductType)

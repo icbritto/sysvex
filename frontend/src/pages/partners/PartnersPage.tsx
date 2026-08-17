@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import { formatCpfCnpj, formatPhone } from '../../utils/masks';
+import { useNotify } from '../../notifications/NotificationContext';
 
 interface Partner {
   id: string;
@@ -30,6 +31,7 @@ const PERSON_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function PartnersPage() {
+  const notify = useNotify();
   const [searchParams] = useSearchParams();
   const typeFilter = searchParams.get('type');
 
@@ -124,6 +126,15 @@ export default function PartnersPage() {
     }
   };
 
+  const handleToggleActive = async (partner: Partner) => {
+    try {
+      await apiClient.patch(`/partners/${partner.id}`, { active: !partner.active });
+      load();
+    } catch (err) {
+      notify(extractErrorMessage(err));
+    }
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -155,9 +166,15 @@ export default function PartnersPage() {
                 <td>{p.document ?? '–'}</td>
                 <td>{p.email ?? p.phone ?? '–'}</td>
                 <td>{p.active ? 'Ativo' : 'Inativo'}</td>
-                <td>
+                <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <button className="btn btn--secondary btn--sm" onClick={() => openEditModal(p)}>
                     Editar
+                  </button>
+                  <button
+                    className={`btn btn--sm ${p.active ? 'btn--danger' : ''}`}
+                    onClick={() => handleToggleActive(p)}
+                  >
+                    {p.active ? 'Desativar' : 'Ativar'}
                   </button>
                 </td>
               </tr>
