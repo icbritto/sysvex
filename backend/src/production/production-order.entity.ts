@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from '../products/product.entity';
+import { BomRecipe } from '../bom/bom-recipe.entity';
 import { DecimalTransformer } from '../common/transformers/decimal.transformer';
 
 export enum ProductionStatus {
@@ -22,6 +23,13 @@ export class ProductionOrder {
 
   @Column({ name: 'product_id' })
   productId: string;
+
+  @ManyToOne(() => BomRecipe, { eager: true, onDelete: 'RESTRICT', nullable: true })
+  @JoinColumn({ name: 'recipe_id' })
+  recipe: BomRecipe | null;
+
+  @Column({ name: 'recipe_id', nullable: true })
+  recipeId: string | null;
 
   @Column('numeric', { precision: 14, scale: 4, transformer: DecimalTransformer })
   quantity: number;

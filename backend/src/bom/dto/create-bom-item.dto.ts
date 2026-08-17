@@ -2,7 +2,7 @@ import { IsNumber, IsUUID, Min } from 'class-validator';
 
 export class CreateBomItemDto {
   @IsUUID()
-  finishedProductId: string;
+  recipeId: string;
 
   @IsUUID()
   rawMaterialId: string;

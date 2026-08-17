@@ -3,6 +3,7 @@ import { User } from '../users/user.entity';
 import { Partner } from '../partners/partner.entity';
 import { Product } from '../products/product.entity';
 import { BomItem } from '../bom/bom-item.entity';
+import { BomRecipe } from '../bom/bom-recipe.entity';
 import { PurchaseOrder } from '../purchasing/purchase-order.entity';
 import { PurchaseOrderItem } from '../purchasing/purchase-order-item.entity';
 import { SalesOrder } from '../sales/sales-order.entity';
@@ -20,6 +21,7 @@ export const typeOrmEntities = [
   User,
   Partner,
   Product,
+  BomRecipe,
   BomItem,
   PurchaseOrder,
   PurchaseOrderItem,
