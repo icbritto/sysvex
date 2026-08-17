@@ -142,6 +142,22 @@ Duas alternativas mais seguras, da mais simples à mais robusta:
   curl -fsSL https://tailscale.com/install.sh | sh
   tailscale up
   ```
+
+  > **LXC não-privilegiada:** se `tailscaled` cair logo após iniciar (ex.:
+  > `systemctl status tailscaled` mostra `Failed with result 'exit-code'` e o
+  > log tem `failed to look up link "tailscale0"`), falta passar o device
+  > `/dev/net/tun` para dentro do container — `nesting=1,keyctl=1` (seção 1)
+  > cobre o Docker, mas não isso. No **host Proxmox** (não dentro da LXC):
+  > ```bash
+  > pct stop <VMID>
+  > cat >> /etc/pve/lxc/<VMID>.conf <<'EOF'
+  > lxc.cgroup2.devices.allow: c 10:200 rwm
+  > lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+  > EOF
+  > pct start <VMID>
+  > ```
+  > Depois, dentro da LXC, confira `ls -la /dev/net/tun` e rode
+  > `systemctl restart tailscaled` novamente.
 - **Reverse proxy com HTTPS (se quiser um domínio público):** coloque um
   Nginx Proxy Manager ou Caddy na frente do SYSVEX (em outra LXC ou no mesmo
   container), com certificado Let's Encrypt, e libere só a porta 443 no
