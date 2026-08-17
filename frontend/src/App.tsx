@@ -13,6 +13,7 @@ import ProductionOrdersPage from './pages/inventory/ProductionOrdersPage';
 import StockMovementsPage from './pages/inventory/StockMovementsPage';
 import PurchaseOrdersPage from './pages/purchasing/PurchaseOrdersPage';
 import SalesOrdersPage from './pages/sales/SalesOrdersPage';
+import SalesOrderDetailPage from './pages/sales/SalesOrderDetailPage';
 import DeliveryTrackingPage from './pages/sales/DeliveryTrackingPage';
 import FinanceEntriesPage from './pages/finance/FinanceEntriesPage';
 import CashFlowPage from './pages/finance/CashFlowPage';
@@ -44,6 +45,7 @@ export default function App() {
                 <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
                 <Route path="/sales-orders" element={<SalesOrdersPage />} />
                 <Route path="/sales-orders/deliveries" element={<DeliveryTrackingPage />} />
+                <Route path="/sales-orders/:id" element={<SalesOrderDetailPage />} />
                 <Route path="/production-orders" element={<ProductionOrdersPage />} />
                 <Route path="/inventory/movements" element={<StockMovementsPage />} />
                 <Route path="/finance/entries" element={<FinanceEntriesPage />} />

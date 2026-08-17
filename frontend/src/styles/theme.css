@@ -854,6 +854,15 @@ table.data-table {
   background: var(--sysvex-surface-hover);
 }
 
+.data-table tbody tr.selected,
+.data-table tbody tr.selected:hover {
+  background: color-mix(in srgb, var(--sysvex-primary) 16%, var(--sysvex-surface));
+}
+
+.data-table tbody tr[data-selectable] {
+  cursor: pointer;
+}
+
 .table-wrap {
   overflow-x: auto;
   border: 1px solid var(--sysvex-border);
