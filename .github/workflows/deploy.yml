@@ -1,0 +1,36 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Conectar ao tailnet
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Configurar chave SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          umask 077
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Rodar deploy no servidor
+        run: |
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes \
+            deploy@${{ secrets.DEPLOY_HOST }} \
+            "deploy iniciado via GitHub Actions"
+
+      - name: Limpar credenciais
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

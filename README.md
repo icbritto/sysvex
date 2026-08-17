@@ -115,6 +115,12 @@ instalação do Docker, `docker compose up`, systemd para subir no boot, e
 como acessar de qualquer lugar com segurança (VPN/Tailscale ou reverse proxy
 com HTTPS).
 
+Quer que cada push em `main` publique sozinho? Veja
+[`deploy/GITHUB_ACTIONS_DEPLOY.md`](deploy/GITHUB_ACTIONS_DEPLOY.md): um
+workflow do GitHub Actions entra no seu tailnet via Tailscale (sem expor SSH
+na internet) e roda o deploy com um usuário dedicado de privilégios
+mínimos, com backup automático do banco antes de cada atualização.
+
 Resumo rápido, já dentro da LXC com Docker instalado:
 
 ```bash
