@@ -64,6 +64,22 @@ Marque o servidor com `tailscale up --advertise-tags=tag:sysvex-server`
 > tailnet (pessoais) e remover a regra `{"src": ["*"], ...}` — mudança
 > maior, adiada por ora.
 
+> **Desligue o Tailscale SSH no servidor.** Se o `tailscale up` do servidor
+> foi rodado com `--ssh` (Tailscale SSH ligado), toda conexão na porta 22
+> vindo de dentro do tailnet passa a ser interceptada pelo Tailscale SSH
+> *antes* de chegar no OpenSSH normal. Como o runner do GitHub Actions
+> entra como nó com tag (`tag:ci`), não como um usuário logado, ele nunca
+> bate com a regra padrão `"src": ["autogroup:member"]` do bloco `"ssh"` da
+> ACL — a conexão é recusada com `tailnet policy does not permit you to SSH
+> to this node`, mesmo com a chave e o forced-command corretos. Como este
+> guia usa SSH normal (chave + forced-command), não o Tailscale SSH, a
+> solução é desligá-lo no servidor:
+> ```bash
+> sudo tailscale up --reset --advertise-tags=tag:sysvex-server
+> ```
+> `--reset` volta os flags booleanos (incluindo `--ssh`) para o padrão
+> (desligado), mantendo só o que for passado explicitamente.
+
 ## 2. Criar o usuário dedicado `deploy` no servidor
 
 Dentro do servidor (LXC), como root:
