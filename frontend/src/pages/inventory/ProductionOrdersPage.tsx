@@ -11,10 +11,17 @@ interface Product {
   unit: string;
 }
 
+interface BomRecipe {
+  id: string;
+  name: string;
+  isDefault: boolean;
+}
+
 interface ProductionOrder {
   id: string;
   orderNumber: string;
   product: Product;
+  recipe: BomRecipe | null;
   quantity: number;
   status: 'PLANNED' | 'COMPLETED' | 'CANCELLED';
   plannedDate: string;
@@ -30,6 +37,8 @@ export default function ProductionOrdersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [productId, setProductId] = useState('');
+  const [recipes, setRecipes] = useState<BomRecipe[]>([]);
+  const [recipeId, setRecipeId] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [plannedDate, setPlannedDate] = useState(new Date().toISOString().slice(0, 10));
 
@@ -42,8 +51,22 @@ export default function ProductionOrdersPage() {
     apiClient.get<Product[]>('/products').then((res) => setProducts(res.data.filter((p: any) => p.type === 'FINISHED_GOOD')));
   }, []);
 
+  useEffect(() => {
+    if (!productId) {
+      setRecipes([]);
+      setRecipeId('');
+      return;
+    }
+    apiClient.get<BomRecipe[]>(`/bom/product/${productId}`).then((res) => {
+      setRecipes(res.data);
+      setRecipeId(res.data.find((r) => r.isDefault)?.id ?? res.data[0]?.id ?? '');
+    });
+  }, [productId]);
+
   const resetForm = () => {
     setProductId('');
+    setRecipes([]);
+    setRecipeId('');
     setQuantity('1');
     setPlannedDate(new Date().toISOString().slice(0, 10));
     setError(null);
@@ -53,7 +76,7 @@ export default function ProductionOrdersPage() {
     e.preventDefault();
     setError(null);
     try {
-      await apiClient.post('/production-orders', { productId, quantity: Number(quantity), plannedDate });
+      await apiClient.post('/production-orders', { productId, recipeId: recipeId || undefined, quantity: Number(quantity), plannedDate });
       setShowModal(false);
       resetForm();
       load();
@@ -95,6 +118,7 @@ export default function ProductionOrdersPage() {
             <tr>
               <th>Número</th>
               <th>Produto</th>
+              <th>Receita</th>
               <th>Quantidade</th>
               <th>Data planejada</th>
               <th>Custo total</th>
@@ -107,6 +131,7 @@ export default function ProductionOrdersPage() {
               <tr key={o.id}>
                 <td>{o.orderNumber}</td>
                 <td>{o.product?.name}</td>
+                <td>{o.recipe?.name ?? '—'}</td>
                 <td>
                   {o.quantity} {o.product?.unit}
                 </td>
@@ -153,6 +178,20 @@ export default function ProductionOrdersPage() {
                   ))}
                 </select>
               </div>
+              {productId && (
+                <div className="form-field">
+                  <label>Receita *</label>
+                  <select value={recipeId} onChange={(e) => setRecipeId(e.target.value)} required>
+                    <option value="">Selecione...</option>
+                    {recipes.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.name}
+                        {r.isDefault ? ' (Padrão)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="form-field">
                 <label>Quantidade a produzir *</label>
                 <input type="number" step="0.0001" min="0.0001" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />

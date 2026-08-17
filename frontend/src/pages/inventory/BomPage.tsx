@@ -17,11 +17,22 @@ interface BomItem {
   rawMaterial: Product;
 }
 
+interface BomRecipe {
+  id: string;
+  name: string;
+  isDefault: boolean;
+  items: BomItem[];
+}
+
 export default function BomPage() {
   const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = useState<Product | null>(null);
-  const [items, setItems] = useState<BomItem[]>([]);
+  const [recipes, setRecipes] = useState<BomRecipe[]>([]);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
   const [rawMaterials, setRawMaterials] = useState<Product[]>([]);
+
+  const [newRecipeName, setNewRecipeName] = useState('');
+  const [renameValue, setRenameValue] = useState('');
   const [rawMaterialId, setRawMaterialId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -29,18 +40,73 @@ export default function BomPage() {
   const load = () => {
     if (!productId) return;
     apiClient.get<Product>(`/products/${productId}`).then((res) => setProduct(res.data));
-    apiClient.get<BomItem[]>(`/bom/product/${productId}`).then((res) => setItems(res.data));
     apiClient.get<Product[]>('/products').then((res) => setRawMaterials(res.data.filter((p) => p.type === 'RAW_MATERIAL')));
+    apiClient.get<BomRecipe[]>(`/bom/product/${productId}`).then((res) => {
+      setRecipes(res.data);
+      setSelectedRecipeId((prev) => {
+        if (prev && res.data.some((r) => r.id === prev)) return prev;
+        return res.data.find((r) => r.isDefault)?.id ?? res.data[0]?.id ?? null;
+      });
+    });
   };
 
   useEffect(load, [productId]);
 
-  const handleAdd = async (e: FormEvent) => {
+  const selectedRecipe = recipes.find((r) => r.id === selectedRecipeId) ?? null;
+
+  useEffect(() => {
+    setRenameValue(selectedRecipe?.name ?? '');
+  }, [selectedRecipe?.id, selectedRecipe?.name]);
+
+  const handleCreateRecipe = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      await apiClient.post('/bom', {
-        finishedProductId: productId,
+      const res = await apiClient.post<BomRecipe>('/bom/recipes', { finishedProductId: productId, name: newRecipeName });
+      setNewRecipeName('');
+      setSelectedRecipeId(res.data.id);
+      load();
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    }
+  };
+
+  const handleRename = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selectedRecipe) return;
+    setError(null);
+    try {
+      await apiClient.patch(`/bom/recipes/${selectedRecipe.id}`, { name: renameValue });
+      load();
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    }
+  };
+
+  const handleSetDefault = async () => {
+    if (!selectedRecipe) return;
+    await apiClient.patch(`/bom/recipes/${selectedRecipe.id}/set-default`);
+    load();
+  };
+
+  const handleDeleteRecipe = async () => {
+    if (!selectedRecipe) return;
+    try {
+      await apiClient.delete(`/bom/recipes/${selectedRecipe.id}`);
+      setSelectedRecipeId(null);
+      load();
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    }
+  };
+
+  const handleAddItem = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selectedRecipe) return;
+    setError(null);
+    try {
+      await apiClient.post('/bom/items', {
+        recipeId: selectedRecipe.id,
         rawMaterialId,
         quantity: Number(quantity),
       });
@@ -52,8 +118,8 @@ export default function BomPage() {
     }
   };
 
-  const handleRemove = async (id: string) => {
-    await apiClient.delete(`/bom/${id}`);
+  const handleRemoveItem = async (id: string) => {
+    await apiClient.delete(`/bom/items/${id}`);
     load();
   };
 
@@ -66,66 +132,134 @@ export default function BomPage() {
         <h1>Ficha Técnica{product ? ` — ${product.name}` : ''}</h1>
       </div>
 
-      <div className="card">
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Insumo</th>
-                <th>Quantidade por unidade produzida</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    {item.rawMaterial.name} ({item.rawMaterial.sku})
-                  </td>
-                  <td>
-                    {item.quantity} {item.rawMaterial.unit}
-                  </td>
-                  <td>
-                    <button className="btn btn--danger btn--sm" onClick={() => handleRemove(item.id)}>
-                      Remover
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {items.length === 0 && <div className="empty-state">Nenhum insumo cadastrado nesta ficha técnica.</div>}
-        </div>
-      </div>
+      {error && <div className="alert alert--error">{error}</div>}
 
       <div className="card">
-        <h2 style={{ marginTop: 0, fontSize: 15 }}>Adicionar insumo</h2>
-        {error && <div className="alert alert--error">{error}</div>}
-        <form onSubmit={handleAdd}>
-          <div className="form-grid">
-            <div className="form-field">
-              <label>Insumo *</label>
-              <select value={rawMaterialId} onChange={(e) => setRawMaterialId(e.target.value)} required>
-                <option value="">Selecione...</option>
-                {rawMaterials.map((rm) => (
-                  <option key={rm.id} value={rm.id}>
-                    {rm.name} ({rm.sku})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-field">
-              <label>Quantidade por unidade *</label>
-              <input type="number" step="0.000001" min="0.000001" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
-            </div>
+        <h2 style={{ marginTop: 0, fontSize: 15 }}>Receitas</h2>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+          {recipes.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              className={`btn btn--sm ${r.id === selectedRecipeId ? '' : 'btn--secondary'}`}
+              onClick={() => setSelectedRecipeId(r.id)}
+            >
+              {r.name}
+              {r.isDefault ? ' (Padrão)' : ''}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleCreateRecipe} className="form-grid">
+          <div className="form-field">
+            <label>Nova receita</label>
+            <input
+              type="text"
+              value={newRecipeName}
+              onChange={(e) => setNewRecipeName(e.target.value)}
+              placeholder="Ex.: Receita sem lactose"
+              required
+            />
           </div>
-          <div className="form-actions">
-            <button className="btn" type="submit">
-              Adicionar
+          <div className="form-field" style={{ alignSelf: 'end' }}>
+            <button className="btn btn--secondary" type="submit">
+              + Adicionar receita
             </button>
           </div>
         </form>
       </div>
+
+      {selectedRecipe && (
+        <>
+          <div className="card">
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <form onSubmit={handleRename} className="form-field" style={{ flex: 1, minWidth: 220 }}>
+                <label>Nome da receita</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} required />
+                  <button className="btn btn--secondary btn--sm" type="submit">
+                    Salvar nome
+                  </button>
+                </div>
+              </form>
+              {!selectedRecipe.isDefault && (
+                <button className="btn btn--secondary btn--sm" onClick={handleSetDefault}>
+                  Tornar padrão
+                </button>
+              )}
+              <button className="btn btn--danger btn--sm" onClick={handleDeleteRecipe}>
+                Excluir receita
+              </button>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Insumo</th>
+                    <th>Quantidade por unidade produzida</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedRecipe.items.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        {item.rawMaterial.name} ({item.rawMaterial.sku})
+                      </td>
+                      <td>
+                        {item.quantity} {item.rawMaterial.unit}
+                      </td>
+                      <td>
+                        <button className="btn btn--danger btn--sm" onClick={() => handleRemoveItem(item.id)}>
+                          Remover
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {selectedRecipe.items.length === 0 && <div className="empty-state">Nenhum insumo cadastrado nesta receita.</div>}
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 style={{ marginTop: 0, fontSize: 15 }}>Adicionar insumo</h2>
+            <form onSubmit={handleAddItem}>
+              <div className="form-grid">
+                <div className="form-field">
+                  <label>Insumo *</label>
+                  <select value={rawMaterialId} onChange={(e) => setRawMaterialId(e.target.value)} required>
+                    <option value="">Selecione...</option>
+                    {rawMaterials.map((rm) => (
+                      <option key={rm.id} value={rm.id}>
+                        {rm.name} ({rm.sku})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-field">
+                  <label>Quantidade por unidade *</label>
+                  <input type="number" step="0.000001" min="0.000001" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
+                </div>
+              </div>
+              <div className="form-actions">
+                <button className="btn" type="submit">
+                  Adicionar
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {recipes.length === 0 && (
+        <div className="card">
+          <div className="empty-state">Nenhuma receita cadastrada para este produto ainda.</div>
+        </div>
+      )}
     </div>
   );
 }

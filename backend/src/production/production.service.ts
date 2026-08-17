@@ -4,6 +4,7 @@ import { DataSource, Repository } from 'typeorm';
 import { ProductionOrder, ProductionStatus } from './production-order.entity';
 import { CreateProductionOrderDto } from './dto/create-production-order.dto';
 import { BomItem } from '../bom/bom-item.entity';
+import { BomRecipe } from '../bom/bom-recipe.entity';
 import { Product } from '../products/product.entity';
 import { InventoryService } from '../inventory/inventory.service';
 import { MovementReason, MovementType } from '../inventory/stock-movement.entity';
@@ -15,6 +16,7 @@ type Actor = { id: string; username: string };
 export class ProductionService {
   constructor(
     @InjectRepository(ProductionOrder) private readonly repo: Repository<ProductionOrder>,
+    @InjectRepository(BomRecipe) private readonly recipesRepo: Repository<BomRecipe>,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly inventoryService: InventoryService,
     private readonly auditLogService: AuditLogService,
@@ -33,9 +35,24 @@ export class ProductionService {
   }
 
   async create(dto: CreateProductionOrderDto, actor?: Actor): Promise<ProductionOrder> {
+    let recipeId: string | null = null;
+    if (dto.recipeId) {
+      const recipe = await this.recipesRepo.findOne({ where: { id: dto.recipeId } });
+      if (!recipe || recipe.finishedProductId !== dto.productId) {
+        throw new BadRequestException('A receita escolhida não pertence a este produto.');
+      }
+      recipeId = recipe.id;
+    } else {
+      const defaultRecipe = await this.recipesRepo.findOne({
+        where: { finishedProductId: dto.productId, isDefault: true },
+      });
+      recipeId = defaultRecipe?.id ?? null;
+    }
+
     const order = this.repo.create({
       orderNumber: `OP-${Date.now()}`,
       productId: dto.productId,
+      recipeId,
       quantity: dto.quantity,
       plannedDate: dto.plannedDate,
       status: ProductionStatus.PLANNED,
@@ -66,12 +83,15 @@ export class ProductionService {
         throw new BadRequestException('Apenas ordens de produção planejadas podem ser concluídas.');
       }
 
+      if (!order.recipeId) {
+        throw new BadRequestException('Este produto não possui uma receita (ficha técnica) definida.');
+      }
       const bomItems = await manager.find(BomItem, {
-        where: { finishedProductId: order.productId },
+        where: { recipeId: order.recipeId },
         relations: ['rawMaterial'],
       });
       if (bomItems.length === 0) {
-        throw new BadRequestException('Este produto não possui ficha técnica (BOM) cadastrada.');
+        throw new BadRequestException('A receita escolhida não possui insumos cadastrados.');
       }
 
       let totalCost = 0;

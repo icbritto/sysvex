@@ -95,9 +95,10 @@ async function seed() {
       minStock: 50,
     });
 
-    await bomService.create({ finishedProductId: brigadeiro.id, rawMaterialId: leiteCondensado.id, quantity: 0.1 });
-    await bomService.create({ finishedProductId: brigadeiro.id, rawMaterialId: chocolatePo.id, quantity: 0.02 });
-    await bomService.create({ finishedProductId: brigadeiro.id, rawMaterialId: manteiga.id, quantity: 0.01 });
+    const receitaPadrao = await bomService.createRecipe({ finishedProductId: brigadeiro.id, name: 'Receita padrão' });
+    await bomService.addItem({ recipeId: receitaPadrao.id, rawMaterialId: leiteCondensado.id, quantity: 0.1 });
+    await bomService.addItem({ recipeId: receitaPadrao.id, rawMaterialId: chocolatePo.id, quantity: 0.02 });
+    await bomService.addItem({ recipeId: receitaPadrao.id, rawMaterialId: manteiga.id, quantity: 0.01 });
 
     // eslint-disable-next-line no-console
     console.log(
