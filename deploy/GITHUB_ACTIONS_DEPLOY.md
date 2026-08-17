@@ -24,28 +24,45 @@ No [admin console do Tailscale](https://login.tailscale.com/admin/settings/oauth
 
 ### Restringir a tag `tag:ci` só ao necessário (ACL)
 
-Em **Access controls**, adicione a tag e uma regra liberando só SSH do
-runner para o servidor (ajuste `tag:sysvex-server` para a tag que você
-aplicar no servidor, ou use o hostname/IP dele diretamente):
+`tag:ci` precisa existir em `tagOwners` **antes** de aparecer como opção na
+tela de criação do OAuth client — se a tag ainda não existir, edite a ACL
+primeiro (este passo), salve, e só depois volte para criar o OAuth client.
 
-```json
+A ACL padrão do Tailscale hoje em dia usa o formato `grants` (não o
+`acls` mais antigo). Em **Access controls**, mescle isto na política
+existente — mantendo o resto do que já estiver lá (comentários, `ssh`,
+etc.):
+
+```jsonc
 {
   "tagOwners": {
-    "tag:ci": ["autogroup:admin"],
-    "tag:sysvex-server": ["autogroup:admin"]
+    "tag:ci":            ["autogroup:admin"],
+    "tag:sysvex-server":  ["autogroup:admin"],
   },
-  "acls": [
-    {
-      "action": "accept",
-      "src": ["tag:ci"],
-      "dst": ["tag:sysvex-server:22"]
-    }
-  ]
+
+  "grants": [
+    // Sua regra "allow all" existente provavelmente continua aqui:
+    {"src": ["*"], "dst": ["*"], "ip": ["*"]},
+
+    // Escopo pretendido para o runner do GitHub Actions:
+    {"src": ["tag:ci"], "dst": ["tag:sysvex-server"], "ip": ["tcp:22"]},
+  ],
 }
 ```
 
 Marque o servidor com `tailscale up --advertise-tags=tag:sysvex-server`
-(ou aplique a tag pela UI) para a regra valer.
+(ou aplique a tag pela UI) para a tag existir de fato num dispositivo.
+
+> **TODO / pendência conhecida:** enquanto o grant `{"src": ["*"], "dst":
+> ["*"], "ip": ["*"]}` (allow all) continuar na política, a regra de
+> `tag:ci` acima **não restringe nada de verdade** — `tag:ci` já teria
+> acesso a tudo por causa do allow-all. A defesa real hoje é o
+> forced-command na chave SSH do usuário `deploy` (seção 3 abaixo): mesmo
+> com acesso de rede amplo, a chave só executa `remote-deploy.sh`. Se
+> quiser reforçar isso no nível de rede depois, é preciso substituir o
+> allow-all por grants explícitos cobrindo os outros dispositivos do
+> tailnet (pessoais) e remover a regra `{"src": ["*"], ...}` — mudança
+> maior, adiada por ora.
 
 ## 2. Criar o usuário dedicado `deploy` no servidor
 
