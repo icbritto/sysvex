@@ -11,11 +11,13 @@ STAMP="$(date +%F-%H%M%S)"
 
 cd "$APP_DIR"
 
-# Carrega DB_USERNAME/DB_NAME do .env (mesmo arquivo que o docker compose usa)
-set -a
-# shellcheck disable=SC1091
-[ -f .env ] && source .env
-set +a
+# Lê DB_USERNAME/DB_NAME do .env sem executá-lo como shell — o .env do
+# docker compose não é bash válido (ex.: valores com espaços não citados),
+# então "source" pode tentar rodar parte do conteúdo como comando.
+DB_USERNAME="$(grep -E '^DB_USERNAME=' .env 2>/dev/null | tail -n1 | cut -d= -f2-)"
+DB_NAME="$(grep -E '^DB_NAME=' .env 2>/dev/null | tail -n1 | cut -d= -f2-)"
+DB_USERNAME="${DB_USERNAME:-sysvex}"
+DB_NAME="${DB_NAME:-sysvex}"
 
 mkdir -p "$BACKUP_DIR"
 echo "==> Backup do banco antes de atualizar"
