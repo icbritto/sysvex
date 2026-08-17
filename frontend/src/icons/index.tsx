@@ -286,6 +286,17 @@ export function EyeIcon({ off, ...props }: IconProps & { off?: boolean }) {
   );
 }
 
+export function TruckIcon(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="2" y="7" width="12" height="9" rx="1" />
+      <path d="M14 10h4l3 3v3h-7z" />
+      <circle cx="7" cy="18" r="1.6" />
+      <circle cx="17.5" cy="18" r="1.6" />
+    </Base>
+  );
+}
+
 // Ícones de tiles (linhas de negócio e páginas), indexados pela chave
 // semântica salva em GroupTile.icon / App.icon — front e back compartilham
 // o mesmo vocabulário de nomes para as 7 linhas de negócio.
@@ -305,6 +316,7 @@ export const TILE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   'shield-check': ShieldCheckIcon,
   monitor: MonitorIcon,
   gear: GearIcon,
+  truck: TruckIcon,
 };
 
 export function TileIcon({ name, ...props }: IconProps & { name: string }) {
