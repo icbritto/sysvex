@@ -14,6 +14,7 @@ import { App } from '../apps/app.entity';
 import { EmergencyAccessGrant } from '../security/emergency-access-grant.entity';
 import { AuditLog } from '../audit/audit-log.entity';
 import { CompanySettings } from '../settings/company-settings.entity';
+import { SequenceCounter } from '../common/sequence-counter.entity';
 
 export const typeOrmEntities = [
   User,
@@ -31,6 +32,7 @@ export const typeOrmEntities = [
   EmergencyAccessGrant,
   AuditLog,
   CompanySettings,
+  SequenceCounter,
 ];
 
 export function buildTypeOrmConfig(): TypeOrmModuleOptions {

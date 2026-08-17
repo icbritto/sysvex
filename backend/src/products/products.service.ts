@@ -1,7 +1,7 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Product } from './product.entity';
+import { Product, ProductType } from './product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AuditLogService } from '../audit/audit-log.service';
@@ -27,12 +27,25 @@ export class ProductsService {
     return product;
   }
 
+  // Gera o próximo SKU sequencial por tipo (MP-001, MP-002... / PA-001,
+  // PA-002...), seguindo a convenção já usada nos dados de exemplo.
+  private async generateSku(type: ProductType): Promise<string> {
+    const prefix = type === ProductType.RAW_MATERIAL ? 'MP' : 'PA';
+    const products = await this.repo
+      .createQueryBuilder('product')
+      .where('product.sku LIKE :pattern', { pattern: `${prefix}-%` })
+      .getMany();
+    const nextSeq =
+      products.reduce((max, p) => {
+        const match = p.sku.match(new RegExp(`^${prefix}-(\\d+)$`));
+        return match ? Math.max(max, parseInt(match[1], 10)) : max;
+      }, 0) + 1;
+    return `${prefix}-${String(nextSeq).padStart(3, '0')}`;
+  }
+
   async create(dto: CreateProductDto, actor?: Actor): Promise<Product> {
-    const existing = await this.repo.findOne({ where: { sku: dto.sku } });
-    if (existing) {
-      throw new ConflictException('Já existe um produto com este SKU.');
-    }
-    const saved = await this.repo.save(this.repo.create(dto));
+    const sku = await this.generateSku(dto.type);
+    const saved = await this.repo.save(this.repo.create({ ...dto, sku }));
     if (actor) {
       await this.auditLogService.record({
         actorUserId: actor.id,

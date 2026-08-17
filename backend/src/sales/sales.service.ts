@@ -10,6 +10,7 @@ import { MovementReason, MovementType } from '../inventory/stock-movement.entity
 import { FinanceService } from '../finance/finance.service';
 import { FinanceEntryType } from '../finance/finance-entry.entity';
 import { AuditLogService } from '../audit/audit-log.service';
+import { SequenceService } from '../common/sequence.service';
 
 type Actor = { id: string; username: string };
 
@@ -21,6 +22,7 @@ export class SalesService {
     private readonly inventoryService: InventoryService,
     private readonly financeService: FinanceService,
     private readonly auditLogService: AuditLogService,
+    private readonly sequenceService: SequenceService,
   ) {}
 
   findAll(): Promise<SalesOrder[]> {
@@ -37,7 +39,8 @@ export class SalesService {
 
   async create(dto: CreateSalesOrderDto, actor?: Actor): Promise<SalesOrder> {
     const totalAmount = dto.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
-    const orderNumber = `PV-${Date.now()}`;
+    const seq = await this.sequenceService.next('sales_order');
+    const orderNumber = `PV-${String(seq).padStart(4, '0')}`;
     const so = this.repo.create({
       orderNumber,
       customerId: dto.customerId,
