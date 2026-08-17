@@ -4,7 +4,7 @@ import { AppModule } from '../app.module';
 import { UsersService } from '../users/users.service';
 import { UserRole } from '../users/user.entity';
 import { PartnersService } from '../partners/partners.service';
-import { PartnerType } from '../partners/partner.entity';
+import { PartnerPersonType, PartnerType } from '../partners/partner.entity';
 import { ProductsService } from '../products/products.service';
 import { ProductType } from '../products/product.entity';
 import { BomService } from '../bom/bom.service';
@@ -41,14 +41,18 @@ async function seed() {
 
   if (process.env.SEED_SAMPLE_DATA !== 'false') {
     const supplier = await partnersService.create({
-      name: 'Distribuidora de Insumos Doce Sabor Ltda',
+      personType: PartnerPersonType.COMPANY,
+      legalName: 'Distribuidora de Insumos Doce Sabor Ltda',
+      tradeName: 'Doce Sabor Distribuidora',
       document: '12.345.678/0001-90',
       type: PartnerType.SUPPLIER,
       email: 'vendas@docesabor.example',
     });
 
     const customer = await partnersService.create({
-      name: 'Mercadinho Bairro Feliz',
+      personType: PartnerPersonType.COMPANY,
+      legalName: 'Mercadinho Bairro Feliz Comércio de Alimentos Ltda',
+      tradeName: 'Mercadinho Bairro Feliz',
       document: '98.765.432/0001-10',
       type: PartnerType.CUSTOMER,
       email: 'compras@bairrofeliz.example',

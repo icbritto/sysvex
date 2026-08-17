@@ -7,6 +7,9 @@ import { formatCpfCnpj, formatPhone } from '../../utils/masks';
 interface Partner {
   id: string;
   name: string;
+  personType: 'INDIVIDUAL' | 'COMPANY';
+  legalName: string | null;
+  tradeName: string | null;
   document: string | null;
   type: 'CUSTOMER' | 'SUPPLIER' | 'BOTH';
   email: string | null;
@@ -21,6 +24,11 @@ const TYPE_LABELS: Record<string, string> = {
   BOTH: 'Cliente/Fornecedor',
 };
 
+const PERSON_TYPE_LABELS: Record<string, string> = {
+  INDIVIDUAL: 'Pessoa Física',
+  COMPANY: 'Pessoa Jurídica',
+};
+
 export default function PartnersPage() {
   const [searchParams] = useSearchParams();
   const typeFilter = searchParams.get('type');
@@ -31,7 +39,10 @@ export default function PartnersPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [personType, setPersonType] = useState<'INDIVIDUAL' | 'COMPANY'>('INDIVIDUAL');
   const [name, setName] = useState('');
+  const [legalName, setLegalName] = useState('');
+  const [tradeName, setTradeName] = useState('');
   const [document, setDocument] = useState('');
   const [type, setType] = useState<'CUSTOMER' | 'SUPPLIER' | 'BOTH'>('CUSTOMER');
   const [email, setEmail] = useState('');
@@ -53,7 +64,10 @@ export default function PartnersPage() {
     : partners;
 
   const resetForm = () => {
+    setPersonType('INDIVIDUAL');
     setName('');
+    setLegalName('');
+    setTradeName('');
     setDocument('');
     setType('CUSTOMER');
     setEmail('');
@@ -70,7 +84,10 @@ export default function PartnersPage() {
 
   const openEditModal = (partner: Partner) => {
     setEditingId(partner.id);
+    setPersonType(partner.personType);
     setName(partner.name);
+    setLegalName(partner.legalName ?? '');
+    setTradeName(partner.tradeName ?? '');
     setDocument(partner.document ?? '');
     setType(partner.type);
     setEmail(partner.email ?? '');
@@ -84,12 +101,13 @@ export default function PartnersPage() {
     e.preventDefault();
     setError(null);
     const payload = {
-      name,
+      personType,
       document: document || null,
       type,
       email: email || null,
       phone: phone || null,
       address: address || null,
+      ...(personType === 'INDIVIDUAL' ? { name } : { legalName, tradeName }),
     };
     try {
       if (editingId) {
@@ -120,6 +138,7 @@ export default function PartnersPage() {
           <thead>
             <tr>
               <th>Nome</th>
+              <th>Tipo de Pessoa</th>
               <th>Tipo</th>
               <th>Documento</th>
               <th>Contato</th>
@@ -131,6 +150,7 @@ export default function PartnersPage() {
             {filtered.map((p) => (
               <tr key={p.id}>
                 <td>{p.name}</td>
+                <td>{PERSON_TYPE_LABELS[p.personType]}</td>
                 <td>{TYPE_LABELS[p.type]}</td>
                 <td>{p.document ?? '–'}</td>
                 <td>{p.email ?? p.phone ?? '–'}</td>
@@ -156,9 +176,37 @@ export default function PartnersPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-field">
-                <label>Nome *</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} required />
+                <label>Tipo de Pessoa *</label>
+                <select value={personType} onChange={(e) => setPersonType(e.target.value as typeof personType)}>
+                  <option value="INDIVIDUAL">Pessoa Física</option>
+                  <option value="COMPANY">Pessoa Jurídica</option>
+                </select>
               </div>
+              {personType === 'INDIVIDUAL' ? (
+                <div className="form-field">
+                  <label>Nome *</label>
+                  <input value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+              ) : (
+                <>
+                  <div className="form-field">
+                    <label>Razão Social *</label>
+                    <input
+                      value={legalName}
+                      onChange={(e) => setLegalName(e.target.value.toUpperCase())}
+                      required
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label>Nome Fantasia *</label>
+                    <input
+                      value={tradeName}
+                      onChange={(e) => setTradeName(e.target.value.toUpperCase())}
+                      required
+                    />
+                  </div>
+                </>
+              )}
               <div className="form-field">
                 <label>Tipo *</label>
                 <select value={type} onChange={(e) => setType(e.target.value as typeof type)}>
