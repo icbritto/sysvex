@@ -163,10 +163,42 @@ O dado mais importante é o volume do Postgres (`sysvex_db_data`). Sugestões:
 
 ## 11. Atualizando o SYSVEX depois de mudanças no código
 
+Com `DB_SYNCHRONIZE=true` (o padrão — veja a seção 12), o backend tenta
+ajustar o schema do banco sozinho a cada boot. Isso funciona bem para
+mudanças aditivas, mas uma mudança de schema que não seja diretamente
+compatível com os dados já existentes (ex.: uma coluna nova obrigatória sem
+como preencher automaticamente a partir do que já está na tabela) pode
+travar o backend num loop de reinício — o container fica reiniciando sem
+nunca terminar de subir, e a aplicação toda fica fora do ar, não só a
+funcionalidade nova. Por isso, **sempre tire um backup antes de atualizar**:
+
 ```bash
 cd /opt/sysvex
+docker compose exec db pg_dump -U sysvex sysvex > backup-pre-update-$(date +%F-%H%M).sql
 git pull
 docker compose up -d --build
+```
+
+Depois de subir, confira se o backend realmente ficou de pé (e não está
+reiniciando em loop):
+
+```bash
+docker compose ps
+docker compose logs backend --tail 50
+```
+
+`sysvex-backend-1` deve aparecer com "Up" há mais de alguns segundos (não
+reiniciando), e o último log deve ser `SYSVEX API rodando na porta 3000`,
+sem `QueryFailedError` logo depois. Se o backend estiver preso em loop de
+reinício após um `git pull`, é sinal de que a mudança de schema da versão
+nova não é compatível com os dados atuais — pare aí, não insista em
+reiniciar repetidamente, e trate como um migration manual: será preciso um
+script SQL específico para adaptar os dados existentes ao novo schema antes
+do backend conseguir subir. Tendo o backup em mãos, também dá para restaurar
+o estado anterior enquanto isso é resolvido:
+
+```bash
+docker compose exec -T db psql -U sysvex -d sysvex < backup-pre-update-AAAA-MM-DD-HHMM.sql
 ```
 
 ## 12. Colocando `DB_SYNCHRONIZE=false` em produção
@@ -174,6 +206,8 @@ docker compose up -d --build
 O SYSVEX usa `DB_SYNCHRONIZE=true` por padrão para criar o schema
 automaticamente na primeira execução — é prático para começar, mas não é
 recomendado para produção de longo prazo (alterações de schema aplicadas
-automaticamente podem ser destrutivas). Depois que a base estiver estável,
-mude `DB_SYNCHRONIZE=false` no `.env` e passe a gerenciar mudanças de schema
-via migrations do TypeORM.
+automaticamente podem falhar ou ser destrutivas quando já existem dados —
+veja o aviso na seção 11). Depois que a base estiver estável, mude
+`DB_SYNCHRONIZE=false` no `.env` e passe a gerenciar mudanças de schema via
+migrations do TypeORM, que rodam de forma controlada e reversível em vez de
+tentar adivinhar o schema a cada boot.
