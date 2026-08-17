@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
-import Modal from '../../components/Modal';
 import StatusBadge from '../../components/StatusBadge';
+import { ArrowLeftIcon } from '../../icons';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
 
@@ -34,28 +34,30 @@ interface SalesOrder {
   status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
   totalAmount: number;
   paymentMethod: PaymentMethod;
-  items: { productId: string; quantity: number; unitPrice: number }[];
+  items: { productId: string; quantity: number; unitPrice: number; product?: Product }[];
 }
 
 const emptyItem = (): OrderItem => ({ productId: '', quantity: '1', unitPrice: '0' });
 
-export default function SalesOrdersPage() {
-  const notify = useNotify();
+export default function SalesOrderDetailPage() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<SalesOrder[]>([]);
+  const notify = useNotify();
+
+  const [order, setOrder] = useState<SalesOrder | null>(null);
   const [customers, setCustomers] = useState<Partner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [customerId, setCustomerId] = useState('');
-  const [orderDate, setOrderDate] = useState(new Date().toISOString().slice(0, 10));
+  const [orderDate, setOrderDate] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('PIX');
   const [items, setItems] = useState<OrderItem[]>([emptyItem()]);
 
   const load = () => {
-    apiClient.get<SalesOrder[]>('/sales-orders').then((res) => setOrders(res.data));
+    if (!id) return;
+    apiClient.get<SalesOrder>(`/sales-orders/${id}`).then((res) => setOrder(res.data));
   };
 
   useEffect(() => {
@@ -64,34 +66,36 @@ export default function SalesOrdersPage() {
       .get<Partner[]>('/partners')
       .then((res) => setCustomers(res.data.filter((p: any) => p.type !== 'SUPPLIER' && p.active)));
     apiClient.get<Product[]>('/products').then((res) => setProducts(res.data.filter((p: any) => p.type === 'FINISHED_GOOD')));
-  }, []);
-
-  const selectedOrder = orders.find((o) => o.id === selectedOrderId) ?? null;
+  }, [id]);
 
   const updateItem = (index: number, patch: Partial<OrderItem>) => {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
   };
 
-  const total = items.reduce((sum, it) => sum + Number(it.quantity || 0) * Number(it.unitPrice || 0), 0);
+  const editTotal = items.reduce((sum, it) => sum + Number(it.quantity || 0) * Number(it.unitPrice || 0), 0);
 
-  const resetForm = () => {
-    setCustomerId('');
-    setOrderDate(new Date().toISOString().slice(0, 10));
-    setPaymentMethod('PIX');
-    setItems([emptyItem()]);
+  const startEditing = () => {
+    if (!order) return;
+    setCustomerId(order.customer?.id ?? '');
+    setOrderDate(order.orderDate);
+    setPaymentMethod(order.paymentMethod);
+    setItems(
+      order.items.map((it) => ({
+        productId: it.productId,
+        quantity: String(it.quantity),
+        unitPrice: String(it.unitPrice),
+      })),
+    );
     setError(null);
-  };
-
-  const openCreateModal = () => {
-    resetForm();
-    setShowModal(true);
+    setEditing(true);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!order) return;
     setError(null);
     try {
-      await apiClient.post('/sales-orders', {
+      await apiClient.patch(`/sales-orders/${order.id}`, {
         customerId,
         orderDate,
         paymentMethod,
@@ -101,22 +105,17 @@ export default function SalesOrdersPage() {
           unitPrice: Number(it.unitPrice),
         })),
       });
-      setShowModal(false);
-      resetForm();
+      setEditing(false);
       load();
     } catch (err) {
       setError(extractErrorMessage(err));
     }
   };
 
-  const handleOpen = () => {
-    if (selectedOrder) navigate(`/sales-orders/${selectedOrder.id}`);
-  };
-
   const handleConfirm = async () => {
-    if (!selectedOrder) return;
+    if (!order) return;
     try {
-      await apiClient.patch(`/sales-orders/${selectedOrder.id}/confirm`);
+      await apiClient.patch(`/sales-orders/${order.id}/confirm`);
       load();
     } catch (err) {
       notify(extractErrorMessage(err));
@@ -124,72 +123,95 @@ export default function SalesOrdersPage() {
   };
 
   const handleCancel = async () => {
-    if (!selectedOrder) return;
+    if (!order) return;
     try {
-      await apiClient.patch(`/sales-orders/${selectedOrder.id}/cancel`);
+      await apiClient.patch(`/sales-orders/${order.id}/cancel`);
       load();
     } catch (err) {
       notify(extractErrorMessage(err));
     }
   };
 
+  if (!order) {
+    return <div className="empty-state">Carregando...</div>;
+  }
+
   return (
     <div>
+      <Link to="/sales-orders" className="page-header__back">
+        <ArrowLeftIcon size={12} style={{ verticalAlign: -1.5 }} /> Pedidos de Venda
+      </Link>
       <div className="page-header">
-        <h1>Pedidos de Venda</h1>
-        <button className="btn" onClick={openCreateModal}>
-          + Novo Pedido
-        </button>
+        <h1>Pedido {order.orderNumber}</h1>
+        <StatusBadge status={order.status} />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <button className="btn btn--secondary btn--sm" disabled={!selectedOrder} onClick={handleOpen}>
-          Abrir
-        </button>
-        <button className="btn btn--sm" disabled={selectedOrder?.status !== 'DRAFT'} onClick={handleConfirm}>
-          Confirmar
-        </button>
-        <button className="btn btn--danger btn--sm" disabled={selectedOrder?.status !== 'DRAFT'} onClick={handleCancel}>
-          Cancelar
-        </button>
-      </div>
+      {error && <div className="alert alert--error">{error}</div>}
 
-      <div className="table-wrap">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Número</th>
-              <th>Cliente</th>
-              <th>Data</th>
-              <th>Total</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((o) => (
-              <tr
-                key={o.id}
-                data-selectable
-                className={o.id === selectedOrderId ? 'selected' : ''}
-                onClick={() => setSelectedOrderId(o.id)}
-              >
-                <td>{o.orderNumber}</td>
-                <td>{o.customer?.name}</td>
-                <td>{o.orderDate}</td>
-                <td>R$ {o.totalAmount.toFixed(2)}</td>
-                <td>
-                  <StatusBadge status={o.status} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {orders.length === 0 && <div className="empty-state">Nenhum pedido de venda cadastrado.</div>}
-      </div>
+      {!editing ? (
+        <>
+          <div className="card">
+            <div className="form-grid">
+              <div className="form-field">
+                <label>Cliente</label>
+                <p style={{ margin: 0, fontSize: 13 }}>{order.customer?.name}</p>
+              </div>
+              <div className="form-field">
+                <label>Data</label>
+                <p style={{ margin: 0, fontSize: 13 }}>{order.orderDate}</p>
+              </div>
+              <div className="form-field">
+                <label>Forma de pagamento</label>
+                <p style={{ margin: 0, fontSize: 13 }}>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</p>
+              </div>
+            </div>
 
-      {showModal && (
-        <Modal title="Novo Pedido de Venda" onClose={() => setShowModal(false)}>
-          {error && <div className="alert alert--error">{error}</div>}
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Preço unitário</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.items.map((it, idx) => (
+                    <tr key={idx}>
+                      <td>{it.product?.name ?? it.productId}</td>
+                      <td>{it.quantity}</td>
+                      <td>R$ {it.unitPrice.toFixed(2)}</td>
+                      <td>R$ {(it.quantity * it.unitPrice).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p style={{ fontWeight: 600, marginTop: 12 }}>Total: R$ {order.totalAmount.toFixed(2)}</p>
+
+            <div className="form-actions">
+              <Link className="btn btn--secondary" to={`/sales-orders/${order.id}/receipt`}>
+                Ver Recibo
+              </Link>
+              {order.status === 'DRAFT' && (
+                <>
+                  <button className="btn" onClick={startEditing}>
+                    Editar
+                  </button>
+                  <button className="btn" onClick={handleConfirm}>
+                    Confirmar
+                  </button>
+                  <button className="btn btn--danger" onClick={handleCancel}>
+                    Cancelar
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="card">
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-field">
@@ -262,18 +284,18 @@ export default function SalesOrdersPage() {
               + Adicionar item
             </button>
 
-            <p style={{ fontWeight: 600 }}>Total: R$ {total.toFixed(2)}</p>
+            <p style={{ fontWeight: 600 }}>Total: R$ {editTotal.toFixed(2)}</p>
 
             <div className="form-actions">
               <button className="btn" type="submit">
                 Salvar
               </button>
-              <button className="btn btn--secondary" type="button" onClick={() => setShowModal(false)}>
+              <button className="btn btn--secondary" type="button" onClick={() => setEditing(false)}>
                 Cancelar
               </button>
             </div>
           </form>
-        </Modal>
+        </div>
       )}
     </div>
   );
