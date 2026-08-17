@@ -18,6 +18,12 @@ export enum SalesOrderStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum DeliveryStatus {
+  PENDING = 'PENDING',
+  SHIPPED = 'SHIPPED',
+  DELIVERED = 'DELIVERED',
+}
+
 @Entity('sales_orders')
 export class SalesOrder {
   @PrimaryGeneratedColumn('uuid')
@@ -52,6 +58,23 @@ export class SalesOrder {
 
   @Column('numeric', { precision: 14, scale: 2, name: 'total_amount', default: 0, transformer: DecimalTransformer })
   totalAmount: number;
+
+  @Column({
+    type: 'enum',
+    enum: DeliveryStatus,
+    name: 'delivery_status',
+    default: DeliveryStatus.PENDING,
+  })
+  deliveryStatus: DeliveryStatus;
+
+  @Column({ name: 'shipped_at', type: 'timestamp', nullable: true })
+  shippedAt: Date | null;
+
+  @Column({ name: 'delivered_at', type: 'timestamp', nullable: true })
+  deliveredAt: Date | null;
+
+  @Column({ name: 'delivery_notes', type: 'text', nullable: true })
+  deliveryNotes: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

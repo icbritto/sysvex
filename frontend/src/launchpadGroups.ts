@@ -55,6 +55,7 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     colorDark: '#ffc46b',
     tiles: [
       { to: '/sales-orders', icon: 'receipt', title: 'Pedidos de Venda', kpiLabel: 'Total', kpiCountKey: 'salesOrders' },
+      { to: '/sales-orders/deliveries', icon: 'truck', title: 'Acompanhamento de Entregas' },
       { to: '/partners?type=CUSTOMER', icon: 'users', title: 'Clientes' },
     ],
   },

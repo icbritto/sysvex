@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { SalesOrder, SalesOrderStatus } from './sales-order.entity';
+import { SalesOrder, SalesOrderStatus, DeliveryStatus } from './sales-order.entity';
 import { PaymentMethod } from '../common/payment-method.enum';
 import { SalesOrderItem } from './sales-order-item.entity';
 import { CreateSalesOrderDto } from './dto/create-sales-order.dto';
+import { UpdateSalesOrderDto } from './dto/update-sales-order.dto';
 import { InventoryService } from '../inventory/inventory.service';
 import { MovementReason, MovementType } from '../inventory/stock-movement.entity';
 import { FinanceService } from '../finance/finance.service';
@@ -18,6 +19,7 @@ type Actor = { id: string; username: string };
 export class SalesService {
   constructor(
     @InjectRepository(SalesOrder) private readonly repo: Repository<SalesOrder>,
+    @InjectRepository(SalesOrderItem) private readonly itemRepo: Repository<SalesOrderItem>,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly inventoryService: InventoryService,
     private readonly financeService: FinanceService,
@@ -65,6 +67,89 @@ export class SalesService {
         targetType: 'SalesOrder',
         targetId: saved.id,
         details: `${saved.orderNumber} - R$ ${saved.totalAmount.toFixed(2)}`,
+      });
+    }
+    return saved;
+  }
+
+  async update(id: string, dto: UpdateSalesOrderDto, actor?: Actor): Promise<SalesOrder> {
+    const so = await this.findById(id);
+    if (so.status !== SalesOrderStatus.DRAFT) {
+      throw new BadRequestException('Só é possível editar pedidos de venda em rascunho.');
+    }
+
+    if (dto.customerId !== undefined) so.customerId = dto.customerId;
+    if (dto.orderDate !== undefined) so.orderDate = dto.orderDate;
+    if (dto.paymentMethod !== undefined) so.paymentMethod = dto.paymentMethod;
+
+    if (dto.items) {
+      await this.itemRepo.delete({ salesOrderId: id });
+      so.items = dto.items.map((i) =>
+        Object.assign(new SalesOrderItem(), {
+          productId: i.productId,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+        }),
+      );
+      so.totalAmount = dto.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+    }
+
+    const saved = await this.repo.save(so);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'SALES_ORDER_UPDATED',
+        targetType: 'SalesOrder',
+        targetId: saved.id,
+        details: `${saved.orderNumber} - R$ ${saved.totalAmount.toFixed(2)}`,
+      });
+    }
+    return saved;
+  }
+
+  async ship(id: string, notes: string | undefined, actor?: Actor): Promise<SalesOrder> {
+    const so = await this.findById(id);
+    if (so.status !== SalesOrderStatus.CONFIRMED) {
+      throw new BadRequestException('Só é possível marcar como enviado um pedido confirmado.');
+    }
+    if (so.deliveryStatus !== DeliveryStatus.PENDING) {
+      throw new BadRequestException('Este pedido já foi enviado.');
+    }
+    so.deliveryStatus = DeliveryStatus.SHIPPED;
+    so.shippedAt = new Date();
+    if (notes !== undefined) so.deliveryNotes = notes;
+    const saved = await this.repo.save(so);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'SALES_ORDER_SHIPPED',
+        targetType: 'SalesOrder',
+        targetId: saved.id,
+        details: saved.orderNumber,
+      });
+    }
+    return saved;
+  }
+
+  async deliver(id: string, notes: string | undefined, actor?: Actor): Promise<SalesOrder> {
+    const so = await this.findById(id);
+    if (so.deliveryStatus !== DeliveryStatus.SHIPPED) {
+      throw new BadRequestException('Só é possível marcar como entregue um pedido já enviado.');
+    }
+    so.deliveryStatus = DeliveryStatus.DELIVERED;
+    so.deliveredAt = new Date();
+    if (notes !== undefined) so.deliveryNotes = notes;
+    const saved = await this.repo.save(so);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'SALES_ORDER_DELIVERED',
+        targetType: 'SalesOrder',
+        targetId: saved.id,
+        details: saved.orderNumber,
       });
     }
     return saved;

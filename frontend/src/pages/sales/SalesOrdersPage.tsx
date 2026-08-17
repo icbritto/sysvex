@@ -34,6 +34,7 @@ interface SalesOrder {
   status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
   totalAmount: number;
   paymentMethod: PaymentMethod;
+  items: { productId: string; quantity: number; unitPrice: number }[];
 }
 
 const emptyItem = (): OrderItem => ({ productId: '', quantity: '1', unitPrice: '0' });
@@ -44,6 +45,7 @@ export default function SalesOrdersPage() {
   const [customers, setCustomers] = useState<Partner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<SalesOrder | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [customerId, setCustomerId] = useState('');
@@ -74,23 +76,50 @@ export default function SalesOrdersPage() {
     setOrderDate(new Date().toISOString().slice(0, 10));
     setPaymentMethod('PIX');
     setItems([emptyItem()]);
+    setEditingOrder(null);
     setError(null);
+  };
+
+  const openCreateModal = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  const openEditModal = (order: SalesOrder) => {
+    setEditingOrder(order);
+    setCustomerId(order.customer?.id ?? '');
+    setOrderDate(order.orderDate);
+    setPaymentMethod(order.paymentMethod);
+    setItems(
+      order.items.map((it) => ({
+        productId: it.productId,
+        quantity: String(it.quantity),
+        unitPrice: String(it.unitPrice),
+      })),
+    );
+    setError(null);
+    setShowModal(true);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    const payload = {
+      customerId,
+      orderDate,
+      paymentMethod,
+      items: items.map((it) => ({
+        productId: it.productId,
+        quantity: Number(it.quantity),
+        unitPrice: Number(it.unitPrice),
+      })),
+    };
     try {
-      await apiClient.post('/sales-orders', {
-        customerId,
-        orderDate,
-        paymentMethod,
-        items: items.map((it) => ({
-          productId: it.productId,
-          quantity: Number(it.quantity),
-          unitPrice: Number(it.unitPrice),
-        })),
-      });
+      if (editingOrder) {
+        await apiClient.patch(`/sales-orders/${editingOrder.id}`, payload);
+      } else {
+        await apiClient.post('/sales-orders', payload);
+      }
       setShowModal(false);
       resetForm();
       load();
@@ -121,7 +150,7 @@ export default function SalesOrdersPage() {
     <div>
       <div className="page-header">
         <h1>Pedidos de Venda</h1>
-        <button className="btn" onClick={() => setShowModal(true)}>
+        <button className="btn" onClick={openCreateModal}>
           + Novo Pedido
         </button>
       </div>
@@ -154,6 +183,9 @@ export default function SalesOrdersPage() {
                   </Link>
                   {o.status === 'DRAFT' && (
                     <>
+                      <button className="btn btn--secondary btn--sm" onClick={() => openEditModal(o)}>
+                        Editar
+                      </button>
                       <button className="btn btn--sm" onClick={() => handleConfirm(o.id)}>
                         Confirmar
                       </button>
@@ -171,7 +203,13 @@ export default function SalesOrdersPage() {
       </div>
 
       {showModal && (
-        <Modal title="Novo Pedido de Venda" onClose={() => setShowModal(false)}>
+        <Modal
+          title={editingOrder ? `Editar Pedido ${editingOrder.orderNumber}` : 'Novo Pedido de Venda'}
+          onClose={() => {
+            setShowModal(false);
+            resetForm();
+          }}
+        >
           {error && <div className="alert alert--error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
@@ -251,7 +289,14 @@ export default function SalesOrdersPage() {
               <button className="btn" type="submit">
                 Salvar
               </button>
-              <button className="btn btn--secondary" type="button" onClick={() => setShowModal(false)}>
+              <button
+                className="btn btn--secondary"
+                type="button"
+                onClick={() => {
+                  setShowModal(false);
+                  resetForm();
+                }}
+              >
                 Cancelar
               </button>
             </div>

@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateSalesOrderDto } from './dto/create-sales-order.dto';
+import { UpdateSalesOrderDto } from './dto/update-sales-order.dto';
+import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -27,6 +29,24 @@ export class SalesController {
   @Post()
   create(@Body() dto: CreateSalesOrderDto, @CurrentUser() actor: AuthenticatedUser) {
     return this.salesService.create(dto, { id: actor.id, username: actor.username });
+  }
+
+  @Roles(UserRole.SX_SALES)
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateSalesOrderDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.salesService.update(id, dto, { id: actor.id, username: actor.username });
+  }
+
+  @Roles(UserRole.SX_SALES)
+  @Patch(':id/ship')
+  ship(@Param('id') id: string, @Body() dto: UpdateDeliveryDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.salesService.ship(id, dto.notes, { id: actor.id, username: actor.username });
+  }
+
+  @Roles(UserRole.SX_SALES)
+  @Patch(':id/deliver')
+  deliver(@Param('id') id: string, @Body() dto: UpdateDeliveryDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.salesService.deliver(id, dto.notes, { id: actor.id, username: actor.username });
   }
 
   @Roles(UserRole.SX_SALES)
