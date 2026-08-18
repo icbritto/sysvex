@@ -927,14 +927,14 @@ table.data-table {
   background: transparent;
   border-radius: 4px;
   padding: 6px 10px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: #00b79c;
+  color: #265a4d;
   cursor: pointer;
 }
 .toolbar-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, #00b79c 12%, var(--sysvex-surface));
-  color: color-mix(in srgb, #00b79c, black 15%);
+  background: color-mix(in srgb, #265a4d 12%, var(--sysvex-surface));
+  color: color-mix(in srgb, #265a4d, black 15%);
 }
 .toolbar-btn:disabled {
   color: var(--sysvex-text-muted);
