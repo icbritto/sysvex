@@ -911,6 +911,37 @@ table.data-table {
   font-size: 12px;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sysvex-text);
+  cursor: pointer;
+}
+.toolbar-btn:hover:not(:disabled) {
+  background: var(--sysvex-surface-hover);
+  color: var(--sysvex-primary);
+}
+.toolbar-btn:disabled {
+  color: var(--sysvex-text-muted);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .badge {
   display: inline-block;
   padding: 2px 9px;
