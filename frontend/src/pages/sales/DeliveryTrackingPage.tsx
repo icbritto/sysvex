@@ -1,7 +1,20 @@
 import { FormEvent, useEffect, useState } from 'react';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
+import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
 import StatusBadge from '../../components/StatusBadge';
+import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
+import { ListIcon } from '../../icons';
+
+const COLUMNS: ColumnDef[] = [
+  { key: 'orderNumber', label: 'Número' },
+  { key: 'customer', label: 'Cliente' },
+  { key: 'orderDate', label: 'Data do pedido' },
+  { key: 'totalAmount', label: 'Total' },
+  { key: 'deliveryStatus', label: 'Status da entrega' },
+  { key: 'shippedAt', label: 'Enviado em' },
+  { key: 'deliveredAt', label: 'Entregue em' },
+];
 
 interface SalesOrder {
   id: string;
@@ -25,6 +38,8 @@ export default function DeliveryTrackingPage() {
   const [action, setAction] = useState<DeliveryAction | null>(null);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showColumnsModal, setShowColumnsModal] = useState(false);
+  const columns = useColumnVisibility('delivery-tracking', COLUMNS);
 
   const load = () => {
     apiClient.get<SalesOrder[]>('/sales-orders').then((res) => setOrders(res.data.filter((o) => o.status === 'CONFIRMED')));
@@ -63,32 +78,45 @@ export default function DeliveryTrackingPage() {
         <h1>Acompanhamento de Entregas</h1>
       </div>
 
+      <div className="toolbar">
+        <button
+          className="toolbar-btn"
+          onClick={() => setShowColumnsModal(true)}
+          title="Colunas"
+          aria-label="Colunas visíveis"
+        >
+          <ListIcon size={16} />
+        </button>
+      </div>
+
       <div className="table-wrap">
         <table className="data-table">
           <thead>
             <tr>
-              <th>Número</th>
-              <th>Cliente</th>
-              <th>Data do pedido</th>
-              <th>Total</th>
-              <th>Status da entrega</th>
-              <th>Enviado em</th>
-              <th>Entregue em</th>
+              {columns.isVisible('orderNumber') && <th>Número</th>}
+              {columns.isVisible('customer') && <th>Cliente</th>}
+              {columns.isVisible('orderDate') && <th>Data do pedido</th>}
+              {columns.isVisible('totalAmount') && <th>Total</th>}
+              {columns.isVisible('deliveryStatus') && <th>Status da entrega</th>}
+              {columns.isVisible('shippedAt') && <th>Enviado em</th>}
+              {columns.isVisible('deliveredAt') && <th>Entregue em</th>}
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((o) => (
               <tr key={o.id}>
-                <td>{o.orderNumber}</td>
-                <td>{o.customer?.name}</td>
-                <td>{o.orderDate}</td>
-                <td>R$ {o.totalAmount.toFixed(2)}</td>
-                <td>
-                  <StatusBadge status={o.deliveryStatus} />
-                </td>
-                <td>{formatDate(o.shippedAt)}</td>
-                <td>{formatDate(o.deliveredAt)}</td>
+                {columns.isVisible('orderNumber') && <td>{o.orderNumber}</td>}
+                {columns.isVisible('customer') && <td>{o.customer?.name}</td>}
+                {columns.isVisible('orderDate') && <td>{o.orderDate}</td>}
+                {columns.isVisible('totalAmount') && <td>R$ {o.totalAmount.toFixed(2)}</td>}
+                {columns.isVisible('deliveryStatus') && (
+                  <td>
+                    <StatusBadge status={o.deliveryStatus} />
+                  </td>
+                )}
+                {columns.isVisible('shippedAt') && <td>{formatDate(o.shippedAt)}</td>}
+                {columns.isVisible('deliveredAt') && <td>{formatDate(o.deliveredAt)}</td>}
                 <td style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                   {o.deliveryStatus === 'PENDING' && (
                     <button className="toolbar-btn" onClick={() => openAction(o, 'ship')}>
@@ -107,6 +135,15 @@ export default function DeliveryTrackingPage() {
         </table>
         {orders.length === 0 && <div className="empty-state">Nenhum pedido confirmado aguardando entrega.</div>}
       </div>
+
+      {showColumnsModal && (
+        <ColumnVisibilityModal
+          columns={COLUMNS}
+          isVisible={columns.isVisible}
+          onToggle={columns.toggle}
+          onClose={() => setShowColumnsModal(false)}
+        />
+      )}
 
       {action && (
         <Modal

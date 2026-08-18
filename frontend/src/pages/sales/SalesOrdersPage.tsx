@@ -2,9 +2,26 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
+import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
 import StatusBadge from '../../components/StatusBadge';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
+import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
+import { ListIcon } from '../../icons';
+
+const COLUMNS: ColumnDef[] = [
+  { key: 'orderNumber', label: 'Número' },
+  { key: 'customer', label: 'Cliente' },
+  { key: 'orderDate', label: 'Data' },
+  { key: 'totalAmount', label: 'Total' },
+  { key: 'status', label: 'Status' },
+];
+
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: 'Rascunho',
+  CONFIRMED: 'Confirmado',
+  CANCELLED: 'Cancelado',
+};
 
 interface Partner {
   id: string;
@@ -50,6 +67,18 @@ export default function SalesOrdersPage() {
   const [error, setError] = useState<string | null>(null);
   const [bulkAction, setBulkAction] = useState<{ kind: 'confirm' | 'cancel'; ids: string[] } | null>(null);
   const [bulkRunning, setBulkRunning] = useState(false);
+  const [showColumnsModal, setShowColumnsModal] = useState(false);
+  const columns = useColumnVisibility('sales-orders', COLUMNS);
+
+  const [draftFilterNumber, setDraftFilterNumber] = useState('');
+  const [draftFilterCustomerId, setDraftFilterCustomerId] = useState('');
+  const [draftFilterStatus, setDraftFilterStatus] = useState('');
+  const [draftFilterDate, setDraftFilterDate] = useState('');
+
+  const [filterNumber, setFilterNumber] = useState('');
+  const [filterCustomerId, setFilterCustomerId] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDate, setFilterDate] = useState('');
 
   const [customerId, setCustomerId] = useState('');
   const [orderDate, setOrderDate] = useState(new Date().toISOString().slice(0, 10));
@@ -68,6 +97,34 @@ export default function SalesOrdersPage() {
     apiClient.get<Product[]>('/products').then((res) => setProducts(res.data.filter((p: any) => p.type === 'FINISHED_GOOD')));
   }, []);
 
+  const filteredOrders = orders.filter((o) => {
+    if (filterNumber && !o.orderNumber.toLowerCase().includes(filterNumber.trim().toLowerCase())) return false;
+    if (filterCustomerId && o.customer?.id !== filterCustomerId) return false;
+    if (filterStatus && o.status !== filterStatus) return false;
+    if (filterDate && o.orderDate !== filterDate) return false;
+    return true;
+  });
+  const hasActiveFilters = Boolean(filterNumber || filterCustomerId || filterStatus || filterDate);
+
+  const applyFilters = (e: FormEvent) => {
+    e.preventDefault();
+    setFilterNumber(draftFilterNumber);
+    setFilterCustomerId(draftFilterCustomerId);
+    setFilterStatus(draftFilterStatus);
+    setFilterDate(draftFilterDate);
+  };
+
+  const clearFilters = () => {
+    setDraftFilterNumber('');
+    setDraftFilterCustomerId('');
+    setDraftFilterStatus('');
+    setDraftFilterDate('');
+    setFilterNumber('');
+    setFilterCustomerId('');
+    setFilterStatus('');
+    setFilterDate('');
+  };
+
   const selectedOrders = orders.filter((o) => selectedIds.has(o.id));
   const allSelectedAreDraft = selectedOrders.length > 0 && selectedOrders.every((o) => o.status === 'DRAFT');
 
@@ -84,8 +141,8 @@ export default function SalesOrdersPage() {
 
   const toggleSelectAll = () => {
     setSelectedIds((prev) => {
-      if (orders.length > 0 && orders.every((o) => prev.has(o.id))) return new Set();
-      return new Set(orders.map((o) => o.id));
+      if (filteredOrders.length > 0 && filteredOrders.every((o) => prev.has(o.id))) return new Set();
+      return new Set(filteredOrders.map((o) => o.id));
     });
   };
 
@@ -190,6 +247,47 @@ export default function SalesOrdersPage() {
         <h1>Pedidos de Venda</h1>
       </div>
 
+      <form className="filter-bar" onSubmit={applyFilters}>
+        <div className="filter-field">
+          <label>Número</label>
+          <input value={draftFilterNumber} onChange={(e) => setDraftFilterNumber(e.target.value)} placeholder="Ex.: PV-0001" />
+        </div>
+        <div className="filter-field">
+          <label>Cliente</label>
+          <select value={draftFilterCustomerId} onChange={(e) => setDraftFilterCustomerId(e.target.value)}>
+            <option value="">Todos</option>
+            {customers.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="filter-field">
+          <label>Status</label>
+          <select value={draftFilterStatus} onChange={(e) => setDraftFilterStatus(e.target.value)}>
+            <option value="">Todos</option>
+            {Object.entries(STATUS_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="filter-field">
+          <label>Data</label>
+          <input type="date" value={draftFilterDate} onChange={(e) => setDraftFilterDate(e.target.value)} />
+        </div>
+        <button type="submit" className="btn btn--sm">
+          Filtrar
+        </button>
+        {hasActiveFilters && (
+          <button type="button" className="filter-bar__clear" onClick={clearFilters}>
+            Limpar filtros
+          </button>
+        )}
+      </form>
+
       <div className="toolbar">
         <button className="toolbar-btn" onClick={openCreateModal}>
           Criar
@@ -212,6 +310,14 @@ export default function SalesOrdersPage() {
         >
           Cancelar
         </button>
+        <button
+          className="toolbar-btn"
+          onClick={() => setShowColumnsModal(true)}
+          title="Colunas"
+          aria-label="Colunas visíveis"
+        >
+          <ListIcon size={16} />
+        </button>
       </div>
 
       <div className="table-wrap">
@@ -221,20 +327,20 @@ export default function SalesOrdersPage() {
               <th style={{ width: 32 }}>
                 <input
                   type="checkbox"
-                  checked={orders.length > 0 && orders.every((o) => selectedIds.has(o.id))}
+                  checked={filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.has(o.id))}
                   onChange={toggleSelectAll}
                   aria-label="Selecionar todos"
                 />
               </th>
-              <th>Número</th>
-              <th>Cliente</th>
-              <th>Data</th>
-              <th>Total</th>
-              <th>Status</th>
+              {columns.isVisible('orderNumber') && <th>Número</th>}
+              {columns.isVisible('customer') && <th>Cliente</th>}
+              {columns.isVisible('orderDate') && <th>Data</th>}
+              {columns.isVisible('totalAmount') && <th>Total</th>}
+              {columns.isVisible('status') && <th>Status</th>}
             </tr>
           </thead>
           <tbody>
-            {orders.map((o) => (
+            {filteredOrders.map((o) => (
               <tr
                 key={o.id}
                 data-selectable
@@ -249,19 +355,34 @@ export default function SalesOrdersPage() {
                     aria-label={`Selecionar pedido ${o.orderNumber}`}
                   />
                 </td>
-                <td>{o.orderNumber}</td>
-                <td>{o.customer?.name}</td>
-                <td>{o.orderDate}</td>
-                <td>R$ {o.totalAmount.toFixed(2)}</td>
-                <td>
-                  <StatusBadge status={o.status} />
-                </td>
+                {columns.isVisible('orderNumber') && <td>{o.orderNumber}</td>}
+                {columns.isVisible('customer') && <td>{o.customer?.name}</td>}
+                {columns.isVisible('orderDate') && <td>{o.orderDate}</td>}
+                {columns.isVisible('totalAmount') && <td>R$ {o.totalAmount.toFixed(2)}</td>}
+                {columns.isVisible('status') && (
+                  <td>
+                    <StatusBadge status={o.status} />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
-        {orders.length === 0 && <div className="empty-state">Nenhum pedido de venda cadastrado.</div>}
+        {filteredOrders.length === 0 && (
+          <div className="empty-state">
+            {hasActiveFilters ? 'Nenhum pedido de venda encontrado para os filtros aplicados.' : 'Nenhum pedido de venda cadastrado.'}
+          </div>
+        )}
       </div>
+
+      {showColumnsModal && (
+        <ColumnVisibilityModal
+          columns={COLUMNS}
+          isVisible={columns.isVisible}
+          onToggle={columns.toggle}
+          onClose={() => setShowColumnsModal(false)}
+        />
+      )}
 
       {bulkAction && (
         <Modal
