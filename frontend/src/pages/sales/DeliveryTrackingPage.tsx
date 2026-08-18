@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
@@ -40,6 +41,7 @@ const formatDate = (value: string | null) => (value ? new Date(value).toLocaleSt
 
 export default function DeliveryTrackingPage() {
   const notify = useNotify();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<SalesOrder[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<{ kind: 'ship' | 'deliver'; ids: string[] } | null>(null);
@@ -108,6 +110,14 @@ export default function DeliveryTrackingPage() {
       if (filteredOrders.length > 0 && filteredOrders.every((o) => prev.has(o.id))) return new Set();
       return new Set(filteredOrders.map((o) => o.id));
     });
+  };
+
+  const handleOpenClick = () => {
+    if (selectedIds.size !== 1) {
+      notify('Selecione exatamente um pedido para abrir.');
+      return;
+    }
+    navigate(`/sales-orders/${[...selectedIds][0]}`);
   };
 
   const handleShipClick = () => {
@@ -205,6 +215,12 @@ export default function DeliveryTrackingPage() {
       </form>
 
       <div className="toolbar">
+        <button
+          className={`toolbar-btn${selectedIds.size !== 1 ? ' toolbar-btn--disabled' : ''}`}
+          onClick={handleOpenClick}
+        >
+          Abrir
+        </button>
         <button
           className={`toolbar-btn${!allSelectedPending ? ' toolbar-btn--disabled' : ''}`}
           onClick={handleShipClick}
