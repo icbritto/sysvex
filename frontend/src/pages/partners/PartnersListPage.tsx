@@ -37,7 +37,8 @@ const COLUMNS: ColumnDef[] = [
   { key: 'personType', label: 'Tipo de Pessoa' },
   { key: 'type', label: 'Tipo' },
   { key: 'document', label: 'Documento' },
-  { key: 'contact', label: 'Contato' },
+  { key: 'phone', label: 'Telefone' },
+  { key: 'email', label: 'Email' },
   { key: 'status', label: 'Status' },
 ];
 
@@ -335,7 +336,8 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
               {columns.isVisible('personType') && <th>Tipo de Pessoa</th>}
               {columns.isVisible('type') && <th>Tipo</th>}
               {columns.isVisible('document') && <th>Documento</th>}
-              {columns.isVisible('contact') && <th>Contato</th>}
+              {columns.isVisible('phone') && <th>Telefone</th>}
+              {columns.isVisible('email') && <th>Email</th>}
               {columns.isVisible('status') && <th>Status</th>}
             </tr>
           </thead>
@@ -359,7 +361,8 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
                 {columns.isVisible('personType') && <td>{PERSON_TYPE_LABELS[p.personType]}</td>}
                 {columns.isVisible('type') && <td>{TYPE_LABELS[p.type]}</td>}
                 {columns.isVisible('document') && <td>{p.document ?? '–'}</td>}
-                {columns.isVisible('contact') && <td>{p.email ?? p.phone ?? '–'}</td>}
+                {columns.isVisible('phone') && <td>{p.phone ?? '–'}</td>}
+                {columns.isVisible('email') && <td>{p.email ?? '–'}</td>}
                 {columns.isVisible('status') && (
                   <td>
                     <span className={`badge ${p.active ? 'badge--success' : 'badge--danger'}`}>
