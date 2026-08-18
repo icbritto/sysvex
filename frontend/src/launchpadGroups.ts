@@ -45,7 +45,7 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     colorDark: '#f6a6c4',
     tiles: [
       { to: '/purchase-orders', icon: 'cart', title: 'Pedidos de Compra', kpiLabel: 'Total', kpiCountKey: 'purchaseOrders' },
-      { to: '/partners?type=SUPPLIER', icon: 'factory', title: 'Fornecedores' },
+      { to: '/suppliers', icon: 'factory', title: 'Fornecedores' },
     ],
   },
   {
@@ -56,7 +56,7 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     tiles: [
       { to: '/sales-orders', icon: 'receipt', title: 'Pedidos de Venda', kpiLabel: 'Total', kpiCountKey: 'salesOrders' },
       { to: '/sales-orders/deliveries', icon: 'truck', title: 'Acompanhamento de Entregas' },
-      { to: '/partners?type=CUSTOMER', icon: 'users', title: 'Clientes' },
+      { to: '/customers', icon: 'users', title: 'Clientes' },
     ],
   },
   {

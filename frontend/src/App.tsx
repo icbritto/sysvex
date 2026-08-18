@@ -6,7 +6,8 @@ import RequireAuth from './auth/RequireAuth';
 import AppShell from './layout/AppShell';
 import Login from './pages/Login';
 import Launchpad from './pages/Launchpad';
-import PartnersPage from './pages/partners/PartnersPage';
+import CustomersPage from './pages/partners/CustomersPage';
+import SuppliersPage from './pages/partners/SuppliersPage';
 import ProductsPage from './pages/inventory/ProductsPage';
 import BomPage from './pages/inventory/BomPage';
 import ProductionOrdersPage from './pages/inventory/ProductionOrdersPage';
@@ -39,7 +40,8 @@ export default function App() {
               <Route element={<AppShell />}>
                 <Route path="/" element={<Launchpad />} />
                 <Route path="/lines/:key" element={<BusinessLineOverviewPage />} />
-                <Route path="/partners" element={<PartnersPage />} />
+                <Route path="/customers" element={<CustomersPage />} />
+                <Route path="/suppliers" element={<SuppliersPage />} />
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/products/:productId/bom" element={<BomPage />} />
                 <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
