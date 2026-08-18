@@ -39,6 +39,7 @@ const COLUMNS: ColumnDef[] = [
   { key: 'document', label: 'Documento' },
   { key: 'phone', label: 'Telefone' },
   { key: 'email', label: 'Email' },
+  { key: 'address', label: 'Endereço' },
   { key: 'status', label: 'Status' },
 ];
 
@@ -338,6 +339,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
               {columns.isVisible('document') && <th>Documento</th>}
               {columns.isVisible('phone') && <th>Telefone</th>}
               {columns.isVisible('email') && <th>Email</th>}
+              {columns.isVisible('address') && <th>Endereço</th>}
               {columns.isVisible('status') && <th>Status</th>}
             </tr>
           </thead>
@@ -363,6 +365,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
                 {columns.isVisible('document') && <td>{p.document ?? '–'}</td>}
                 {columns.isVisible('phone') && <td>{p.phone ?? '–'}</td>}
                 {columns.isVisible('email') && <td>{p.email ?? '–'}</td>}
+                {columns.isVisible('address') && <td>{p.address ?? '–'}</td>}
                 {columns.isVisible('status') && (
                   <td>
                     <span className={`badge ${p.active ? 'badge--success' : 'badge--danger'}`}>
