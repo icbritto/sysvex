@@ -45,9 +45,11 @@ export default function SalesOrdersPage() {
   const [orders, setOrders] = useState<SalesOrder[]>([]);
   const [customers, setCustomers] = useState<Partner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bulkAction, setBulkAction] = useState<{ kind: 'confirm' | 'cancel'; ids: string[] } | null>(null);
+  const [bulkRunning, setBulkRunning] = useState(false);
 
   const [customerId, setCustomerId] = useState('');
   const [orderDate, setOrderDate] = useState(new Date().toISOString().slice(0, 10));
@@ -66,7 +68,26 @@ export default function SalesOrdersPage() {
     apiClient.get<Product[]>('/products').then((res) => setProducts(res.data.filter((p: any) => p.type === 'FINISHED_GOOD')));
   }, []);
 
-  const selectedOrder = orders.find((o) => o.id === selectedOrderId) ?? null;
+  const selectedOrders = orders.filter((o) => selectedIds.has(o.id));
+  const allSelectedAreDraft = selectedOrders.length > 0 && selectedOrders.every((o) => o.status === 'DRAFT');
+
+  const selectOnly = (id: string) => setSelectedIds(new Set([id]));
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      if (orders.length > 0 && orders.every((o) => prev.has(o.id))) return new Set();
+      return new Set(orders.map((o) => o.id));
+    });
+  };
 
   const updateItem = (index: number, patch: Partial<OrderItem>) => {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
@@ -109,27 +130,57 @@ export default function SalesOrdersPage() {
     }
   };
 
-  const handleOpen = () => {
-    if (selectedOrder) navigate(`/sales-orders/${selectedOrder.id}`);
-  };
-
-  const handleConfirm = async () => {
-    if (!selectedOrder) return;
-    try {
-      await apiClient.patch(`/sales-orders/${selectedOrder.id}/confirm`);
-      load();
-    } catch (err) {
-      notify(extractErrorMessage(err));
+  const handleOpenClick = () => {
+    if (selectedIds.size !== 1) {
+      notify('Selecione exatamente um pedido para abrir.');
+      return;
     }
+    navigate(`/sales-orders/${[...selectedIds][0]}`);
   };
 
-  const handleCancel = async () => {
-    if (!selectedOrder) return;
-    try {
-      await apiClient.patch(`/sales-orders/${selectedOrder.id}/cancel`);
-      load();
-    } catch (err) {
-      notify(extractErrorMessage(err));
+  const handleConfirmClick = () => {
+    if (selectedOrders.length === 0) {
+      notify('Selecione ao menos um pedido em rascunho para confirmar.');
+      return;
+    }
+    if (!allSelectedAreDraft) {
+      notify('Só é possível confirmar em massa quando todos os pedidos selecionados estão em rascunho. Desmarque os que já foram confirmados ou cancelados.');
+      return;
+    }
+    setBulkAction({ kind: 'confirm', ids: selectedOrders.map((o) => o.id) });
+  };
+
+  const handleCancelClick = () => {
+    if (selectedOrders.length === 0) {
+      notify('Selecione ao menos um pedido em rascunho para cancelar.');
+      return;
+    }
+    if (!allSelectedAreDraft) {
+      notify('Só é possível cancelar em massa quando todos os pedidos selecionados estão em rascunho. Desmarque os que já foram confirmados ou cancelados.');
+      return;
+    }
+    setBulkAction({ kind: 'cancel', ids: selectedOrders.map((o) => o.id) });
+  };
+
+  const runBulkAction = async () => {
+    if (!bulkAction) return;
+    setBulkRunning(true);
+    const endpoint = bulkAction.kind === 'confirm' ? 'confirm' : 'cancel';
+    let failures = 0;
+    for (const id of bulkAction.ids) {
+      try {
+        await apiClient.patch(`/sales-orders/${id}/${endpoint}`);
+      } catch {
+        failures += 1;
+      }
+    }
+    setBulkRunning(false);
+    setBulkAction(null);
+    setSelectedIds(new Set());
+    load();
+    if (failures > 0) {
+      const verb = bulkAction.kind === 'confirm' ? 'confirmados' : 'cancelados';
+      notify(`${failures} de ${bulkAction.ids.length} pedido(s) não puderam ser ${verb}.`);
     }
   };
 
@@ -143,13 +194,22 @@ export default function SalesOrdersPage() {
         <button className="toolbar-btn" onClick={openCreateModal}>
           Criar
         </button>
-        <button className="toolbar-btn" disabled={!selectedOrder} onClick={handleOpen}>
+        <button
+          className={`toolbar-btn${selectedIds.size !== 1 ? ' toolbar-btn--disabled' : ''}`}
+          onClick={handleOpenClick}
+        >
           Abrir
         </button>
-        <button className="toolbar-btn" disabled={selectedOrder?.status !== 'DRAFT'} onClick={handleConfirm}>
+        <button
+          className={`toolbar-btn${!allSelectedAreDraft ? ' toolbar-btn--disabled' : ''}`}
+          onClick={handleConfirmClick}
+        >
           Confirmar
         </button>
-        <button className="toolbar-btn" disabled={selectedOrder?.status !== 'DRAFT'} onClick={handleCancel}>
+        <button
+          className={`toolbar-btn${!allSelectedAreDraft ? ' toolbar-btn--disabled' : ''}`}
+          onClick={handleCancelClick}
+        >
           Cancelar
         </button>
       </div>
@@ -158,6 +218,14 @@ export default function SalesOrdersPage() {
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ width: 32 }}>
+                <input
+                  type="checkbox"
+                  checked={orders.length > 0 && orders.every((o) => selectedIds.has(o.id))}
+                  onChange={toggleSelectAll}
+                  aria-label="Selecionar todos"
+                />
+              </th>
               <th>Número</th>
               <th>Cliente</th>
               <th>Data</th>
@@ -170,9 +238,17 @@ export default function SalesOrdersPage() {
               <tr
                 key={o.id}
                 data-selectable
-                className={o.id === selectedOrderId ? 'selected' : ''}
-                onClick={() => setSelectedOrderId(o.id)}
+                className={selectedIds.has(o.id) ? 'selected' : ''}
+                onClick={() => selectOnly(o.id)}
               >
+                <td onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(o.id)}
+                    onChange={() => toggleOne(o.id)}
+                    aria-label={`Selecionar pedido ${o.orderNumber}`}
+                  />
+                </td>
                 <td>{o.orderNumber}</td>
                 <td>{o.customer?.name}</td>
                 <td>{o.orderDate}</td>
@@ -186,6 +262,27 @@ export default function SalesOrdersPage() {
         </table>
         {orders.length === 0 && <div className="empty-state">Nenhum pedido de venda cadastrado.</div>}
       </div>
+
+      {bulkAction && (
+        <Modal
+          title={bulkAction.kind === 'confirm' ? 'Confirmar pedidos de venda' : 'Cancelar pedidos de venda'}
+          onClose={() => (bulkRunning ? undefined : setBulkAction(null))}
+        >
+          <p>
+            {bulkAction.kind === 'confirm'
+              ? `Confirmar ${bulkAction.ids.length} pedido(s) de venda selecionado(s)? O estoque dos produtos será baixado e os títulos de contas a receber serão gerados.`
+              : `Cancelar ${bulkAction.ids.length} pedido(s) de venda selecionado(s)? Essa ação não pode ser desfeita.`}
+          </p>
+          <div className="form-actions">
+            <button className="btn" onClick={runBulkAction} disabled={bulkRunning}>
+              {bulkRunning ? 'Processando...' : 'Confirmar'}
+            </button>
+            <button className="btn btn--secondary" onClick={() => setBulkAction(null)} disabled={bulkRunning}>
+              Voltar
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {showModal && (
         <Modal title="Novo Pedido de Venda" onClose={() => setShowModal(false)}>

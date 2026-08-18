@@ -150,6 +150,25 @@ export default function SalesOrderDetailPage() {
 
       {!editing ? (
         <>
+          <div className="toolbar">
+            <Link className="toolbar-btn" to={`/sales-orders/${order.id}/receipt`}>
+              Ver Recibo
+            </Link>
+            {order.status === 'DRAFT' && (
+              <>
+                <button className="toolbar-btn" onClick={startEditing}>
+                  Editar
+                </button>
+                <button className="toolbar-btn" onClick={handleConfirm}>
+                  Confirmar
+                </button>
+                <button className="toolbar-btn" onClick={handleCancel}>
+                  Cancelar
+                </button>
+              </>
+            )}
+          </div>
+
           <div className="card">
             <div className="form-grid">
               <div className="form-field">
@@ -189,25 +208,6 @@ export default function SalesOrderDetailPage() {
               </table>
             </div>
             <p style={{ fontWeight: 600, marginTop: 12 }}>Total: R$ {order.totalAmount.toFixed(2)}</p>
-
-            <div className="form-actions">
-              <Link className="btn btn--secondary" to={`/sales-orders/${order.id}/receipt`}>
-                Ver Recibo
-              </Link>
-              {order.status === 'DRAFT' && (
-                <>
-                  <button className="btn" onClick={startEditing}>
-                    Editar
-                  </button>
-                  <button className="btn" onClick={handleConfirm}>
-                    Confirmar
-                  </button>
-                  <button className="btn btn--danger" onClick={handleCancel}>
-                    Cancelar
-                  </button>
-                </>
-              )}
-            </div>
           </div>
         </>
       ) : (

@@ -89,14 +89,14 @@ export default function DeliveryTrackingPage() {
                 </td>
                 <td>{formatDate(o.shippedAt)}</td>
                 <td>{formatDate(o.deliveredAt)}</td>
-                <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <td style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                   {o.deliveryStatus === 'PENDING' && (
-                    <button className="btn btn--sm" onClick={() => openAction(o, 'ship')}>
+                    <button className="toolbar-btn" onClick={() => openAction(o, 'ship')}>
                       Marcar como Enviado
                     </button>
                   )}
                   {o.deliveryStatus === 'SHIPPED' && (
-                    <button className="btn btn--sm" onClick={() => openAction(o, 'deliver')}>
+                    <button className="toolbar-btn" onClick={() => openAction(o, 'deliver')}>
                       Marcar como Entregue
                     </button>
                   )}
