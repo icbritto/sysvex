@@ -35,7 +35,19 @@ interface SalesOrder {
   totalAmount: number;
   paymentMethod: PaymentMethod;
   items: { productId: string; quantity: number; unitPrice: number; product?: Product }[];
+  deliveryStatus: 'PENDING' | 'SHIPPED' | 'DELIVERED';
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  deliveryNotes: string | null;
 }
+
+const DELIVERY_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pendente',
+  SHIPPED: 'Enviado',
+  DELIVERED: 'Entregue',
+};
+
+const formatDate = (value: string | null) => (value ? new Date(value).toLocaleString('pt-BR') : '—');
 
 const emptyItem = (): OrderItem => ({ productId: '', quantity: '1', unitPrice: '0' });
 
@@ -214,6 +226,35 @@ export default function SalesOrderDetailPage() {
             </div>
             <p style={{ fontWeight: 600, marginTop: 12 }}>Total: R$ {order.totalAmount.toFixed(2)}</p>
           </div>
+
+          {order.status === 'CONFIRMED' && (
+            <div className="card" style={{ marginTop: 16 }}>
+              <div className="page-header" style={{ marginBottom: 12 }}>
+                <h3 style={{ fontSize: 13, margin: 0 }}>Entrega</h3>
+                <StatusBadge status={order.deliveryStatus} />
+              </div>
+              <div className="form-grid">
+                <div className="form-field">
+                  <label>Status</label>
+                  <p style={{ margin: 0, fontSize: 13 }}>{DELIVERY_STATUS_LABELS[order.deliveryStatus]}</p>
+                </div>
+                <div className="form-field">
+                  <label>Enviado em</label>
+                  <p style={{ margin: 0, fontSize: 13 }}>{formatDate(order.shippedAt)}</p>
+                </div>
+                <div className="form-field">
+                  <label>Entregue em</label>
+                  <p style={{ margin: 0, fontSize: 13 }}>{formatDate(order.deliveredAt)}</p>
+                </div>
+                {order.deliveryNotes && (
+                  <div className="form-field">
+                    <label>Observações</label>
+                    <p style={{ margin: 0, fontSize: 13 }}>{order.deliveryNotes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <div className="card">
