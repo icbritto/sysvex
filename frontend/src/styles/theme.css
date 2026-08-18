@@ -929,17 +929,23 @@ table.data-table {
   padding: 6px 10px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--sysvex-text);
+  color: #00b79c;
   cursor: pointer;
 }
 .toolbar-btn:hover:not(:disabled) {
-  background: var(--sysvex-surface-hover);
-  color: var(--sysvex-primary);
+  background: color-mix(in srgb, #00b79c 12%, var(--sysvex-surface));
+  color: color-mix(in srgb, #00b79c, black 15%);
 }
 .toolbar-btn:disabled {
   color: var(--sysvex-text-muted);
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Fonte Inter aplicada só nas telas da linha de negócio de Vendas (piloto do
+   novo padrão de toolbar antes de virar ERP-wide). */
+.vendas-scope {
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .badge {

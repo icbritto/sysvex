@@ -134,7 +134,7 @@ export default function SalesOrdersPage() {
   };
 
   return (
-    <div>
+    <div className="vendas-scope">
       <div className="page-header">
         <h1>Pedidos de Venda</h1>
       </div>
