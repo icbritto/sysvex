@@ -69,6 +69,11 @@ export default function SalesOrdersPage() {
   const [showColumnsModal, setShowColumnsModal] = useState(false);
   const columns = useColumnVisibility('sales-orders', COLUMNS);
 
+  const [draftFilterNumber, setDraftFilterNumber] = useState('');
+  const [draftFilterCustomerId, setDraftFilterCustomerId] = useState('');
+  const [draftFilterStatus, setDraftFilterStatus] = useState('');
+  const [draftFilterDate, setDraftFilterDate] = useState('');
+
   const [filterNumber, setFilterNumber] = useState('');
   const [filterCustomerId, setFilterCustomerId] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -99,7 +104,20 @@ export default function SalesOrdersPage() {
     return true;
   });
   const hasActiveFilters = Boolean(filterNumber || filterCustomerId || filterStatus || filterDate);
+
+  const applyFilters = (e: FormEvent) => {
+    e.preventDefault();
+    setFilterNumber(draftFilterNumber);
+    setFilterCustomerId(draftFilterCustomerId);
+    setFilterStatus(draftFilterStatus);
+    setFilterDate(draftFilterDate);
+  };
+
   const clearFilters = () => {
+    setDraftFilterNumber('');
+    setDraftFilterCustomerId('');
+    setDraftFilterStatus('');
+    setDraftFilterDate('');
     setFilterNumber('');
     setFilterCustomerId('');
     setFilterStatus('');
@@ -228,14 +246,14 @@ export default function SalesOrdersPage() {
         <h1>Pedidos de Venda</h1>
       </div>
 
-      <div className="filter-bar">
+      <form className="filter-bar" onSubmit={applyFilters}>
         <div className="filter-field">
           <label>Número</label>
-          <input value={filterNumber} onChange={(e) => setFilterNumber(e.target.value)} placeholder="Ex.: PV-0001" />
+          <input value={draftFilterNumber} onChange={(e) => setDraftFilterNumber(e.target.value)} placeholder="Ex.: PV-0001" />
         </div>
         <div className="filter-field">
           <label>Cliente</label>
-          <select value={filterCustomerId} onChange={(e) => setFilterCustomerId(e.target.value)}>
+          <select value={draftFilterCustomerId} onChange={(e) => setDraftFilterCustomerId(e.target.value)}>
             <option value="">Todos</option>
             {customers.map((c) => (
               <option key={c.id} value={c.id}>
@@ -246,7 +264,7 @@ export default function SalesOrdersPage() {
         </div>
         <div className="filter-field">
           <label>Status</label>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <select value={draftFilterStatus} onChange={(e) => setDraftFilterStatus(e.target.value)}>
             <option value="">Todos</option>
             {Object.entries(STATUS_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -257,14 +275,17 @@ export default function SalesOrdersPage() {
         </div>
         <div className="filter-field">
           <label>Data</label>
-          <input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+          <input type="date" value={draftFilterDate} onChange={(e) => setDraftFilterDate(e.target.value)} />
         </div>
+        <button type="submit" className="btn btn--sm">
+          Filtrar
+        </button>
         {hasActiveFilters && (
           <button type="button" className="filter-bar__clear" onClick={clearFilters}>
             Limpar filtros
           </button>
         )}
-      </div>
+      </form>
 
       <div className="toolbar">
         <button className="toolbar-btn" onClick={openCreateModal}>
