@@ -58,7 +58,7 @@ export default function DeliveryTrackingPage() {
   };
 
   return (
-    <div className="vendas-scope">
+    <div>
       <div className="page-header">
         <h1>Acompanhamento de Entregas</h1>
       </div>

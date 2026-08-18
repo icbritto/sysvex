@@ -137,7 +137,7 @@ export default function SalesOrderDetailPage() {
   }
 
   return (
-    <div className="vendas-scope">
+    <div>
       <Link to="/sales-orders" className="page-header__back">
         <ArrowLeftIcon size={12} style={{ verticalAlign: -1.5 }} /> Pedidos de Venda
       </Link>
