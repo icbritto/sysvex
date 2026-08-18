@@ -5,7 +5,9 @@ import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
 import StatusBadge from '../../components/StatusBadge';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
-import { FilterIcon, ListIcon } from '../../icons';
+import { useSort } from '../../hooks/useSort';
+import SortModal from '../../components/SortModal';
+import { FilterIcon, ListIcon, SortIcon } from '../../icons';
 import { useNotify } from '../../notifications/NotificationContext';
 
 const COLUMNS: ColumnDef[] = [
@@ -16,6 +18,7 @@ const COLUMNS: ColumnDef[] = [
   { key: 'deliveryStatus', label: 'Status da entrega' },
   { key: 'shippedAt', label: 'Enviado em' },
   { key: 'deliveredAt', label: 'Entregue em' },
+  { key: 'address', label: 'Endereço' },
 ];
 
 const DELIVERY_STATUS_LABELS: Record<string, string> = {
@@ -27,7 +30,7 @@ const DELIVERY_STATUS_LABELS: Record<string, string> = {
 interface SalesOrder {
   id: string;
   orderNumber: string;
-  customer: { id: string; name: string };
+  customer: { id: string; name: string; address: string | null };
   orderDate: string;
   totalAmount: number;
   status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
@@ -49,7 +52,9 @@ export default function DeliveryTrackingPage() {
   const [bulkRunning, setBulkRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showColumnsModal, setShowColumnsModal] = useState(false);
+  const [showSortModal, setShowSortModal] = useState(false);
   const columns = useColumnVisibility('delivery-tracking', COLUMNS);
+  const sort = useSort('delivery-tracking', COLUMNS, 'orderNumber');
 
   const [draftFilterNumber, setDraftFilterNumber] = useState('');
   const [draftFilterCustomerId, setDraftFilterCustomerId] = useState('');
@@ -73,6 +78,30 @@ export default function DeliveryTrackingPage() {
     return true;
   });
   const hasActiveFilters = Boolean(filterNumber || filterCustomerId || filterStatus);
+
+  const compareOrders = (a: SalesOrder, b: SalesOrder) => {
+    const dir = sort.direction === 'asc' ? 1 : -1;
+    switch (sort.sortKey) {
+      case 'customer':
+        return (a.customer?.name ?? '').localeCompare(b.customer?.name ?? '') * dir;
+      case 'orderDate':
+        return a.orderDate.localeCompare(b.orderDate) * dir;
+      case 'totalAmount':
+        return (a.totalAmount - b.totalAmount) * dir;
+      case 'deliveryStatus':
+        return a.deliveryStatus.localeCompare(b.deliveryStatus) * dir;
+      case 'shippedAt':
+        return (new Date(a.shippedAt ?? 0).getTime() - new Date(b.shippedAt ?? 0).getTime()) * dir;
+      case 'deliveredAt':
+        return (new Date(a.deliveredAt ?? 0).getTime() - new Date(b.deliveredAt ?? 0).getTime()) * dir;
+      case 'address':
+        return (a.customer?.address ?? '').localeCompare(b.customer?.address ?? '') * dir;
+      case 'orderNumber':
+      default:
+        return a.orderNumber.localeCompare(b.orderNumber) * dir;
+    }
+  };
+  const sortedOrders = [...filteredOrders].sort(compareOrders);
 
   const applyFilters = (e: FormEvent) => {
     e.preventDefault();
@@ -241,6 +270,14 @@ export default function DeliveryTrackingPage() {
         >
           <ListIcon size={16} />
         </button>
+        <button
+          className="toolbar-btn"
+          onClick={() => setShowSortModal(true)}
+          title="Ordenar por"
+          aria-label="Ordenar por"
+        >
+          <SortIcon size={16} />
+        </button>
       </div>
 
       <div className="table-wrap">
@@ -262,10 +299,11 @@ export default function DeliveryTrackingPage() {
               {columns.isVisible('deliveryStatus') && <th>Status da entrega</th>}
               {columns.isVisible('shippedAt') && <th>Enviado em</th>}
               {columns.isVisible('deliveredAt') && <th>Entregue em</th>}
+              {columns.isVisible('address') && <th>Endereço</th>}
             </tr>
           </thead>
           <tbody>
-            {filteredOrders.map((o) => (
+            {sortedOrders.map((o) => (
               <tr
                 key={o.id}
                 data-selectable
@@ -291,6 +329,7 @@ export default function DeliveryTrackingPage() {
                 )}
                 {columns.isVisible('shippedAt') && <td>{formatDate(o.shippedAt)}</td>}
                 {columns.isVisible('deliveredAt') && <td>{formatDate(o.deliveredAt)}</td>}
+                {columns.isVisible('address') && <td>{o.customer?.address ?? '–'}</td>}
               </tr>
             ))}
           </tbody>
@@ -308,6 +347,16 @@ export default function DeliveryTrackingPage() {
           isVisible={columns.isVisible}
           onToggle={columns.toggle}
           onClose={() => setShowColumnsModal(false)}
+        />
+      )}
+
+      {showSortModal && (
+        <SortModal
+          options={sort.options}
+          sortKey={sort.sortKey}
+          direction={sort.direction}
+          onChange={sort.setSort}
+          onClose={() => setShowSortModal(false)}
         />
       )}
 

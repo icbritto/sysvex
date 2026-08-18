@@ -7,7 +7,9 @@ import StatusBadge from '../../components/StatusBadge';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
-import { FilterIcon, ListIcon } from '../../icons';
+import { useSort } from '../../hooks/useSort';
+import SortModal from '../../components/SortModal';
+import { FilterIcon, ListIcon, SortIcon } from '../../icons';
 
 const COLUMNS: ColumnDef[] = [
   { key: 'orderNumber', label: 'Número' },
@@ -68,7 +70,9 @@ export default function SalesOrdersPage() {
   const [bulkAction, setBulkAction] = useState<{ kind: 'confirm' | 'cancel'; ids: string[] } | null>(null);
   const [bulkRunning, setBulkRunning] = useState(false);
   const [showColumnsModal, setShowColumnsModal] = useState(false);
+  const [showSortModal, setShowSortModal] = useState(false);
   const columns = useColumnVisibility('sales-orders', COLUMNS);
+  const sort = useSort('sales-orders', COLUMNS, 'orderNumber');
 
   const [draftFilterNumber, setDraftFilterNumber] = useState('');
   const [draftFilterCustomerId, setDraftFilterCustomerId] = useState('');
@@ -105,6 +109,24 @@ export default function SalesOrdersPage() {
     return true;
   });
   const hasActiveFilters = Boolean(filterNumber || filterCustomerId || filterStatus || filterDate);
+
+  const compareOrders = (a: SalesOrder, b: SalesOrder) => {
+    const dir = sort.direction === 'asc' ? 1 : -1;
+    switch (sort.sortKey) {
+      case 'customer':
+        return (a.customer?.name ?? '').localeCompare(b.customer?.name ?? '') * dir;
+      case 'orderDate':
+        return a.orderDate.localeCompare(b.orderDate) * dir;
+      case 'totalAmount':
+        return (a.totalAmount - b.totalAmount) * dir;
+      case 'status':
+        return a.status.localeCompare(b.status) * dir;
+      case 'orderNumber':
+      default:
+        return a.orderNumber.localeCompare(b.orderNumber) * dir;
+    }
+  };
+  const sortedOrders = [...filteredOrders].sort(compareOrders);
 
   const applyFilters = (e: FormEvent) => {
     e.preventDefault();
@@ -318,6 +340,14 @@ export default function SalesOrdersPage() {
         >
           <ListIcon size={16} />
         </button>
+        <button
+          className="toolbar-btn"
+          onClick={() => setShowSortModal(true)}
+          title="Ordenar por"
+          aria-label="Ordenar por"
+        >
+          <SortIcon size={16} />
+        </button>
       </div>
 
       <div className="table-wrap">
@@ -340,7 +370,7 @@ export default function SalesOrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredOrders.map((o) => (
+            {sortedOrders.map((o) => (
               <tr
                 key={o.id}
                 data-selectable
@@ -381,6 +411,16 @@ export default function SalesOrdersPage() {
           isVisible={columns.isVisible}
           onToggle={columns.toggle}
           onClose={() => setShowColumnsModal(false)}
+        />
+      )}
+
+      {showSortModal && (
+        <SortModal
+          options={sort.options}
+          sortKey={sort.sortKey}
+          direction={sort.direction}
+          onChange={sort.setSort}
+          onClose={() => setShowSortModal(false)}
         />
       )}
 

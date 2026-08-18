@@ -1,59 +1,49 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
+import SortModal from '../../components/SortModal';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
 import { useSort } from '../../hooks/useSort';
-import SortModal from '../../components/SortModal';
 import { FilterIcon, ListIcon, SortIcon } from '../../icons';
-import { formatCpfCnpj, formatPhone } from '../../utils/masks';
 import { useNotify } from '../../notifications/NotificationContext';
 
-interface Partner {
+interface Product {
   id: string;
+  sku: string;
   name: string;
-  personType: 'INDIVIDUAL' | 'COMPANY';
-  legalName: string | null;
-  tradeName: string | null;
-  document: string | null;
-  type: 'CUSTOMER' | 'SUPPLIER' | 'BOTH';
-  email: string | null;
-  phone: string | null;
-  address: string | null;
+  type: 'RAW_MATERIAL' | 'FINISHED_GOOD';
+  unit: string;
+  costPrice: number;
+  salePrice: number | null;
+  stockQty: number;
+  minStock: number;
   active: boolean;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  CUSTOMER: 'Cliente',
-  SUPPLIER: 'Fornecedor',
-  BOTH: 'Cliente/Fornecedor',
-};
-
-const PERSON_TYPE_LABELS: Record<string, string> = {
-  INDIVIDUAL: 'Pessoa Física',
-  COMPANY: 'Pessoa Jurídica',
-};
-
 const COLUMNS: ColumnDef[] = [
+  { key: 'sku', label: 'SKU' },
   { key: 'name', label: 'Nome' },
-  { key: 'personType', label: 'Tipo de Pessoa' },
-  { key: 'type', label: 'Tipo' },
-  { key: 'document', label: 'Documento' },
-  { key: 'phone', label: 'Telefone' },
-  { key: 'email', label: 'Email' },
-  { key: 'address', label: 'Endereço' },
+  { key: 'stockQty', label: 'Estoque' },
+  { key: 'costPrice', label: 'Custo' },
+  { key: 'salePrice', label: 'Venda' },
   { key: 'status', label: 'Status' },
 ];
 
-interface PartnersListPageProps {
-  partnerType: 'CUSTOMER' | 'SUPPLIER';
+interface ProductsListPageProps {
+  productType: 'RAW_MATERIAL' | 'FINISHED_GOOD';
   title: string;
   storageKey: string;
 }
 
-export default function PartnersListPage({ partnerType, title, storageKey }: PartnersListPageProps) {
+export default function ProductsListPage({ productType, title, storageKey }: ProductsListPageProps) {
   const notify = useNotify();
-  const [partners, setPartners] = useState<Partner[]>([]);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const onlyLowStock = searchParams.get('lowStock') === '1';
+
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -67,89 +57,77 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
   const sort = useSort(storageKey, COLUMNS, 'name');
 
   const [draftFilterName, setDraftFilterName] = useState('');
-  const [draftFilterDocument, setDraftFilterDocument] = useState('');
   const [draftFilterStatus, setDraftFilterStatus] = useState('');
   const [filterName, setFilterName] = useState('');
-  const [filterDocument, setFilterDocument] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
-  const [personType, setPersonType] = useState<'INDIVIDUAL' | 'COMPANY'>('INDIVIDUAL');
   const [name, setName] = useState('');
-  const [legalName, setLegalName] = useState('');
-  const [tradeName, setTradeName] = useState('');
-  const [document, setDocument] = useState('');
-  const [type, setType] = useState<'CUSTOMER' | 'SUPPLIER' | 'BOTH'>(partnerType);
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const [unit, setUnit] = useState('un');
+  const [costPrice, setCostPrice] = useState('0');
+  const [salePrice, setSalePrice] = useState('');
+  const [stockQty, setStockQty] = useState('0');
+  const [minStock, setMinStock] = useState('0');
 
   const load = () => {
     setLoading(true);
+    const endpoint = onlyLowStock ? '/products/low-stock' : '/products';
     apiClient
-      .get<Partner[]>('/partners')
-      .then((res) => setPartners(res.data))
+      .get<Product[]>(endpoint)
+      .then((res) => setProducts(res.data))
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(load, [onlyLowStock]);
 
-  const byType = partners.filter((p) => p.type === partnerType || p.type === 'BOTH');
+  const byType = products.filter((p) => p.type === productType);
 
-  const filteredPartners = byType.filter((p) => {
+  const filteredProducts = byType.filter((p) => {
     if (filterName) {
-      const haystack = `${p.name} ${p.legalName ?? ''} ${p.tradeName ?? ''}`.toLowerCase();
+      const haystack = `${p.name} ${p.sku}`.toLowerCase();
       if (!haystack.includes(filterName.trim().toLowerCase())) return false;
     }
-    if (filterDocument && !(p.document ?? '').includes(filterDocument.trim())) return false;
     if (filterStatus && String(p.active) !== filterStatus) return false;
     return true;
   });
-  const hasActiveFilters = Boolean(filterName || filterDocument || filterStatus);
-
-  const compareValues = (a: string, b: string, dir: number) => a.localeCompare(b) * dir;
-  const comparePartners = (a: Partner, b: Partner) => {
-    const dir = sort.direction === 'asc' ? 1 : -1;
-    switch (sort.sortKey) {
-      case 'personType':
-        return compareValues(PERSON_TYPE_LABELS[a.personType], PERSON_TYPE_LABELS[b.personType], dir);
-      case 'type':
-        return compareValues(TYPE_LABELS[a.type], TYPE_LABELS[b.type], dir);
-      case 'document':
-        return compareValues(a.document ?? '', b.document ?? '', dir);
-      case 'phone':
-        return compareValues(a.phone ?? '', b.phone ?? '', dir);
-      case 'email':
-        return compareValues(a.email ?? '', b.email ?? '', dir);
-      case 'address':
-        return compareValues(a.address ?? '', b.address ?? '', dir);
-      case 'status':
-        return (Number(a.active) - Number(b.active)) * dir;
-      case 'name':
-      default:
-        return compareValues(a.name, b.name, dir);
-    }
-  };
-  const sortedPartners = [...filteredPartners].sort(comparePartners);
+  const hasActiveFilters = Boolean(filterName || filterStatus);
 
   const applyFilters = (e: FormEvent) => {
     e.preventDefault();
     setFilterName(draftFilterName);
-    setFilterDocument(draftFilterDocument);
     setFilterStatus(draftFilterStatus);
   };
 
   const clearFilters = () => {
     setDraftFilterName('');
-    setDraftFilterDocument('');
     setDraftFilterStatus('');
     setFilterName('');
-    setFilterDocument('');
     setFilterStatus('');
   };
 
-  const selectedPartners = partners.filter((p) => selectedIds.has(p.id));
-  const allSelectedActive = selectedPartners.length > 0 && selectedPartners.every((p) => p.active);
-  const allSelectedInactive = selectedPartners.length > 0 && selectedPartners.every((p) => !p.active);
+  const compareValues = (a: number, b: number, dir: number) => (a - b) * dir;
+  const compareProducts = (a: Product, b: Product) => {
+    const dir = sort.direction === 'asc' ? 1 : -1;
+    switch (sort.sortKey) {
+      case 'sku':
+        return a.sku.localeCompare(b.sku) * dir;
+      case 'stockQty':
+        return compareValues(a.stockQty, b.stockQty, dir);
+      case 'costPrice':
+        return compareValues(a.costPrice, b.costPrice, dir);
+      case 'salePrice':
+        return compareValues(a.salePrice ?? 0, b.salePrice ?? 0, dir);
+      case 'status':
+        return compareValues(Number(a.active), Number(b.active), dir);
+      case 'name':
+      default:
+        return a.name.localeCompare(b.name) * dir;
+    }
+  };
+  const sortedProducts = [...filteredProducts].sort(compareProducts);
+
+  const selectedProducts = products.filter((p) => selectedIds.has(p.id));
+  const allSelectedActive = selectedProducts.length > 0 && selectedProducts.every((p) => p.active);
+  const allSelectedInactive = selectedProducts.length > 0 && selectedProducts.every((p) => !p.active);
 
   const selectOnly = (id: string) => setSelectedIds(new Set([id]));
 
@@ -164,21 +142,18 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
 
   const toggleSelectAll = () => {
     setSelectedIds((prev) => {
-      if (filteredPartners.length > 0 && filteredPartners.every((p) => prev.has(p.id))) return new Set();
-      return new Set(filteredPartners.map((p) => p.id));
+      if (filteredProducts.length > 0 && filteredProducts.every((p) => prev.has(p.id))) return new Set();
+      return new Set(filteredProducts.map((p) => p.id));
     });
   };
 
   const resetForm = () => {
-    setPersonType('INDIVIDUAL');
     setName('');
-    setLegalName('');
-    setTradeName('');
-    setDocument('');
-    setType(partnerType);
-    setEmail('');
-    setPhone('');
-    setAddress('');
+    setUnit('un');
+    setCostPrice('0');
+    setSalePrice('');
+    setStockQty('0');
+    setMinStock('0');
     setError(null);
   };
 
@@ -188,17 +163,13 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
     setShowModal(true);
   };
 
-  const openEditModal = (partner: Partner) => {
-    setEditingId(partner.id);
-    setPersonType(partner.personType);
-    setName(partner.name);
-    setLegalName(partner.legalName ?? '');
-    setTradeName(partner.tradeName ?? '');
-    setDocument(partner.document ?? '');
-    setType(partner.type);
-    setEmail(partner.email ?? '');
-    setPhone(partner.phone ?? '');
-    setAddress(partner.address ?? '');
+  const openEditModal = (product: Product) => {
+    setEditingId(product.id);
+    setName(product.name);
+    setUnit(product.unit);
+    setCostPrice(String(product.costPrice));
+    setSalePrice(product.salePrice != null ? String(product.salePrice) : '');
+    setMinStock(String(product.minStock));
     setError(null);
     setShowModal(true);
   };
@@ -208,27 +179,40 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
       notify('Selecione exatamente um registro para editar.');
       return;
     }
-    const partner = partners.find((p) => p.id === [...selectedIds][0]);
-    if (partner) openEditModal(partner);
+    const product = products.find((p) => p.id === [...selectedIds][0]);
+    if (product) openEditModal(product);
+  };
+
+  const handleBomClick = () => {
+    if (selectedIds.size !== 1) {
+      notify('Selecione exatamente um produto para abrir a ficha técnica.');
+      return;
+    }
+    navigate(`/products/${[...selectedIds][0]}/bom`);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    const payload = {
-      personType,
-      document: document || null,
-      type,
-      email: email || null,
-      phone: phone || null,
-      address: address || null,
-      ...(personType === 'INDIVIDUAL' ? { name } : { legalName, tradeName }),
-    };
     try {
       if (editingId) {
-        await apiClient.patch(`/partners/${editingId}`, payload);
+        await apiClient.patch(`/products/${editingId}`, {
+          name,
+          unit,
+          costPrice: Number(costPrice),
+          salePrice: salePrice ? Number(salePrice) : null,
+          minStock: Number(minStock),
+        });
       } else {
-        await apiClient.post('/partners', payload);
+        await apiClient.post('/products', {
+          name,
+          type: productType,
+          unit,
+          costPrice: Number(costPrice),
+          salePrice: salePrice ? Number(salePrice) : undefined,
+          stockQty: Number(stockQty),
+          minStock: Number(minStock),
+        });
       }
       setShowModal(false);
       resetForm();
@@ -240,7 +224,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
   };
 
   const handleActivateClick = () => {
-    if (selectedPartners.length === 0) {
+    if (selectedProducts.length === 0) {
       notify('Selecione ao menos um registro inativo para ativar.');
       return;
     }
@@ -248,11 +232,11 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
       notify('Só é possível ativar em massa quando todos os selecionados estão inativos. Desmarque os que já estão ativos.');
       return;
     }
-    setBulkAction({ kind: 'activate', ids: selectedPartners.map((p) => p.id) });
+    setBulkAction({ kind: 'activate', ids: selectedProducts.map((p) => p.id) });
   };
 
   const handleDeactivateClick = () => {
-    if (selectedPartners.length === 0) {
+    if (selectedProducts.length === 0) {
       notify('Selecione ao menos um registro ativo para desativar.');
       return;
     }
@@ -260,7 +244,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
       notify('Só é possível desativar em massa quando todos os selecionados estão ativos. Desmarque os que já estão inativos.');
       return;
     }
-    setBulkAction({ kind: 'deactivate', ids: selectedPartners.map((p) => p.id) });
+    setBulkAction({ kind: 'deactivate', ids: selectedProducts.map((p) => p.id) });
   };
 
   const runBulkAction = async () => {
@@ -270,7 +254,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
     let failures = 0;
     for (const id of bulkAction.ids) {
       try {
-        await apiClient.patch(`/partners/${id}`, { active });
+        await apiClient.patch(`/products/${id}`, { active });
       } catch {
         failures += 1;
       }
@@ -285,20 +269,18 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
     }
   };
 
+  const singularLabel = productType === 'FINISHED_GOOD' ? 'Produto Acabado' : 'Insumo';
+
   return (
     <div>
       <div className="page-header">
-        <h1>{title}</h1>
+        <h1>{onlyLowStock ? `${title} com Estoque Baixo` : title}</h1>
       </div>
 
       <form className="filter-bar" onSubmit={applyFilters}>
         <div className="filter-field">
-          <label>Nome</label>
-          <input value={draftFilterName} onChange={(e) => setDraftFilterName(e.target.value)} placeholder="Buscar por nome..." />
-        </div>
-        <div className="filter-field">
-          <label>Documento</label>
-          <input value={draftFilterDocument} onChange={(e) => setDraftFilterDocument(e.target.value)} placeholder="CPF/CNPJ" />
+          <label>Nome / SKU</label>
+          <input value={draftFilterName} onChange={(e) => setDraftFilterName(e.target.value)} placeholder="Buscar..." />
         </div>
         <div className="filter-field">
           <label>Status</label>
@@ -340,6 +322,14 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
         >
           Desativar
         </button>
+        {productType === 'FINISHED_GOOD' && (
+          <button
+            className={`toolbar-btn${selectedIds.size !== 1 ? ' toolbar-btn--disabled' : ''}`}
+            onClick={handleBomClick}
+          >
+            Ficha Técnica
+          </button>
+        )}
         <button
           className="toolbar-btn"
           onClick={() => setShowColumnsModal(true)}
@@ -365,23 +355,21 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
               <th style={{ width: 32 }}>
                 <input
                   type="checkbox"
-                  checked={filteredPartners.length > 0 && filteredPartners.every((p) => selectedIds.has(p.id))}
+                  checked={filteredProducts.length > 0 && filteredProducts.every((p) => selectedIds.has(p.id))}
                   onChange={toggleSelectAll}
                   aria-label="Selecionar todos"
                 />
               </th>
+              {columns.isVisible('sku') && <th>SKU</th>}
               {columns.isVisible('name') && <th>Nome</th>}
-              {columns.isVisible('personType') && <th>Tipo de Pessoa</th>}
-              {columns.isVisible('type') && <th>Tipo</th>}
-              {columns.isVisible('document') && <th>Documento</th>}
-              {columns.isVisible('phone') && <th>Telefone</th>}
-              {columns.isVisible('email') && <th>Email</th>}
-              {columns.isVisible('address') && <th>Endereço</th>}
+              {columns.isVisible('stockQty') && <th>Estoque</th>}
+              {columns.isVisible('costPrice') && <th>Custo</th>}
+              {columns.isVisible('salePrice') && <th>Venda</th>}
               {columns.isVisible('status') && <th>Status</th>}
             </tr>
           </thead>
           <tbody>
-            {sortedPartners.map((p) => (
+            {sortedProducts.map((p) => (
               <tr
                 key={p.id}
                 data-selectable
@@ -396,13 +384,20 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
                     aria-label={`Selecionar ${p.name}`}
                   />
                 </td>
+                {columns.isVisible('sku') && <td>{p.sku}</td>}
                 {columns.isVisible('name') && <td>{p.name}</td>}
-                {columns.isVisible('personType') && <td>{PERSON_TYPE_LABELS[p.personType]}</td>}
-                {columns.isVisible('type') && <td>{TYPE_LABELS[p.type]}</td>}
-                {columns.isVisible('document') && <td>{p.document ?? '–'}</td>}
-                {columns.isVisible('phone') && <td>{p.phone ?? '–'}</td>}
-                {columns.isVisible('email') && <td>{p.email ?? '–'}</td>}
-                {columns.isVisible('address') && <td>{p.address ?? '–'}</td>}
+                {columns.isVisible('stockQty') && (
+                  <td>
+                    {p.stockQty} {p.unit}
+                    {p.stockQty <= p.minStock && (
+                      <span className="badge badge--warning" style={{ marginLeft: 6 }}>
+                        baixo
+                      </span>
+                    )}
+                  </td>
+                )}
+                {columns.isVisible('costPrice') && <td>R$ {p.costPrice.toFixed(2)}</td>}
+                {columns.isVisible('salePrice') && <td>{p.salePrice != null ? `R$ ${p.salePrice.toFixed(2)}` : '–'}</td>}
                 {columns.isVisible('status') && (
                   <td>
                     <span className={`badge ${p.active ? 'badge--success' : 'badge--danger'}`}>
@@ -414,7 +409,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
             ))}
           </tbody>
         </table>
-        {!loading && filteredPartners.length === 0 && (
+        {!loading && filteredProducts.length === 0 && (
           <div className="empty-state">
             {hasActiveFilters ? 'Nenhum registro encontrado para os filtros aplicados.' : 'Nenhum registro cadastrado.'}
           </div>
@@ -448,7 +443,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
           <p>
             {bulkAction.kind === 'activate'
               ? `Ativar ${bulkAction.ids.length} registro(s) selecionado(s)?`
-              : `Desativar ${bulkAction.ids.length} registro(s) selecionado(s)? Eles deixarão de aparecer nas listas de seleção de novos pedidos.`}
+              : `Desativar ${bulkAction.ids.length} registro(s) selecionado(s)? Eles deixarão de aparecer nas listas de seleção de novos pedidos/ordens.`}
           </p>
           <div className="form-actions">
             <button className="btn" onClick={runBulkAction} disabled={bulkRunning}>
@@ -462,68 +457,39 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
       )}
 
       {showModal && (
-        <Modal
-          title={editingId ? `Editar ${title === 'Clientes' ? 'Cliente' : 'Fornecedor'}` : `Novo ${title === 'Clientes' ? 'Cliente' : 'Fornecedor'}`}
-          onClose={() => setShowModal(false)}
-        >
+        <Modal title={editingId ? `Editar ${singularLabel}` : `Novo ${singularLabel}`} onClose={() => setShowModal(false)}>
           {error && <div className="alert alert--error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-field">
-                <label>Tipo de Pessoa *</label>
-                <select value={personType} onChange={(e) => setPersonType(e.target.value as typeof personType)}>
-                  <option value="INDIVIDUAL">Pessoa Física</option>
-                  <option value="COMPANY">Pessoa Jurídica</option>
-                </select>
+                <label>SKU</label>
+                <input value={editingId ? products.find((p) => p.id === editingId)?.sku ?? '' : ''} disabled placeholder="Gerado automaticamente ao salvar" />
               </div>
-              {personType === 'INDIVIDUAL' ? (
+              <div className="form-field">
+                <label>Nome *</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} required />
+              </div>
+              <div className="form-field">
+                <label>Unidade</label>
+                <input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="un, kg, L..." />
+              </div>
+              <div className="form-field">
+                <label>Preço de custo *</label>
+                <input type="number" step="0.01" min="0" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} required />
+              </div>
+              <div className="form-field">
+                <label>Preço de venda</label>
+                <input type="number" step="0.01" min="0" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} />
+              </div>
+              {!editingId && (
                 <div className="form-field">
-                  <label>Nome *</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} required />
+                  <label>Estoque inicial</label>
+                  <input type="number" step="0.0001" min="0" value={stockQty} onChange={(e) => setStockQty(e.target.value)} />
                 </div>
-              ) : (
-                <>
-                  <div className="form-field">
-                    <label>Razão Social *</label>
-                    <input
-                      value={legalName}
-                      onChange={(e) => setLegalName(e.target.value.toUpperCase())}
-                      required
-                    />
-                  </div>
-                  <div className="form-field">
-                    <label>Nome Fantasia *</label>
-                    <input
-                      value={tradeName}
-                      onChange={(e) => setTradeName(e.target.value.toUpperCase())}
-                      required
-                    />
-                  </div>
-                </>
               )}
               <div className="form-field">
-                <label>Tipo *</label>
-                <select value={type} onChange={(e) => setType(e.target.value as typeof type)}>
-                  <option value="CUSTOMER">Cliente</option>
-                  <option value="SUPPLIER">Fornecedor</option>
-                  <option value="BOTH">Cliente e Fornecedor</option>
-                </select>
-              </div>
-              <div className="form-field">
-                <label>CPF/CNPJ</label>
-                <input value={document} onChange={(e) => setDocument(formatCpfCnpj(e.target.value))} inputMode="numeric" />
-              </div>
-              <div className="form-field">
-                <label>Email</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div className="form-field">
-                <label>Telefone</label>
-                <input value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} inputMode="tel" />
-              </div>
-              <div className="form-field">
-                <label>Endereço</label>
-                <input value={address} onChange={(e) => setAddress(e.target.value)} />
+                <label>Estoque mínimo</label>
+                <input type="number" step="0.0001" min="0" value={minStock} onChange={(e) => setMinStock(e.target.value)} />
               </div>
             </div>
             <div className="form-actions">

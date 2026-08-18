@@ -125,8 +125,8 @@ export default function BomPage() {
 
   return (
     <div>
-      <Link to="/products" className="page-header__back">
-        <ArrowLeftIcon size={12} style={{ verticalAlign: -1.5 }} /> Produtos & Insumos
+      <Link to="/finished-goods" className="page-header__back">
+        <ArrowLeftIcon size={12} style={{ verticalAlign: -1.5 }} /> Produtos Acabados
       </Link>
       <div className="page-header">
         <h1>Ficha Técnica{product ? ` — ${product.name}` : ''}</h1>
