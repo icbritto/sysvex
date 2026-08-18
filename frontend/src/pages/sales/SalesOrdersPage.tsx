@@ -137,19 +137,19 @@ export default function SalesOrdersPage() {
     <div>
       <div className="page-header">
         <h1>Pedidos de Venda</h1>
-        <button className="btn" onClick={openCreateModal}>
-          + Novo Pedido
-        </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <button className="btn btn--secondary btn--sm" disabled={!selectedOrder} onClick={handleOpen}>
+      <div className="toolbar">
+        <button className="toolbar-btn" onClick={openCreateModal}>
+          Criar
+        </button>
+        <button className="toolbar-btn" disabled={!selectedOrder} onClick={handleOpen}>
           Abrir
         </button>
-        <button className="btn btn--sm" disabled={selectedOrder?.status !== 'DRAFT'} onClick={handleConfirm}>
+        <button className="toolbar-btn" disabled={selectedOrder?.status !== 'DRAFT'} onClick={handleConfirm}>
           Confirmar
         </button>
-        <button className="btn btn--danger btn--sm" disabled={selectedOrder?.status !== 'DRAFT'} onClick={handleCancel}>
+        <button className="toolbar-btn" disabled={selectedOrder?.status !== 'DRAFT'} onClick={handleCancel}>
           Cancelar
         </button>
       </div>
