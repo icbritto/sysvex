@@ -31,7 +31,7 @@
   --sysvex-chrome-hover: rgba(29, 45, 62, 0.08);
   --sysvex-chrome-active: rgba(29, 45, 62, 0.14);
   --sysvex-avatar-bg: #0a6ed1;
-  font-family: '72', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 [data-theme='dark'] {
@@ -940,12 +940,6 @@ table.data-table {
   color: var(--sysvex-text-muted);
   opacity: 0.55;
   cursor: not-allowed;
-}
-
-/* Fonte Inter aplicada só nas telas da linha de negócio de Vendas (piloto do
-   novo padrão de toolbar antes de virar ERP-wide). */
-.vendas-scope {
-  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .badge {
