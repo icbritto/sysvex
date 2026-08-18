@@ -194,6 +194,19 @@ export function MenuIcon(props: IconProps) {
   );
 }
 
+export function ListIcon(props: IconProps) {
+  return (
+    <Base {...props}>
+      <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" />
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+    </Base>
+  );
+}
+
 export function ChevronDownIcon(props: IconProps) {
   return (
     <Base {...props}>

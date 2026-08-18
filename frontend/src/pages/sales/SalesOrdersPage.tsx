@@ -7,6 +7,7 @@ import StatusBadge from '../../components/StatusBadge';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
+import { ListIcon } from '../../icons';
 
 const COLUMNS: ColumnDef[] = [
   { key: 'orderNumber', label: 'Número' },
@@ -309,8 +310,13 @@ export default function SalesOrdersPage() {
         >
           Cancelar
         </button>
-        <button className="toolbar-btn" onClick={() => setShowColumnsModal(true)}>
-          Colunas
+        <button
+          className="toolbar-btn"
+          onClick={() => setShowColumnsModal(true)}
+          title="Colunas"
+          aria-label="Colunas visíveis"
+        >
+          <ListIcon size={16} />
         </button>
       </div>
 

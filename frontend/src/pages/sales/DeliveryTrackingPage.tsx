@@ -4,6 +4,7 @@ import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
 import StatusBadge from '../../components/StatusBadge';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
+import { ListIcon } from '../../icons';
 
 const COLUMNS: ColumnDef[] = [
   { key: 'orderNumber', label: 'Número' },
@@ -78,8 +79,13 @@ export default function DeliveryTrackingPage() {
       </div>
 
       <div className="toolbar">
-        <button className="toolbar-btn" onClick={() => setShowColumnsModal(true)}>
-          Colunas
+        <button
+          className="toolbar-btn"
+          onClick={() => setShowColumnsModal(true)}
+          title="Colunas"
+          aria-label="Colunas visíveis"
+        >
+          <ListIcon size={16} />
         </button>
       </div>
 
