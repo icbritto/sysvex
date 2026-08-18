@@ -931,12 +931,14 @@ table.data-table {
   font-weight: 600;
   color: #265a4d;
   cursor: pointer;
+  text-decoration: none;
 }
-.toolbar-btn:hover:not(:disabled) {
+.toolbar-btn:hover:not(:disabled):not(.toolbar-btn--disabled) {
   background: color-mix(in srgb, #265a4d 12%, var(--sysvex-surface));
   color: color-mix(in srgb, #265a4d, black 15%);
 }
-.toolbar-btn:disabled {
+.toolbar-btn:disabled,
+.toolbar-btn--disabled {
   color: var(--sysvex-text-muted);
   opacity: 0.55;
   cursor: not-allowed;
