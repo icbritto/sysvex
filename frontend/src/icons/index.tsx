@@ -207,6 +207,25 @@ export function ListIcon(props: IconProps) {
   );
 }
 
+export function FilterIcon(props: IconProps) {
+  return (
+    <Base {...props}>
+      <polygon points="3,4 21,4 14,12.5 14,19 10,21 10,12.5" />
+    </Base>
+  );
+}
+
+export function InspectionIcon(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+      <path d="M15 3v4h4" />
+      <circle cx="11" cy="14" r="3" />
+      <line x1="13.3" y1="16.3" x2="16" y2="19" />
+    </Base>
+  );
+}
+
 export function ChevronDownIcon(props: IconProps) {
   return (
     <Base {...props}>

@@ -7,7 +7,7 @@ import StatusBadge from '../../components/StatusBadge';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
-import { ListIcon } from '../../icons';
+import { FilterIcon, ListIcon } from '../../icons';
 
 const COLUMNS: ColumnDef[] = [
   { key: 'orderNumber', label: 'Número' },
@@ -278,8 +278,8 @@ export default function SalesOrdersPage() {
           <label>Data</label>
           <input type="date" value={draftFilterDate} onChange={(e) => setDraftFilterDate(e.target.value)} />
         </div>
-        <button type="submit" className="btn btn--sm">
-          Filtrar
+        <button type="submit" className="btn btn--sm" title="Filtrar" aria-label="Filtrar">
+          <FilterIcon size={14} />
         </button>
         {hasActiveFilters && (
           <button type="button" className="filter-bar__clear" onClick={clearFilters}>
