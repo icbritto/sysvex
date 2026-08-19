@@ -127,6 +127,24 @@ export default function SalesOrdersPage() {
     }
   };
   const sortedOrders = [...filteredOrders].sort(compareOrders);
+  const visibleColumns = columns.orderedColumns.filter((c) => columns.isVisible(c.key));
+
+  const renderCell = (key: string, o: SalesOrder) => {
+    switch (key) {
+      case 'orderNumber':
+        return o.orderNumber;
+      case 'customer':
+        return o.customer?.name;
+      case 'orderDate':
+        return o.orderDate;
+      case 'totalAmount':
+        return `R$ ${o.totalAmount.toFixed(2)}`;
+      case 'status':
+        return <StatusBadge status={o.status} />;
+      default:
+        return null;
+    }
+  };
 
   const applyFilters = (e: FormEvent) => {
     e.preventDefault();
@@ -362,11 +380,9 @@ export default function SalesOrdersPage() {
                   aria-label="Selecionar todos"
                 />
               </th>
-              {columns.isVisible('orderNumber') && <th>Número</th>}
-              {columns.isVisible('customer') && <th>Cliente</th>}
-              {columns.isVisible('orderDate') && <th>Data</th>}
-              {columns.isVisible('totalAmount') && <th>Total</th>}
-              {columns.isVisible('status') && <th>Status</th>}
+              {visibleColumns.map((c) => (
+                <th key={c.key}>{c.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -385,15 +401,9 @@ export default function SalesOrdersPage() {
                     aria-label={`Selecionar pedido ${o.orderNumber}`}
                   />
                 </td>
-                {columns.isVisible('orderNumber') && <td>{o.orderNumber}</td>}
-                {columns.isVisible('customer') && <td>{o.customer?.name}</td>}
-                {columns.isVisible('orderDate') && <td>{o.orderDate}</td>}
-                {columns.isVisible('totalAmount') && <td>R$ {o.totalAmount.toFixed(2)}</td>}
-                {columns.isVisible('status') && (
-                  <td>
-                    <StatusBadge status={o.status} />
-                  </td>
-                )}
+                {visibleColumns.map((c) => (
+                  <td key={c.key}>{renderCell(c.key, o)}</td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -407,9 +417,11 @@ export default function SalesOrdersPage() {
 
       {showColumnsModal && (
         <ColumnVisibilityModal
-          columns={COLUMNS}
+          orderedColumns={columns.orderedColumns}
           isVisible={columns.isVisible}
           onToggle={columns.toggle}
+          onMoveUp={columns.moveUp}
+          onMoveDown={columns.moveDown}
           onClose={() => setShowColumnsModal(false)}
         />
       )}

@@ -102,6 +102,30 @@ export default function DeliveryTrackingPage() {
     }
   };
   const sortedOrders = [...filteredOrders].sort(compareOrders);
+  const visibleColumns = columns.orderedColumns.filter((c) => columns.isVisible(c.key));
+
+  const renderCell = (key: string, o: SalesOrder) => {
+    switch (key) {
+      case 'orderNumber':
+        return o.orderNumber;
+      case 'customer':
+        return o.customer?.name;
+      case 'orderDate':
+        return o.orderDate;
+      case 'totalAmount':
+        return `R$ ${o.totalAmount.toFixed(2)}`;
+      case 'deliveryStatus':
+        return <StatusBadge status={o.deliveryStatus} />;
+      case 'shippedAt':
+        return formatDate(o.shippedAt);
+      case 'deliveredAt':
+        return formatDate(o.deliveredAt);
+      case 'address':
+        return o.customer?.address ?? '–';
+      default:
+        return null;
+    }
+  };
 
   const applyFilters = (e: FormEvent) => {
     e.preventDefault();
@@ -292,14 +316,9 @@ export default function DeliveryTrackingPage() {
                   aria-label="Selecionar todos"
                 />
               </th>
-              {columns.isVisible('orderNumber') && <th>Número</th>}
-              {columns.isVisible('customer') && <th>Cliente</th>}
-              {columns.isVisible('orderDate') && <th>Data do pedido</th>}
-              {columns.isVisible('totalAmount') && <th>Total</th>}
-              {columns.isVisible('deliveryStatus') && <th>Status da entrega</th>}
-              {columns.isVisible('shippedAt') && <th>Enviado em</th>}
-              {columns.isVisible('deliveredAt') && <th>Entregue em</th>}
-              {columns.isVisible('address') && <th>Endereço</th>}
+              {visibleColumns.map((c) => (
+                <th key={c.key}>{c.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -318,18 +337,9 @@ export default function DeliveryTrackingPage() {
                     aria-label={`Selecionar pedido ${o.orderNumber}`}
                   />
                 </td>
-                {columns.isVisible('orderNumber') && <td>{o.orderNumber}</td>}
-                {columns.isVisible('customer') && <td>{o.customer?.name}</td>}
-                {columns.isVisible('orderDate') && <td>{o.orderDate}</td>}
-                {columns.isVisible('totalAmount') && <td>R$ {o.totalAmount.toFixed(2)}</td>}
-                {columns.isVisible('deliveryStatus') && (
-                  <td>
-                    <StatusBadge status={o.deliveryStatus} />
-                  </td>
-                )}
-                {columns.isVisible('shippedAt') && <td>{formatDate(o.shippedAt)}</td>}
-                {columns.isVisible('deliveredAt') && <td>{formatDate(o.deliveredAt)}</td>}
-                {columns.isVisible('address') && <td>{o.customer?.address ?? '–'}</td>}
+                {visibleColumns.map((c) => (
+                  <td key={c.key}>{renderCell(c.key, o)}</td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -343,9 +353,11 @@ export default function DeliveryTrackingPage() {
 
       {showColumnsModal && (
         <ColumnVisibilityModal
-          columns={COLUMNS}
+          orderedColumns={columns.orderedColumns}
           isVisible={columns.isVisible}
           onToggle={columns.toggle}
+          onMoveUp={columns.moveUp}
+          onMoveDown={columns.moveDown}
           onClose={() => setShowColumnsModal(false)}
         />
       )}
