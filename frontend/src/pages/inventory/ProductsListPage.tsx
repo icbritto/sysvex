@@ -124,6 +124,35 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
     }
   };
   const sortedProducts = [...filteredProducts].sort(compareProducts);
+  const visibleColumns = columns.orderedColumns.filter((c) => columns.isVisible(c.key));
+
+  const renderCell = (key: string, p: Product) => {
+    switch (key) {
+      case 'sku':
+        return p.sku;
+      case 'name':
+        return p.name;
+      case 'stockQty':
+        return (
+          <>
+            {p.stockQty} {p.unit}
+            {p.stockQty <= p.minStock && (
+              <span className="badge badge--warning" style={{ marginLeft: 6 }}>
+                baixo
+              </span>
+            )}
+          </>
+        );
+      case 'costPrice':
+        return `R$ ${p.costPrice.toFixed(2)}`;
+      case 'salePrice':
+        return p.salePrice != null ? `R$ ${p.salePrice.toFixed(2)}` : '–';
+      case 'status':
+        return <span className={`badge ${p.active ? 'badge--success' : 'badge--danger'}`}>{p.active ? 'Ativo' : 'Inativo'}</span>;
+      default:
+        return null;
+    }
+  };
 
   const selectedProducts = products.filter((p) => selectedIds.has(p.id));
   const allSelectedActive = selectedProducts.length > 0 && selectedProducts.every((p) => p.active);
@@ -360,12 +389,9 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
                   aria-label="Selecionar todos"
                 />
               </th>
-              {columns.isVisible('sku') && <th>SKU</th>}
-              {columns.isVisible('name') && <th>Nome</th>}
-              {columns.isVisible('stockQty') && <th>Estoque</th>}
-              {columns.isVisible('costPrice') && <th>Custo</th>}
-              {columns.isVisible('salePrice') && <th>Venda</th>}
-              {columns.isVisible('status') && <th>Status</th>}
+              {visibleColumns.map((c) => (
+                <th key={c.key}>{c.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -384,27 +410,9 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
                     aria-label={`Selecionar ${p.name}`}
                   />
                 </td>
-                {columns.isVisible('sku') && <td>{p.sku}</td>}
-                {columns.isVisible('name') && <td>{p.name}</td>}
-                {columns.isVisible('stockQty') && (
-                  <td>
-                    {p.stockQty} {p.unit}
-                    {p.stockQty <= p.minStock && (
-                      <span className="badge badge--warning" style={{ marginLeft: 6 }}>
-                        baixo
-                      </span>
-                    )}
-                  </td>
-                )}
-                {columns.isVisible('costPrice') && <td>R$ {p.costPrice.toFixed(2)}</td>}
-                {columns.isVisible('salePrice') && <td>{p.salePrice != null ? `R$ ${p.salePrice.toFixed(2)}` : '–'}</td>}
-                {columns.isVisible('status') && (
-                  <td>
-                    <span className={`badge ${p.active ? 'badge--success' : 'badge--danger'}`}>
-                      {p.active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                )}
+                {visibleColumns.map((c) => (
+                  <td key={c.key}>{renderCell(c.key, p)}</td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -418,9 +426,11 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
 
       {showColumnsModal && (
         <ColumnVisibilityModal
-          columns={COLUMNS}
+          orderedColumns={columns.orderedColumns}
           isVisible={columns.isVisible}
           onToggle={columns.toggle}
+          onMoveUp={columns.moveUp}
+          onMoveDown={columns.moveDown}
           onClose={() => setShowColumnsModal(false)}
         />
       )}

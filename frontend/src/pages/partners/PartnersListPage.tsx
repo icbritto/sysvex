@@ -130,6 +130,30 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
     }
   };
   const sortedPartners = [...filteredPartners].sort(comparePartners);
+  const visibleColumns = columns.orderedColumns.filter((c) => columns.isVisible(c.key));
+
+  const renderCell = (key: string, p: Partner) => {
+    switch (key) {
+      case 'name':
+        return p.name;
+      case 'personType':
+        return PERSON_TYPE_LABELS[p.personType];
+      case 'type':
+        return TYPE_LABELS[p.type];
+      case 'document':
+        return p.document ?? '–';
+      case 'phone':
+        return p.phone ?? '–';
+      case 'email':
+        return p.email ?? '–';
+      case 'address':
+        return p.address ?? '–';
+      case 'status':
+        return <span className={`badge ${p.active ? 'badge--success' : 'badge--danger'}`}>{p.active ? 'Ativo' : 'Inativo'}</span>;
+      default:
+        return null;
+    }
+  };
 
   const applyFilters = (e: FormEvent) => {
     e.preventDefault();
@@ -370,14 +394,9 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
                   aria-label="Selecionar todos"
                 />
               </th>
-              {columns.isVisible('name') && <th>Nome</th>}
-              {columns.isVisible('personType') && <th>Tipo de Pessoa</th>}
-              {columns.isVisible('type') && <th>Tipo</th>}
-              {columns.isVisible('document') && <th>Documento</th>}
-              {columns.isVisible('phone') && <th>Telefone</th>}
-              {columns.isVisible('email') && <th>Email</th>}
-              {columns.isVisible('address') && <th>Endereço</th>}
-              {columns.isVisible('status') && <th>Status</th>}
+              {visibleColumns.map((c) => (
+                <th key={c.key}>{c.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -396,20 +415,9 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
                     aria-label={`Selecionar ${p.name}`}
                   />
                 </td>
-                {columns.isVisible('name') && <td>{p.name}</td>}
-                {columns.isVisible('personType') && <td>{PERSON_TYPE_LABELS[p.personType]}</td>}
-                {columns.isVisible('type') && <td>{TYPE_LABELS[p.type]}</td>}
-                {columns.isVisible('document') && <td>{p.document ?? '–'}</td>}
-                {columns.isVisible('phone') && <td>{p.phone ?? '–'}</td>}
-                {columns.isVisible('email') && <td>{p.email ?? '–'}</td>}
-                {columns.isVisible('address') && <td>{p.address ?? '–'}</td>}
-                {columns.isVisible('status') && (
-                  <td>
-                    <span className={`badge ${p.active ? 'badge--success' : 'badge--danger'}`}>
-                      {p.active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                )}
+                {visibleColumns.map((c) => (
+                  <td key={c.key}>{renderCell(c.key, p)}</td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -423,9 +431,11 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
 
       {showColumnsModal && (
         <ColumnVisibilityModal
-          columns={COLUMNS}
+          orderedColumns={columns.orderedColumns}
           isVisible={columns.isVisible}
           onToggle={columns.toggle}
+          onMoveUp={columns.moveUp}
+          onMoveDown={columns.moveDown}
           onClose={() => setShowColumnsModal(false)}
         />
       )}

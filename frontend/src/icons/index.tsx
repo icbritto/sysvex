@@ -318,6 +318,24 @@ export function EyeIcon({ off, ...props }: IconProps & { off?: boolean }) {
   );
 }
 
+export function ArrowUpIcon(props: IconProps) {
+  return (
+    <Base {...props}>
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="6,11 12,5 18,11" />
+    </Base>
+  );
+}
+
+export function ArrowDownIcon(props: IconProps) {
+  return (
+    <Base {...props}>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <polyline points="6,13 12,19 18,13" />
+    </Base>
+  );
+}
+
 export function SortIcon(props: IconProps) {
   return (
     <Base {...props}>
