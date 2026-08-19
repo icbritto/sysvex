@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
+import Spinner from '../../components/Spinner';
 import { ArrowLeftIcon } from '../../icons';
 
 interface Product {
@@ -134,131 +135,141 @@ export default function BomPage() {
 
       {error && <div className="alert alert--error">{error}</div>}
 
-      <div className="card">
-        <h2 style={{ marginTop: 0, fontSize: 15 }}>Receitas</h2>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-          {recipes.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              className={`btn btn--sm ${r.id === selectedRecipeId ? '' : 'btn--secondary'}`}
-              onClick={() => setSelectedRecipeId(r.id)}
-            >
-              {r.name}
-              {r.isDefault ? ' (Padrão)' : ''}
-            </button>
-          ))}
+      {!product && (
+        <div className="loading-state">
+          <Spinner />
         </div>
+      )}
 
-        <form onSubmit={handleCreateRecipe} className="form-grid">
-          <div className="form-field">
-            <label>Nova receita</label>
-            <input
-              type="text"
-              value={newRecipeName}
-              onChange={(e) => setNewRecipeName(e.target.value)}
-              placeholder="Ex.: Receita sem lactose"
-              required
-            />
-          </div>
-          <div className="form-field" style={{ alignSelf: 'end' }}>
-            <button className="btn btn--secondary" type="submit">
-              + Adicionar receita
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {selectedRecipe && (
+      {product && (
         <>
           <div className="card">
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-              <form onSubmit={handleRename} className="form-field" style={{ flex: 1, minWidth: 220 }}>
-                <label>Nome da receita</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} required />
-                  <button className="btn btn--secondary btn--sm" type="submit">
-                    Salvar nome
-                  </button>
-                </div>
-              </form>
-              {!selectedRecipe.isDefault && (
-                <button className="btn btn--secondary btn--sm" onClick={handleSetDefault}>
-                  Tornar padrão
+            <h2 style={{ marginTop: 0, fontSize: 15 }}>Receitas</h2>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+              {recipes.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className={`btn btn--sm ${r.id === selectedRecipeId ? '' : 'btn--secondary'}`}
+                  onClick={() => setSelectedRecipeId(r.id)}
+                >
+                  {r.name}
+                  {r.isDefault ? ' (Padrão)' : ''}
                 </button>
-              )}
-              <button className="btn btn--danger btn--sm" onClick={handleDeleteRecipe}>
-                Excluir receita
-              </button>
+              ))}
             </div>
-          </div>
 
-          <div className="card">
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Insumo</th>
-                    <th>Quantidade por unidade produzida</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedRecipe.items.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        {item.rawMaterial.name} ({item.rawMaterial.sku})
-                      </td>
-                      <td>
-                        {item.quantity} {item.rawMaterial.unit}
-                      </td>
-                      <td>
-                        <button className="btn btn--danger btn--sm" onClick={() => handleRemoveItem(item.id)}>
-                          Remover
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {selectedRecipe.items.length === 0 && <div className="empty-state">Nenhum insumo cadastrado nesta receita.</div>}
-            </div>
-          </div>
-
-          <div className="card">
-            <h2 style={{ marginTop: 0, fontSize: 15 }}>Adicionar insumo</h2>
-            <form onSubmit={handleAddItem}>
-              <div className="form-grid">
-                <div className="form-field">
-                  <label>Insumo *</label>
-                  <select value={rawMaterialId} onChange={(e) => setRawMaterialId(e.target.value)} required>
-                    <option value="">Selecione...</option>
-                    {rawMaterials.map((rm) => (
-                      <option key={rm.id} value={rm.id}>
-                        {rm.name} ({rm.sku})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-field">
-                  <label>Quantidade por unidade *</label>
-                  <input type="number" step="0.000001" min="0.000001" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
-                </div>
+            <form onSubmit={handleCreateRecipe} className="form-grid">
+              <div className="form-field">
+                <label>Nova receita</label>
+                <input
+                  type="text"
+                  value={newRecipeName}
+                  onChange={(e) => setNewRecipeName(e.target.value)}
+                  placeholder="Ex.: Receita sem lactose"
+                  required
+                />
               </div>
-              <div className="form-actions">
-                <button className="btn" type="submit">
-                  Adicionar
+              <div className="form-field" style={{ alignSelf: 'end' }}>
+                <button className="btn btn--secondary" type="submit">
+                  + Adicionar receita
                 </button>
               </div>
             </form>
           </div>
-        </>
-      )}
 
-      {recipes.length === 0 && (
-        <div className="card">
-          <div className="empty-state">Nenhuma receita cadastrada para este produto ainda.</div>
-        </div>
+          {selectedRecipe && (
+            <>
+              <div className="card">
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                  <form onSubmit={handleRename} className="form-field" style={{ flex: 1, minWidth: 220 }}>
+                    <label>Nome da receita</label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} required />
+                      <button className="btn btn--secondary btn--sm" type="submit">
+                        Salvar nome
+                      </button>
+                    </div>
+                  </form>
+                  {!selectedRecipe.isDefault && (
+                    <button className="btn btn--secondary btn--sm" onClick={handleSetDefault}>
+                      Tornar padrão
+                    </button>
+                  )}
+                  <button className="btn btn--danger btn--sm" onClick={handleDeleteRecipe}>
+                    Excluir receita
+                  </button>
+                </div>
+              </div>
+
+              <div className="card">
+                <div className="table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Insumo</th>
+                        <th>Quantidade por unidade produzida</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedRecipe.items.map((item) => (
+                        <tr key={item.id}>
+                          <td>
+                            {item.rawMaterial.name} ({item.rawMaterial.sku})
+                          </td>
+                          <td>
+                            {item.quantity} {item.rawMaterial.unit}
+                          </td>
+                          <td>
+                            <button className="btn btn--danger btn--sm" onClick={() => handleRemoveItem(item.id)}>
+                              Remover
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {selectedRecipe.items.length === 0 && <div className="empty-state">Nenhum insumo cadastrado nesta receita.</div>}
+                </div>
+              </div>
+
+              <div className="card">
+                <h2 style={{ marginTop: 0, fontSize: 15 }}>Adicionar insumo</h2>
+                <form onSubmit={handleAddItem}>
+                  <div className="form-grid">
+                    <div className="form-field">
+                      <label>Insumo *</label>
+                      <select value={rawMaterialId} onChange={(e) => setRawMaterialId(e.target.value)} required>
+                        <option value="">Selecione...</option>
+                        {rawMaterials.map((rm) => (
+                          <option key={rm.id} value={rm.id}>
+                            {rm.name} ({rm.sku})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-field">
+                      <label>Quantidade por unidade *</label>
+                      <input type="number" step="0.000001" min="0.000001" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <button className="btn" type="submit">
+                      Adicionar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </>
+          )}
+
+          {recipes.length === 0 && (
+            <div className="card">
+              <div className="empty-state">Nenhuma receita cadastrada para este produto ainda.</div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

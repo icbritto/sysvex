@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../../api/client';
+import Spinner from '../../components/Spinner';
 
 interface SystemStatus {
   appVersion: string;
@@ -56,6 +57,12 @@ export default function SystemStatusPage() {
           {loading ? 'Atualizando…' : 'Atualizar'}
         </button>
       </div>
+
+      {loading && !status && (
+        <div className="loading-state">
+          <Spinner />
+        </div>
+      )}
 
       {status && (
         <>

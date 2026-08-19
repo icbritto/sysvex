@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import apiClient from '../../api/client';
+import Spinner from '../../components/Spinner';
 
 interface CashFlowSummary {
   startDate: string;
@@ -20,9 +21,14 @@ export default function CashFlowPage() {
   const [startDate, setStartDate] = useState(firstDayOfMonth());
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
   const [summary, setSummary] = useState<CashFlowSummary | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const load = () => {
-    apiClient.get<CashFlowSummary>('/finance/cash-flow', { params: { startDate, endDate } }).then((res) => setSummary(res.data));
+    setLoading(true);
+    apiClient
+      .get<CashFlowSummary>('/finance/cash-flow', { params: { startDate, endDate } })
+      .then((res) => setSummary(res.data))
+      .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
@@ -54,7 +60,13 @@ export default function CashFlowPage() {
         </button>
       </form>
 
-      {summary && (
+      {loading && (
+        <div className="loading-state">
+          <Spinner />
+        </div>
+      )}
+
+      {!loading && summary && (
         <div className="kpi-row">
           <div className="kpi-tile">
             <div className="kpi-tile__label">Recebido no período</div>
