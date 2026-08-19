@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
+import Spinner from '../../components/Spinner';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
 import { useSort } from '../../hooks/useSort';
 import SortModal from '../../components/SortModal';
@@ -422,6 +423,11 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
             ))}
           </tbody>
         </table>
+        {loading && (
+          <div className="loading-state">
+            <Spinner />
+          </div>
+        )}
         {!loading && filteredPartners.length === 0 && (
           <div className="empty-state">
             {hasActiveFilters ? 'Nenhum registro encontrado para os filtros aplicados.' : 'Nenhum registro cadastrado.'}
