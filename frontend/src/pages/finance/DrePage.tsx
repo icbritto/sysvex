@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import apiClient from '../../api/client';
+import Spinner from '../../components/Spinner';
 
 interface DreSummary {
   startDate: string;
@@ -18,9 +19,14 @@ export default function DrePage() {
   const [startDate, setStartDate] = useState(firstDayOfMonth());
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
   const [summary, setSummary] = useState<DreSummary | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const load = () => {
-    apiClient.get<DreSummary>('/finance/dre', { params: { startDate, endDate } }).then((res) => setSummary(res.data));
+    setLoading(true);
+    apiClient
+      .get<DreSummary>('/finance/dre', { params: { startDate, endDate } })
+      .then((res) => setSummary(res.data))
+      .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
@@ -55,7 +61,13 @@ export default function DrePage() {
         </button>
       </form>
 
-      {summary && (
+      {loading && (
+        <div className="loading-state">
+          <Spinner />
+        </div>
+      )}
+
+      {!loading && summary && (
         <div className="card">
           <table className="data-table">
             <tbody>
