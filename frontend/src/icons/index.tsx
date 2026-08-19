@@ -318,6 +318,17 @@ export function EyeIcon({ off, ...props }: IconProps & { off?: boolean }) {
   );
 }
 
+export function SortIcon(props: IconProps) {
+  return (
+    <Base {...props}>
+      <polyline points="4,7 7,4 10,7" />
+      <line x1="7" y1="4" x2="7" y2="20" />
+      <polyline points="20,17 17,20 14,17" />
+      <line x1="17" y1="4" x2="17" y2="20" />
+    </Base>
+  );
+}
+
 export function TruckIcon(props: IconProps) {
   return (
     <Base {...props}>

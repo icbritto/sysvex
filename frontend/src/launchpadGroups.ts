@@ -65,8 +65,9 @@ export const LAUNCHPAD_GROUPS: LaunchpadGroup[] = [
     color: '#6f42c1',
     colorDark: '#c9a6f0',
     tiles: [
-      { to: '/products', icon: 'package', title: 'Produtos & Insumos', kpiLabel: 'Cadastrados', kpiCountKey: 'products' },
-      { to: '/products?lowStock=1', icon: 'alert-triangle', title: 'Estoque Baixo', kpiLabel: 'Alertas', kpiCountKey: 'lowStock' },
+      { to: '/finished-goods', icon: 'package', title: 'Produtos Acabados' },
+      { to: '/raw-materials', icon: 'layers', title: 'Insumos (Matéria-Prima)' },
+      { to: '/raw-materials?lowStock=1', icon: 'alert-triangle', title: 'Estoque Baixo', kpiLabel: 'Alertas', kpiCountKey: 'lowStock' },
       { to: '/production-orders', icon: 'layers', title: 'Ordens de Produção', kpiLabel: 'Total', kpiCountKey: 'productionOrders' },
       { to: '/inventory/movements', icon: 'clipboard-list', title: 'Movimentações de Estoque' },
     ],

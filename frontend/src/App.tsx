@@ -8,7 +8,8 @@ import Login from './pages/Login';
 import Launchpad from './pages/Launchpad';
 import CustomersPage from './pages/partners/CustomersPage';
 import SuppliersPage from './pages/partners/SuppliersPage';
-import ProductsPage from './pages/inventory/ProductsPage';
+import FinishedGoodsPage from './pages/inventory/FinishedGoodsPage';
+import RawMaterialsPage from './pages/inventory/RawMaterialsPage';
 import BomPage from './pages/inventory/BomPage';
 import ProductionOrdersPage from './pages/inventory/ProductionOrdersPage';
 import StockMovementsPage from './pages/inventory/StockMovementsPage';
@@ -42,7 +43,8 @@ export default function App() {
                 <Route path="/lines/:key" element={<BusinessLineOverviewPage />} />
                 <Route path="/customers" element={<CustomersPage />} />
                 <Route path="/suppliers" element={<SuppliersPage />} />
-                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/finished-goods" element={<FinishedGoodsPage />} />
+                <Route path="/raw-materials" element={<RawMaterialsPage />} />
                 <Route path="/products/:productId/bom" element={<BomPage />} />
                 <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
                 <Route path="/sales-orders" element={<SalesOrdersPage />} />
