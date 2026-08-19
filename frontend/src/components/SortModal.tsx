@@ -34,7 +34,7 @@ export default function SortModal({ options, sortKey, direction, onChange, onClo
           );
         })}
       </div>
-      <div className="form-actions">
+      <div className="form-actions form-actions--end">
         <button className="btn btn--sm" onClick={onClose}>
           OK
         </button>

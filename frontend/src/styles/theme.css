@@ -1149,6 +1149,10 @@ table.data-table {
   margin-top: 4px;
 }
 
+.form-actions--end {
+  justify-content: flex-end;
+}
+
 .alert {
   padding: 10px 14px;
   border-radius: 6px;
