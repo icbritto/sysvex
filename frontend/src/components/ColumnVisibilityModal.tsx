@@ -53,7 +53,7 @@ export default function ColumnVisibilityModal({
           </div>
         ))}
       </div>
-      <div className="form-actions form-actions--end">
+      <div className="form-actions">
         <button className="btn btn--sm" onClick={onClose}>
           OK
         </button>

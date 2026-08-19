@@ -1145,12 +1145,9 @@ table.data-table {
 
 .form-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
   margin-top: 4px;
-}
-
-.form-actions--end {
-  justify-content: flex-end;
 }
 
 .alert {
