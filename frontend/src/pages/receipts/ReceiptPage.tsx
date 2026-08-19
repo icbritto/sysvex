@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toDataURL } from 'qrcode';
 import apiClient from '../../api/client';
+import Spinner from '../../components/Spinner';
 import { buildPixPayload } from '../../utils/pixPayload';
 import { PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { PIX_KEY_TYPE_LABELS, PixKeyType } from '../../constants/pixKeyTypes';
@@ -158,7 +159,11 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
     return <div className="empty-state">{error}</div>;
   }
   if (!order || !settings) {
-    return <div className="empty-state">Carregando recibo...</div>;
+    return (
+      <div className="loading-state loading-state--fullpage">
+        <Spinner size={28} />
+      </div>
+    );
   }
 
   const partner = kind === 'sales' ? order.customer : order.supplier;

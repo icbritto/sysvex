@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import StatusBadge from '../../components/StatusBadge';
+import Spinner from '../../components/Spinner';
 import { ArrowLeftIcon, InspectionIcon } from '../../icons';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
@@ -145,7 +146,11 @@ export default function SalesOrderDetailPage() {
   };
 
   if (!order) {
-    return <div className="empty-state">Carregando...</div>;
+    return (
+      <div className="loading-state">
+        <Spinner />
+      </div>
+    );
   }
 
   return (

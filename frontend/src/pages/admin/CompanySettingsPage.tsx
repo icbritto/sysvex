@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import apiClient, { extractErrorMessage } from '../../api/client';
+import Spinner from '../../components/Spinner';
 import { PIX_KEY_TYPES, PIX_KEY_TYPE_LABELS, PIX_KEY_TYPE_PLACEHOLDERS, PixKeyType } from '../../constants/pixKeyTypes';
 
 interface CompanySettings {
@@ -64,7 +65,11 @@ export default function CompanySettingsPage() {
   };
 
   if (loading || !settings) {
-    return <div className="empty-state">Carregando...</div>;
+    return (
+      <div className="loading-state">
+        <Spinner />
+      </div>
+    );
   }
 
   return (

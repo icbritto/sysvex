@@ -4,6 +4,7 @@ import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
 import SortModal from '../../components/SortModal';
+import Spinner from '../../components/Spinner';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
 import { useSort } from '../../hooks/useSort';
 import { FilterIcon, ListIcon, SortIcon } from '../../icons';
@@ -417,6 +418,11 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
             ))}
           </tbody>
         </table>
+        {loading && (
+          <div className="loading-state">
+            <Spinner />
+          </div>
+        )}
         {!loading && filteredProducts.length === 0 && (
           <div className="empty-state">
             {hasActiveFilters ? 'Nenhum registro encontrado para os filtros aplicados.' : 'Nenhum registro cadastrado.'}

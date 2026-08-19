@@ -4,6 +4,7 @@ import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
 import StatusBadge from '../../components/StatusBadge';
+import Spinner from '../../components/Spinner';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
@@ -62,6 +63,7 @@ export default function SalesOrdersPage() {
   const notify = useNotify();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<SalesOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [customers, setCustomers] = useState<Partner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -90,7 +92,11 @@ export default function SalesOrdersPage() {
   const [items, setItems] = useState<OrderItem[]>([emptyItem()]);
 
   const load = () => {
-    apiClient.get<SalesOrder[]>('/sales-orders').then((res) => setOrders(res.data));
+    setLoading(true);
+    apiClient
+      .get<SalesOrder[]>('/sales-orders')
+      .then((res) => setOrders(res.data))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -408,7 +414,12 @@ export default function SalesOrdersPage() {
             ))}
           </tbody>
         </table>
-        {filteredOrders.length === 0 && (
+        {loading && (
+          <div className="loading-state">
+            <Spinner />
+          </div>
+        )}
+        {!loading && filteredOrders.length === 0 && (
           <div className="empty-state">
             {hasActiveFilters ? 'Nenhum pedido de venda encontrado para os filtros aplicados.' : 'Nenhum pedido de venda cadastrado.'}
           </div>

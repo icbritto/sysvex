@@ -4,6 +4,7 @@ import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
 import StatusBadge from '../../components/StatusBadge';
+import Spinner from '../../components/Spinner';
 import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility';
 import { useSort } from '../../hooks/useSort';
 import SortModal from '../../components/SortModal';
@@ -46,6 +47,7 @@ export default function DeliveryTrackingPage() {
   const notify = useNotify();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<SalesOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<{ kind: 'ship' | 'deliver'; ids: string[] } | null>(null);
   const [bulkNotes, setBulkNotes] = useState('');
@@ -64,7 +66,11 @@ export default function DeliveryTrackingPage() {
   const [filterStatus, setFilterStatus] = useState('');
 
   const load = () => {
-    apiClient.get<SalesOrder[]>('/sales-orders').then((res) => setOrders(res.data.filter((o) => o.status === 'CONFIRMED')));
+    setLoading(true);
+    apiClient
+      .get<SalesOrder[]>('/sales-orders')
+      .then((res) => setOrders(res.data.filter((o) => o.status === 'CONFIRMED')))
+      .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
@@ -344,7 +350,12 @@ export default function DeliveryTrackingPage() {
             ))}
           </tbody>
         </table>
-        {filteredOrders.length === 0 && (
+        {loading && (
+          <div className="loading-state">
+            <Spinner />
+          </div>
+        )}
+        {!loading && filteredOrders.length === 0 && (
           <div className="empty-state">
             {hasActiveFilters ? 'Nenhum pedido encontrado para os filtros aplicados.' : 'Nenhum pedido confirmado aguardando entrega.'}
           </div>
