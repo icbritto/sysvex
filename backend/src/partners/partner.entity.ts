@@ -1,8 +1,14 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
+// "BOTH" não é mais oferecido na criação/edição (ver CreatePartnerDto), mas
+// continua um valor válido do enum do banco para não quebrar quem já tinha
+// parceiros cadastrados assim — remover um valor de um enum nativo do
+// Postgres via `synchronize: true` derruba a inicialização do backend
+// inteiro caso exista alguma linha usando o valor removido.
 export enum PartnerType {
   CUSTOMER = 'CUSTOMER',
   SUPPLIER = 'SUPPLIER',
+  BOTH = 'BOTH',
 }
 
 export enum PartnerPersonType {
