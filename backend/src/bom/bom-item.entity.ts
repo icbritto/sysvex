@@ -4,7 +4,10 @@ import { BomRecipe } from './bom-recipe.entity';
 import { DecimalTransformer } from '../common/transformers/decimal.transformer';
 
 // Ficha técnica: quantidade de um insumo (rawMaterial) necessária para
-// produzir 1 unidade do produto acabado, dentro de uma receita específica.
+// produzir a receita inteira (que rende `recipe.outputQuantity` unidades do
+// produto acabado), não por unidade individual — a produção escala essa
+// quantidade pela proporção de rodadas da receita (order.quantity /
+// recipe.outputQuantity).
 @Entity('bom_items')
 export class BomItem {
   @PrimaryGeneratedColumn('uuid')

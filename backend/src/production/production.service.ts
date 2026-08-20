@@ -12,6 +12,10 @@ import { AuditLogService } from '../audit/audit-log.service';
 
 type Actor = { id: string; username: string };
 
+// Evita ruído de ponto flutuante (ex.: 2.2199999999999998) em quantidades e
+// valores calculados na hora, sem persistência via coluna numeric do banco.
+const round4 = (value: number): number => Math.round(value * 10000) / 10000;
+
 @Injectable()
 export class ProductionService {
   constructor(
@@ -79,8 +83,12 @@ export class ProductionService {
       };
     }
 
+    // `bomItem.quantity` é a quantidade do insumo para a receita inteira
+    // (que rende `recipe.outputQuantity` unidades), não por unidade — então
+    // escalamos pela proporção de "rodadas" que esta ordem representa.
+    const batches = order.quantity / order.recipe.outputQuantity;
     const items = order.recipe.items.map((bomItem) => {
-      const requiredQty = bomItem.quantity * order.quantity;
+      const requiredQty = round4(bomItem.quantity * batches);
       const availableQty = bomItem.rawMaterial.stockQty;
       return {
         rawMaterialId: bomItem.rawMaterialId,
@@ -88,14 +96,15 @@ export class ProductionService {
         unit: bomItem.rawMaterial.unit,
         requiredQty,
         availableQty,
-        shortfall: Math.max(0, requiredQty - availableQty),
+        shortfall: round4(Math.max(0, requiredQty - availableQty)),
         costPrice: bomItem.rawMaterial.costPrice,
         defaultSupplierId: bomItem.rawMaterial.defaultSupplierId,
         defaultSupplierName: bomItem.rawMaterial.defaultSupplier?.name ?? null,
       };
     });
-    const estimatedCost = items.reduce((sum, item) => sum + item.requiredQty * item.costPrice, 0);
-    const estimatedRevenue = order.product.salePrice != null ? order.product.salePrice * order.quantity : null;
+    const estimatedCost = round4(items.reduce((sum, item) => sum + item.requiredQty * item.costPrice, 0));
+    const estimatedRevenue =
+      order.product.salePrice != null ? round4(order.product.salePrice * order.quantity) : null;
     const hasShortfall = items.some((item) => item.shortfall > 0);
     const canComplete = order.status === 'PLANNED' && !hasShortfall;
 
@@ -105,7 +114,7 @@ export class ProductionService {
       blockedReason: order.status === 'PLANNED' && hasShortfall ? 'Estoque insuficiente para um ou mais insumos desta receita.' : null,
       estimatedCost,
       estimatedRevenue,
-      estimatedProfit: estimatedRevenue != null ? estimatedRevenue - estimatedCost : null,
+      estimatedProfit: estimatedRevenue != null ? round4(estimatedRevenue - estimatedCost) : null,
     };
   }
 
@@ -195,6 +204,10 @@ export class ProductionService {
       if (!order.recipeId) {
         throw new BadRequestException('Este produto não possui uma receita (ficha técnica) definida.');
       }
+      const recipe = await manager.findOne(BomRecipe, { where: { id: order.recipeId } });
+      if (!recipe) {
+        throw new NotFoundException('Receita não encontrada.');
+      }
       const bomItems = await manager.find(BomItem, {
         where: { recipeId: order.recipeId },
         relations: ['rawMaterial'],
@@ -203,9 +216,12 @@ export class ProductionService {
         throw new BadRequestException('A receita escolhida não possui insumos cadastrados.');
       }
 
+      // `bomItem.quantity` é a quantidade para a receita inteira (que rende
+      // `recipe.outputQuantity` unidades), não por unidade produzida.
+      const batches = order.quantity / recipe.outputQuantity;
       let totalCost = 0;
       for (const bomItem of bomItems) {
-        const requiredQty = bomItem.quantity * order.quantity;
+        const requiredQty = round4(bomItem.quantity * batches);
         await this.inventoryService.recordMovement(manager, {
           productId: bomItem.rawMaterialId,
           type: MovementType.OUT,
@@ -229,13 +245,13 @@ export class ProductionService {
       const productRepo = manager.getRepository(Product);
       const finishedProduct = await productRepo.findOne({ where: { id: order.productId } });
       if (finishedProduct) {
-        finishedProduct.costPrice = totalCost / order.quantity;
+        finishedProduct.costPrice = round4(totalCost / order.quantity);
         await productRepo.save(finishedProduct);
       }
 
       order.status = ProductionStatus.COMPLETED;
       order.completedDate = new Date().toISOString().slice(0, 10);
-      order.totalCost = totalCost;
+      order.totalCost = round4(totalCost);
       return manager.save(order);
     });
     if (actor) {
