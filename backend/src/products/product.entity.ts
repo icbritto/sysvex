@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { DecimalTransformer } from '../common/transformers/decimal.transformer';
+import { Partner } from '../partners/partner.entity';
 
 export enum ProductType {
   RAW_MATERIAL = 'RAW_MATERIAL',
@@ -67,6 +68,15 @@ export class Product {
 
   @Column('numeric', { precision: 14, scale: 4, name: 'min_stock', default: 0, transformer: DecimalTransformer })
   minStock: number;
+
+  // Fornecedor sugerido ao gerar um pedido de compra automático por falta de
+  // estoque deste insumo (sempre pode ser trocado no pedido gerado).
+  @ManyToOne(() => Partner, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'default_supplier_id' })
+  defaultSupplier: Partner | null;
+
+  @Column({ name: 'default_supplier_id', nullable: true })
+  defaultSupplierId: string | null;
 
   @Column({ default: true })
   active: boolean;

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { PurchasingService } from './purchasing.service';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
+import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -27,6 +28,12 @@ export class PurchasingController {
   @Post()
   create(@Body() dto: CreatePurchaseOrderDto, @CurrentUser() actor: AuthenticatedUser) {
     return this.purchasingService.create(dto, { id: actor.id, username: actor.username });
+  }
+
+  @Roles(UserRole.SX_PURCHASING)
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdatePurchaseOrderDto, @CurrentUser() actor: AuthenticatedUser) {
+    return this.purchasingService.update(id, dto, { id: actor.id, username: actor.username });
   }
 
   @Roles(UserRole.SX_PURCHASING)

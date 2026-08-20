@@ -232,6 +232,14 @@ export default function PurchaseOrdersPage() {
     }
   };
 
+  const handleOpenClick = () => {
+    if (selectedIds.size !== 1) {
+      notify('Selecione exatamente um pedido para abrir.');
+      return;
+    }
+    navigate(`/purchase-orders/${[...selectedIds][0]}`);
+  };
+
   const handleReceiptClick = () => {
     if (selectedIds.size !== 1) {
       notify('Selecione exatamente um pedido recebido para ver o recibo.');
@@ -341,6 +349,12 @@ export default function PurchaseOrdersPage() {
       <div className="toolbar">
         <button className="toolbar-btn" onClick={openCreateModal}>
           Criar
+        </button>
+        <button
+          className={`toolbar-btn${selectedIds.size !== 1 ? ' toolbar-btn--disabled' : ''}`}
+          onClick={handleOpenClick}
+        >
+          Abrir
         </button>
         <button
           className={`toolbar-btn${!allSelectedAreDraft ? ' toolbar-btn--disabled' : ''}`}
@@ -506,7 +520,7 @@ export default function PurchaseOrdersPage() {
 
             <h3 style={{ fontSize: 13, marginBottom: 8 }}>Itens</h3>
             {items.map((it, idx) => (
-              <div className="form-grid" key={idx}>
+              <div className="form-grid" key={idx} style={{ alignItems: 'end' }}>
                 <div className="form-field">
                   <label>Insumo</label>
                   <select
@@ -532,6 +546,16 @@ export default function PurchaseOrdersPage() {
                 <div className="form-field">
                   <label>Preço unitário</label>
                   <input type="number" step="0.01" min="0" value={it.unitPrice} onChange={(e) => updateItem(idx, { unitPrice: e.target.value })} required />
+                </div>
+                <div className="form-field">
+                  <button
+                    type="button"
+                    className="btn btn--danger btn--sm"
+                    disabled={items.length === 1}
+                    onClick={() => setItems((prev) => prev.filter((_, i) => i !== idx))}
+                  >
+                    Remover
+                  </button>
                 </div>
               </div>
             ))}

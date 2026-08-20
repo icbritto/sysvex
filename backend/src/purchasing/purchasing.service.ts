@@ -5,6 +5,7 @@ import { PurchaseOrder, PurchaseOrderStatus } from './purchase-order.entity';
 import { PaymentMethod } from '../common/payment-method.enum';
 import { PurchaseOrderItem } from './purchase-order-item.entity';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
+import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
 import { InventoryService } from '../inventory/inventory.service';
 import { MovementReason, MovementType } from '../inventory/stock-movement.entity';
 import { FinanceService } from '../finance/finance.service';
@@ -18,6 +19,7 @@ type Actor = { id: string; username: string };
 export class PurchasingService {
   constructor(
     @InjectRepository(PurchaseOrder) private readonly repo: Repository<PurchaseOrder>,
+    @InjectRepository(PurchaseOrderItem) private readonly itemRepo: Repository<PurchaseOrderItem>,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly inventoryService: InventoryService,
     private readonly financeService: FinanceService,
@@ -62,6 +64,42 @@ export class PurchasingService {
         actorUserId: actor.id,
         actorUsername: actor.username,
         action: 'PURCHASE_ORDER_CREATED',
+        targetType: 'PurchaseOrder',
+        targetId: saved.id,
+        details: `${saved.orderNumber} - R$ ${saved.totalAmount.toFixed(2)}`,
+      });
+    }
+    return saved;
+  }
+
+  async update(id: string, dto: UpdatePurchaseOrderDto, actor?: Actor): Promise<PurchaseOrder> {
+    const po = await this.findById(id);
+    if (po.status !== PurchaseOrderStatus.DRAFT) {
+      throw new BadRequestException('Só é possível editar pedidos de compra em rascunho.');
+    }
+
+    if (dto.supplierId !== undefined) po.supplierId = dto.supplierId;
+    if (dto.orderDate !== undefined) po.orderDate = dto.orderDate;
+    if (dto.paymentMethod !== undefined) po.paymentMethod = dto.paymentMethod;
+
+    if (dto.items) {
+      await this.itemRepo.delete({ purchaseOrderId: id });
+      po.items = dto.items.map((i) =>
+        Object.assign(new PurchaseOrderItem(), {
+          productId: i.productId,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+        }),
+      );
+      po.totalAmount = dto.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+    }
+
+    const saved = await this.repo.save(po);
+    if (actor) {
+      await this.auditLogService.record({
+        actorUserId: actor.id,
+        actorUsername: actor.username,
+        action: 'PURCHASE_ORDER_UPDATED',
         targetType: 'PurchaseOrder',
         targetId: saved.id,
         details: `${saved.orderNumber} - R$ ${saved.totalAmount.toFixed(2)}`,

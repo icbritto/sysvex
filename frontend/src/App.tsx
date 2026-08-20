@@ -15,6 +15,7 @@ import ProductionOrdersPage from './pages/inventory/ProductionOrdersPage';
 import ProductionOrderDetailPage from './pages/inventory/ProductionOrderDetailPage';
 import StockMovementsPage from './pages/inventory/StockMovementsPage';
 import PurchaseOrdersPage from './pages/purchasing/PurchaseOrdersPage';
+import PurchaseOrderDetailPage from './pages/purchasing/PurchaseOrderDetailPage';
 import SalesOrdersPage from './pages/sales/SalesOrdersPage';
 import SalesOrderDetailPage from './pages/sales/SalesOrderDetailPage';
 import DeliveryTrackingPage from './pages/sales/DeliveryTrackingPage';
@@ -48,6 +49,7 @@ export default function App() {
                 <Route path="/raw-materials" element={<RawMaterialsPage />} />
                 <Route path="/products/:productId/bom" element={<BomPage />} />
                 <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route path="/purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
                 <Route path="/sales-orders" element={<SalesOrdersPage />} />
                 <Route path="/sales-orders/deliveries" element={<DeliveryTrackingPage />} />
                 <Route path="/sales-orders/:id" element={<SalesOrderDetailPage />} />
