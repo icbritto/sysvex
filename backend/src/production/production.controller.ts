@@ -28,6 +28,11 @@ export class ProductionController {
     return this.productionService.getRequirements(id);
   }
 
+  @Get(':id/purchase-suggestion')
+  getPurchaseSuggestion(@Param('id') id: string) {
+    return this.productionService.getPurchaseSuggestion(id);
+  }
+
   @Roles(UserRole.SX_PRODUCTION)
   @Post()
   create(@Body() dto: CreateProductionOrderDto, @CurrentUser() actor: AuthenticatedUser) {

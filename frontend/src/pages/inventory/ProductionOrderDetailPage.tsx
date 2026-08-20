@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { FormEvent, useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
+import Modal from '../../components/Modal';
 import StatusBadge from '../../components/StatusBadge';
 import Spinner from '../../components/Spinner';
 import { ArrowLeftIcon } from '../../icons';
+import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
 
 interface Product {
@@ -51,13 +53,40 @@ interface Requirements {
   estimatedProfit: number | null;
 }
 
+interface Supplier {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
+interface SuggestedItem {
+  productId: string;
+  productName: string;
+  quantity: string;
+  unitPrice: string;
+}
+
+interface PurchaseSuggestion {
+  supplierId: string | null;
+  items: { productId: string; productName: string; quantity: number; unitPrice: number }[];
+}
+
 export default function ProductionOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const notify = useNotify();
 
   const [order, setOrder] = useState<ProductionOrder | null>(null);
   const [requirements, setRequirements] = useState<Requirements | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [showSuggestModal, setShowSuggestModal] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [suggestSupplierId, setSuggestSupplierId] = useState('');
+  const [suggestOrderDate, setSuggestOrderDate] = useState(new Date().toISOString().slice(0, 10));
+  const [suggestPaymentMethod, setSuggestPaymentMethod] = useState<PaymentMethod>('PIX');
+  const [suggestItems, setSuggestItems] = useState<SuggestedItem[]>([]);
 
   const load = () => {
     if (!id) return;
@@ -66,6 +95,61 @@ export default function ProductionOrderDetailPage() {
   };
 
   useEffect(load, [id]);
+
+  useEffect(() => {
+    apiClient
+      .get<Supplier[]>('/partners')
+      .then((res) => setSuppliers(res.data.filter((p: any) => p.type !== 'CUSTOMER' && p.active)));
+  }, []);
+
+  const openSuggestModal = async () => {
+    if (!id) return;
+    setSuggestError(null);
+    try {
+      const res = await apiClient.get<PurchaseSuggestion>(`/production-orders/${id}/purchase-suggestion`);
+      setSuggestSupplierId(res.data.supplierId ?? '');
+      setSuggestOrderDate(new Date().toISOString().slice(0, 10));
+      setSuggestPaymentMethod('PIX');
+      setSuggestItems(
+        res.data.items.map((i) => ({
+          productId: i.productId,
+          productName: i.productName,
+          quantity: String(i.quantity),
+          unitPrice: String(i.unitPrice),
+        })),
+      );
+      setShowSuggestModal(true);
+    } catch (err) {
+      notify(extractErrorMessage(err));
+    }
+  };
+
+  const updateSuggestItem = (index: number, patch: Partial<SuggestedItem>) => {
+    setSuggestItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
+  };
+
+  const suggestTotal = suggestItems.reduce((sum, it) => sum + Number(it.quantity || 0) * Number(it.unitPrice || 0), 0);
+
+  const handleCreateSuggestedOrder = async (e: FormEvent) => {
+    e.preventDefault();
+    setSuggestError(null);
+    try {
+      const res = await apiClient.post<{ id: string }>('/purchase-orders', {
+        supplierId: suggestSupplierId,
+        orderDate: suggestOrderDate,
+        paymentMethod: suggestPaymentMethod,
+        items: suggestItems.map((it) => ({
+          productId: it.productId,
+          quantity: Number(it.quantity),
+          unitPrice: Number(it.unitPrice),
+        })),
+      });
+      setShowSuggestModal(false);
+      navigate(`/purchase-orders/${res.data.id}`);
+    } catch (err) {
+      setSuggestError(extractErrorMessage(err));
+    }
+  };
 
   const handleComplete = async () => {
     if (!order) return;
@@ -125,6 +209,11 @@ export default function ProductionOrderDetailPage() {
           <button className="toolbar-btn" onClick={handleCancel}>
             Cancelar
           </button>
+          {requirements.blockedReason && (
+            <button className="toolbar-btn" onClick={openSuggestModal}>
+              Sugerir Pedido de Compra
+            </button>
+          )}
         </div>
       )}
 
@@ -229,6 +318,88 @@ export default function ProductionOrderDetailPage() {
           </p>
         )}
       </div>
+
+      {showSuggestModal && (
+        <Modal title="Sugerir Pedido de Compra" onClose={() => setShowSuggestModal(false)}>
+          {suggestError && <div className="alert alert--error">{suggestError}</div>}
+          <p style={{ fontSize: 12, color: 'var(--sysvex-text-muted)' }}>
+            Itens e quantidades pré-preenchidos com o que falta para esta ordem. Revise e confirme antes de criar o
+            pedido.
+          </p>
+          <form onSubmit={handleCreateSuggestedOrder}>
+            <div className="form-grid">
+              <div className="form-field">
+                <label>Fornecedor *</label>
+                <select value={suggestSupplierId} onChange={(e) => setSuggestSupplierId(e.target.value)} required>
+                  <option value="">Selecione...</option>
+                  {suppliers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-field">
+                <label>Data *</label>
+                <input type="date" value={suggestOrderDate} onChange={(e) => setSuggestOrderDate(e.target.value)} required />
+              </div>
+              <div className="form-field">
+                <label>Forma de pagamento *</label>
+                <select value={suggestPaymentMethod} onChange={(e) => setSuggestPaymentMethod(e.target.value as PaymentMethod)}>
+                  {PAYMENT_METHODS.map((pm) => (
+                    <option key={pm} value={pm}>
+                      {PAYMENT_METHOD_LABELS[pm]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <h3 style={{ fontSize: 13, marginBottom: 8 }}>Itens</h3>
+            {suggestItems.map((it, idx) => (
+              <div className="form-grid" key={it.productId}>
+                <div className="form-field">
+                  <label>Insumo</label>
+                  <p style={{ margin: 0, fontSize: 13 }}>{it.productName}</p>
+                </div>
+                <div className="form-field">
+                  <label>Quantidade</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    min="0.0001"
+                    value={it.quantity}
+                    onChange={(e) => updateSuggestItem(idx, { quantity: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label>Preço unitário</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={it.unitPrice}
+                    onChange={(e) => updateSuggestItem(idx, { unitPrice: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+            ))}
+
+            <p style={{ fontWeight: 600 }}>Total: R$ {suggestTotal.toFixed(2)}</p>
+
+            <div className="form-actions">
+              <button className="btn" type="submit">
+                Criar Pedido de Compra
+              </button>
+              <button className="btn btn--secondary" type="button" onClick={() => setShowSuggestModal(false)}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

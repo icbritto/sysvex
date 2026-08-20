@@ -29,7 +29,7 @@ export class ProductionService {
   async findById(id: string): Promise<ProductionOrder> {
     const order = await this.repo.findOne({
       where: { id },
-      relations: ['recipe.items.rawMaterial'],
+      relations: ['recipe.items.rawMaterial.defaultSupplier'],
     });
     if (!order) {
       throw new NotFoundException('Ordem de produção não encontrada.');
@@ -48,6 +48,8 @@ export class ProductionService {
       availableQty: number;
       shortfall: number;
       costPrice: number;
+      defaultSupplierId: string | null;
+      defaultSupplierName: string | null;
     }[];
     canComplete: boolean;
     blockedReason: string | null;
@@ -88,6 +90,8 @@ export class ProductionService {
         availableQty,
         shortfall: Math.max(0, requiredQty - availableQty),
         costPrice: bomItem.rawMaterial.costPrice,
+        defaultSupplierId: bomItem.rawMaterial.defaultSupplierId,
+        defaultSupplierName: bomItem.rawMaterial.defaultSupplier?.name ?? null,
       };
     });
     const estimatedCost = items.reduce((sum, item) => sum + item.requiredQty * item.costPrice, 0);
@@ -102,6 +106,40 @@ export class ProductionService {
       estimatedCost,
       estimatedRevenue,
       estimatedProfit: estimatedRevenue != null ? estimatedRevenue - estimatedCost : null,
+    };
+  }
+
+  // Rascunho de Pedido de Compra sugerido para repor os insumos que faltam
+  // nesta ordem — o usuário ainda revisa/confirma antes de criar de verdade.
+  async getPurchaseSuggestion(id: string): Promise<{
+    supplierId: string | null;
+    items: { productId: string; productName: string; quantity: number; unitPrice: number }[];
+  }> {
+    const requirements = await this.getRequirements(id);
+    const shortfallItems = requirements.items.filter((item) => item.shortfall > 0);
+
+    const supplierCounts = new Map<string, number>();
+    for (const item of shortfallItems) {
+      if (!item.defaultSupplierId) continue;
+      supplierCounts.set(item.defaultSupplierId, (supplierCounts.get(item.defaultSupplierId) ?? 0) + 1);
+    }
+    let supplierId: string | null = null;
+    let bestCount = 0;
+    for (const [id_, count] of supplierCounts) {
+      if (count > bestCount) {
+        bestCount = count;
+        supplierId = id_;
+      }
+    }
+
+    return {
+      supplierId,
+      items: shortfallItems.map((item) => ({
+        productId: item.rawMaterialId,
+        productName: item.rawMaterialName,
+        quantity: item.shortfall,
+        unitPrice: item.costPrice,
+      })),
     };
   }
 
