@@ -6,7 +6,7 @@ import { UserRole } from '../users/user.entity';
 import { PartnersService } from '../partners/partners.service';
 import { PartnerPersonType, PartnerType } from '../partners/partner.entity';
 import { ProductsService } from '../products/products.service';
-import { ProductType } from '../products/product.entity';
+import { ProductType, ProductUnit } from '../products/product.entity';
 import { BomService } from '../bom/bom.service';
 
 // Cria o usuário administrador inicial e, opcionalmente, dados de exemplo
@@ -61,7 +61,7 @@ async function seed() {
     const leiteCondensado = await productsService.create({
       name: 'Leite condensado (lata 395g)',
       type: ProductType.RAW_MATERIAL,
-      unit: 'un',
+      unit: ProductUnit.UNIDADE,
       costPrice: 6.5,
       stockQty: 100,
       minStock: 20,
@@ -70,7 +70,7 @@ async function seed() {
     const chocolatePo = await productsService.create({
       name: 'Chocolate em pó (kg)',
       type: ProductType.RAW_MATERIAL,
-      unit: 'kg',
+      unit: ProductUnit.QUILOGRAMA,
       costPrice: 28.0,
       stockQty: 20,
       minStock: 5,
@@ -79,7 +79,8 @@ async function seed() {
     const manteiga = await productsService.create({
       name: 'Manteiga (kg)',
       type: ProductType.RAW_MATERIAL,
-      unit: 'kg',
+      unit: ProductUnit.QUILOGRAMA,
+      packageQty: 0.2,
       costPrice: 32.0,
       stockQty: 10,
       minStock: 3,
@@ -88,7 +89,7 @@ async function seed() {
     const brigadeiro = await productsService.create({
       name: 'Brigadeiro gourmet (unidade)',
       type: ProductType.FINISHED_GOOD,
-      unit: 'un',
+      unit: ProductUnit.UNIDADE,
       costPrice: 0,
       salePrice: 3.5,
       stockQty: 0,

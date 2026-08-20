@@ -16,12 +16,24 @@ interface Product {
   name: string;
   type: 'RAW_MATERIAL' | 'FINISHED_GOOD';
   unit: string;
+  packageQty: number | null;
   costPrice: number;
   salePrice: number | null;
   stockQty: number;
   minStock: number;
   active: boolean;
 }
+
+const UNIT_OPTIONS: { value: string; label: string }[] = [
+  { value: 'un', label: 'un — Unidade' },
+  { value: 'kg', label: 'kg — Quilograma' },
+  { value: 'g', label: 'g — Grama' },
+  { value: 'L', label: 'L — Litro' },
+  { value: 'mL', label: 'mL — Mililitro' },
+  { value: 'dz', label: 'dz — Dúzia' },
+  { value: 'cx', label: 'cx — Caixa' },
+  { value: 'pct', label: 'pct — Pacote' },
+];
 
 const COLUMNS: ColumnDef[] = [
   { key: 'sku', label: 'SKU' },
@@ -64,10 +76,28 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
 
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('un');
+  const [usePackage, setUsePackage] = useState(false);
+  const [packageQty, setPackageQty] = useState('');
+  const [packagePrice, setPackagePrice] = useState('');
+  const [packageCount, setPackageCount] = useState('1');
   const [costPrice, setCostPrice] = useState('0');
   const [salePrice, setSalePrice] = useState('');
   const [stockQty, setStockQty] = useState('0');
   const [minStock, setMinStock] = useState('0');
+
+  useEffect(() => {
+    if (!usePackage) return;
+    const pq = Number(packageQty);
+    const pp = Number(packagePrice);
+    if (pq > 0 && pp > 0) setCostPrice((pp / pq).toFixed(4));
+  }, [usePackage, packageQty, packagePrice]);
+
+  useEffect(() => {
+    if (!usePackage || editingId) return;
+    const pq = Number(packageQty);
+    const pc = Number(packageCount);
+    if (pq > 0 && pc > 0) setStockQty((pq * pc).toFixed(4));
+  }, [usePackage, packageQty, packageCount, editingId]);
 
   const load = () => {
     setLoading(true);
@@ -180,6 +210,10 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
   const resetForm = () => {
     setName('');
     setUnit('un');
+    setUsePackage(false);
+    setPackageQty('');
+    setPackagePrice('');
+    setPackageCount('1');
     setCostPrice('0');
     setSalePrice('');
     setStockQty('0');
@@ -197,6 +231,10 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
     setEditingId(product.id);
     setName(product.name);
     setUnit(product.unit);
+    setUsePackage(product.packageQty != null);
+    setPackageQty(product.packageQty != null ? String(product.packageQty) : '');
+    setPackagePrice('');
+    setPackageCount('1');
     setCostPrice(String(product.costPrice));
     setSalePrice(product.salePrice != null ? String(product.salePrice) : '');
     setMinStock(String(product.minStock));
@@ -225,10 +263,12 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
     e.preventDefault();
     setError(null);
     try {
+      const packageQtyValue = usePackage && packageQty ? Number(packageQty) : null;
       if (editingId) {
         await apiClient.patch(`/products/${editingId}`, {
           name,
           unit,
+          packageQty: packageQtyValue,
           costPrice: Number(costPrice),
           salePrice: salePrice ? Number(salePrice) : null,
           minStock: Number(minStock),
@@ -238,6 +278,7 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
           name,
           type: productType,
           unit,
+          packageQty: packageQtyValue ?? undefined,
           costPrice: Number(costPrice),
           salePrice: salePrice ? Number(salePrice) : undefined,
           stockQty: Number(stockQty),
@@ -486,12 +527,69 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
                 <input value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
               <div className="form-field">
-                <label>Unidade</label>
-                <input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="un, kg, L..." />
+                <label>Unidade *</label>
+                <select value={unit} onChange={(e) => setUnit(e.target.value)}>
+                  {UNIT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
               </div>
+              {productType === 'RAW_MATERIAL' && (
+                <div className="form-field" style={{ gridColumn: '1 / -1' }}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={usePackage}
+                      onChange={(e) => setUsePackage(e.target.checked)}
+                      style={{ marginRight: 6 }}
+                    />
+                    Comprado em embalagem fechada (ex.: tablete de manteiga de 200g)
+                  </label>
+                </div>
+              )}
+              {productType === 'RAW_MATERIAL' && usePackage && (
+                <>
+                  <div className="form-field">
+                    <label>Tamanho da embalagem ({unit}) *</label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      min="0.0001"
+                      value={packageQty}
+                      onChange={(e) => setPackageQty(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label>Preço pago no pacote</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={packagePrice}
+                      onChange={(e) => setPackagePrice(e.target.value)}
+                      placeholder="calcula o custo por unidade abaixo"
+                    />
+                  </div>
+                  {!editingId && (
+                    <div className="form-field">
+                      <label>Quantas embalagens você tem</label>
+                      <input
+                        type="number"
+                        step="1"
+                        min="0"
+                        value={packageCount}
+                        onChange={(e) => setPackageCount(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
               <div className="form-field">
-                <label>Preço de custo *</label>
-                <input type="number" step="0.01" min="0" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} required />
+                <label>Preço de custo * {usePackage && <span style={{ fontWeight: 400 }}>(por {unit})</span>}</label>
+                <input type="number" step="0.0001" min="0" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} required />
               </div>
               <div className="form-field">
                 <label>Preço de venda</label>
@@ -499,7 +597,7 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
               </div>
               {!editingId && (
                 <div className="form-field">
-                  <label>Estoque inicial</label>
+                  <label>Estoque inicial {usePackage && <span style={{ fontWeight: 400 }}>(em {unit})</span>}</label>
                   <input type="number" step="0.0001" min="0" value={stockQty} onChange={(e) => setStockQty(e.target.value)} />
                 </div>
               )}
