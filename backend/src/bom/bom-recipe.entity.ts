@@ -25,10 +25,11 @@ export class BomRecipe {
   isDefault: boolean;
 
   // Quantas unidades do produto acabado essa receita rende de uma vez (ex.:
-  // a "Receita X" rende 12 unidades por rodada). Usado para pré-preencher a
-  // quantidade a produzir na Ordem de Produção; os itens da ficha técnica
-  // continuam definidos por 1 unidade produzida, então essa quantidade é só
-  // um valor sugerido e continua editável na ordem.
+  // a "Receita X" rende 12 unidades por rodada). Os itens da ficha técnica
+  // (BomItem.quantity) são definidos para a receita inteira, não por
+  // unidade — production.service.ts escala pela proporção de rodadas
+  // (order.quantity / outputQuantity). Também usado para pré-preencher a
+  // quantidade a produzir na Ordem de Produção (continua editável lá).
   @Column('numeric', { precision: 14, scale: 4, name: 'output_quantity', default: 1, transformer: DecimalTransformer })
   outputQuantity: number;
 

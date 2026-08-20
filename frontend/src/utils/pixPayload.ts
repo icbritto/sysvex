@@ -63,7 +63,10 @@ export function buildPixPayload(params: PixPayloadParams): string {
 
   const parts = [
     tlv('00', '01'),
-    tlv('01', params.amount != null ? '12' : '11'),
+    // "11" = QR estático — sempre o caso aqui, já que o payload é
+    // autocontido (sem URL de dados dinâmicos); "12" seria só para BR Code
+    // dinâmico, que aponta pra uma URL externa com os dados da cobrança.
+    tlv('01', '11'),
     tlv('26', merchantAccountInfo),
     tlv('52', '0000'),
     tlv('53', '986'),

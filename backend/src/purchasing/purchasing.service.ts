@@ -12,6 +12,7 @@ import { FinanceService } from '../finance/finance.service';
 import { FinanceEntryType } from '../finance/finance-entry.entity';
 import { AuditLogService } from '../audit/audit-log.service';
 import { SequenceService } from '../common/sequence.service';
+import { sumLineAmounts } from '../common/money';
 
 type Actor = { id: string; username: string };
 
@@ -40,7 +41,7 @@ export class PurchasingService {
   }
 
   async create(dto: CreatePurchaseOrderDto, actor?: Actor): Promise<PurchaseOrder> {
-    const totalAmount = dto.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+    const totalAmount = sumLineAmounts(dto.items);
     const seq = await this.sequenceService.next('purchase_order');
     const orderNumber = `PC-${String(seq).padStart(4, '0')}`;
     const po = this.repo.create({
@@ -91,7 +92,7 @@ export class PurchasingService {
           unitPrice: i.unitPrice,
         }),
       );
-      po.totalAmount = dto.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+      po.totalAmount = sumLineAmounts(dto.items);
     }
 
     const saved = await this.repo.save(po);

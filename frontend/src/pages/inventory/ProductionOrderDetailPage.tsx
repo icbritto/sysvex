@@ -7,6 +7,7 @@ import Spinner from '../../components/Spinner';
 import { ArrowLeftIcon } from '../../icons';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
+import { sumLineAmounts } from '../../utils/money';
 
 interface Product {
   id: string;
@@ -128,7 +129,7 @@ export default function ProductionOrderDetailPage() {
     setSuggestItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
   };
 
-  const suggestTotal = suggestItems.reduce((sum, it) => sum + Number(it.quantity || 0) * Number(it.unitPrice || 0), 0);
+  const suggestTotal = sumLineAmounts(suggestItems);
 
   const handleCreateSuggestedOrder = async (e: FormEvent) => {
     e.preventDefault();

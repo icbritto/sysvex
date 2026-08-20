@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { FinanceEntry, FinanceEntryStatus, FinanceEntryType } from './finance-entry.entity';
@@ -91,6 +91,9 @@ export class FinanceService {
     if (!entry) {
       throw new NotFoundException('Lançamento financeiro não encontrado.');
     }
+    if (entry.status !== FinanceEntryStatus.OPEN) {
+      throw new BadRequestException('Só é possível dar baixa em lançamentos em aberto.');
+    }
     entry.status = FinanceEntryStatus.PAID;
     entry.paidDate = paidDate ?? new Date().toISOString().slice(0, 10);
     const saved = await this.repo.save(entry);
@@ -111,6 +114,9 @@ export class FinanceService {
     const entry = await this.repo.findOne({ where: { id } });
     if (!entry) {
       throw new NotFoundException('Lançamento financeiro não encontrado.');
+    }
+    if (entry.status !== FinanceEntryStatus.OPEN) {
+      throw new BadRequestException('Só é possível cancelar lançamentos em aberto.');
     }
     entry.status = FinanceEntryStatus.CANCELLED;
     const saved = await this.repo.save(entry);
