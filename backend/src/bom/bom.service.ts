@@ -48,6 +48,7 @@ export class BomService {
       finishedProductId: dto.finishedProductId,
       name: dto.name,
       isDefault: existingCount === 0,
+      outputQuantity: dto.outputQuantity ?? 1,
     });
     const saved = await this.recipesRepo.save(recipe);
     if (actor) {
@@ -66,6 +67,9 @@ export class BomService {
   async renameRecipe(id: string, dto: UpdateBomRecipeDto, actor?: Actor): Promise<BomRecipe> {
     const recipe = await this.findRecipeOrThrow(id);
     recipe.name = dto.name;
+    if (dto.outputQuantity != null) {
+      recipe.outputQuantity = dto.outputQuantity;
+    }
     const saved = await this.recipesRepo.save(recipe);
     if (actor) {
       await this.auditLogService.record({

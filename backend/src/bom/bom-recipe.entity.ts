@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from '../products/product.entity';
 import { BomItem } from './bom-item.entity';
+import { DecimalTransformer } from '../common/transformers/decimal.transformer';
 
 // Uma receita nomeada para um produto acabado. Um produto pode ter várias
 // receitas (ex.: "Padrão", "Sem lactose"), mas apenas uma é a padrão —
@@ -22,6 +23,14 @@ export class BomRecipe {
 
   @Column({ name: 'is_default', default: false })
   isDefault: boolean;
+
+  // Quantas unidades do produto acabado essa receita rende de uma vez (ex.:
+  // a "Receita X" rende 12 unidades por rodada). Usado para pré-preencher a
+  // quantidade a produzir na Ordem de Produção; os itens da ficha técnica
+  // continuam definidos por 1 unidade produzida, então essa quantidade é só
+  // um valor sugerido e continua editável na ordem.
+  @Column('numeric', { precision: 14, scale: 4, name: 'output_quantity', default: 1, transformer: DecimalTransformer })
+  outputQuantity: number;
 
   @OneToMany(() => BomItem, (item) => item.recipe, { cascade: true, eager: true })
   items: BomItem[];

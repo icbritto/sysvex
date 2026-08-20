@@ -12,6 +12,7 @@ import FinishedGoodsPage from './pages/inventory/FinishedGoodsPage';
 import RawMaterialsPage from './pages/inventory/RawMaterialsPage';
 import BomPage from './pages/inventory/BomPage';
 import ProductionOrdersPage from './pages/inventory/ProductionOrdersPage';
+import ProductionOrderDetailPage from './pages/inventory/ProductionOrderDetailPage';
 import StockMovementsPage from './pages/inventory/StockMovementsPage';
 import PurchaseOrdersPage from './pages/purchasing/PurchaseOrdersPage';
 import SalesOrdersPage from './pages/sales/SalesOrdersPage';
@@ -51,6 +52,7 @@ export default function App() {
                 <Route path="/sales-orders/deliveries" element={<DeliveryTrackingPage />} />
                 <Route path="/sales-orders/:id" element={<SalesOrderDetailPage />} />
                 <Route path="/production-orders" element={<ProductionOrdersPage />} />
+                <Route path="/production-orders/:id" element={<ProductionOrderDetailPage />} />
                 <Route path="/inventory/movements" element={<StockMovementsPage />} />
                 <Route path="/finance/entries" element={<FinanceEntriesPage />} />
                 <Route path="/finance/cash-flow" element={<CashFlowPage />} />

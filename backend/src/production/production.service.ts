@@ -27,11 +27,82 @@ export class ProductionService {
   }
 
   async findById(id: string): Promise<ProductionOrder> {
-    const order = await this.repo.findOne({ where: { id } });
+    const order = await this.repo.findOne({
+      where: { id },
+      relations: ['recipe.items.rawMaterial'],
+    });
     if (!order) {
       throw new NotFoundException('Ordem de produção não encontrada.');
     }
     return order;
+  }
+
+  // Requisitos de insumos, custo e lucro estimados para a ordem — usados na
+  // tela de detalhes pra saber se dá pra concluir e o que falta comprar.
+  async getRequirements(id: string): Promise<{
+    items: {
+      rawMaterialId: string;
+      rawMaterialName: string;
+      unit: string;
+      requiredQty: number;
+      availableQty: number;
+      shortfall: number;
+      costPrice: number;
+    }[];
+    canComplete: boolean;
+    blockedReason: string | null;
+    estimatedCost: number;
+    estimatedRevenue: number | null;
+    estimatedProfit: number | null;
+  }> {
+    const order = await this.findById(id);
+    if (!order.recipeId || !order.recipe) {
+      return {
+        items: [],
+        canComplete: false,
+        blockedReason: 'Este produto não possui uma receita (ficha técnica) definida.',
+        estimatedCost: 0,
+        estimatedRevenue: null,
+        estimatedProfit: null,
+      };
+    }
+    if (order.recipe.items.length === 0) {
+      return {
+        items: [],
+        canComplete: false,
+        blockedReason: 'A receita escolhida não possui insumos cadastrados.',
+        estimatedCost: 0,
+        estimatedRevenue: null,
+        estimatedProfit: null,
+      };
+    }
+
+    const items = order.recipe.items.map((bomItem) => {
+      const requiredQty = bomItem.quantity * order.quantity;
+      const availableQty = bomItem.rawMaterial.stockQty;
+      return {
+        rawMaterialId: bomItem.rawMaterialId,
+        rawMaterialName: bomItem.rawMaterial.name,
+        unit: bomItem.rawMaterial.unit,
+        requiredQty,
+        availableQty,
+        shortfall: Math.max(0, requiredQty - availableQty),
+        costPrice: bomItem.rawMaterial.costPrice,
+      };
+    });
+    const estimatedCost = items.reduce((sum, item) => sum + item.requiredQty * item.costPrice, 0);
+    const estimatedRevenue = order.product.salePrice != null ? order.product.salePrice * order.quantity : null;
+    const hasShortfall = items.some((item) => item.shortfall > 0);
+    const canComplete = order.status === 'PLANNED' && !hasShortfall;
+
+    return {
+      items,
+      canComplete,
+      blockedReason: order.status === 'PLANNED' && hasShortfall ? 'Estoque insuficiente para um ou mais insumos desta receita.' : null,
+      estimatedCost,
+      estimatedRevenue,
+      estimatedProfit: estimatedRevenue != null ? estimatedRevenue - estimatedCost : null,
+    };
   }
 
   async create(dto: CreateProductionOrderDto, actor?: Actor): Promise<ProductionOrder> {
