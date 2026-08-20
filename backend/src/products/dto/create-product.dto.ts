@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min, MinLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Min, MinLength } from 'class-validator';
 import { ProductType, ProductUnit } from '../product.entity';
 
 export class CreateProductDto {
@@ -39,4 +39,8 @@ export class CreateProductDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
+
+  @IsUUID()
+  @IsOptional()
+  defaultSupplierId?: string;
 }

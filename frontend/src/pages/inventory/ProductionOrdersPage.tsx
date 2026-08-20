@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import Modal from '../../components/Modal';
 import ColumnVisibilityModal from '../../components/ColumnVisibilityModal';
@@ -37,6 +38,7 @@ interface BomRecipe {
   id: string;
   name: string;
   isDefault: boolean;
+  outputQuantity: number;
 }
 
 interface ProductionOrder {
@@ -53,6 +55,7 @@ interface ProductionOrder {
 
 export default function ProductionOrdersPage() {
   const notify = useNotify();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<ProductionOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
@@ -101,9 +104,17 @@ export default function ProductionOrdersPage() {
     }
     apiClient.get<BomRecipe[]>(`/bom/product/${productId}`).then((res) => {
       setRecipes(res.data);
-      setRecipeId(res.data.find((r) => r.isDefault)?.id ?? res.data[0]?.id ?? '');
+      const chosen = res.data.find((r) => r.isDefault) ?? res.data[0];
+      setRecipeId(chosen?.id ?? '');
+      if (chosen) setQuantity(String(chosen.outputQuantity));
     });
   }, [productId]);
+
+  const handleRecipeChange = (id: string) => {
+    setRecipeId(id);
+    const chosen = recipes.find((r) => r.id === id);
+    if (chosen) setQuantity(String(chosen.outputQuantity));
+  };
 
   const filteredOrders = orders.filter((o) => {
     if (filterNumber && !o.orderNumber.toLowerCase().includes(filterNumber.trim().toLowerCase())) return false;
@@ -221,6 +232,14 @@ export default function ProductionOrdersPage() {
     }
   };
 
+  const handleOpenClick = () => {
+    if (selectedIds.size !== 1) {
+      notify('Selecione exatamente uma ordem para abrir.');
+      return;
+    }
+    navigate(`/production-orders/${[...selectedIds][0]}`);
+  };
+
   const handleCompleteClick = () => {
     if (selectedOrders.length === 0) {
       notify('Selecione ao menos uma ordem planejada para concluir.');
@@ -313,6 +332,12 @@ export default function ProductionOrdersPage() {
       <div className="toolbar">
         <button className="toolbar-btn" onClick={openCreateModal}>
           Criar
+        </button>
+        <button
+          className={`toolbar-btn${selectedIds.size !== 1 ? ' toolbar-btn--disabled' : ''}`}
+          onClick={handleOpenClick}
+        >
+          Abrir
         </button>
         <button
           className={`toolbar-btn${!allSelectedArePlanned ? ' toolbar-btn--disabled' : ''}`}
@@ -460,12 +485,12 @@ export default function ProductionOrdersPage() {
               {productId && (
                 <div className="form-field">
                   <label>Receita *</label>
-                  <select value={recipeId} onChange={(e) => setRecipeId(e.target.value)} required>
+                  <select value={recipeId} onChange={(e) => handleRecipeChange(e.target.value)} required>
                     <option value="">Selecione...</option>
                     {recipes.map((r) => (
                       <option key={r.id} value={r.id}>
                         {r.name}
-                        {r.isDefault ? ' (Padrão)' : ''}
+                        {r.isDefault ? ' (Padrão)' : ''} — rende {r.outputQuantity}
                       </option>
                     ))}
                   </select>

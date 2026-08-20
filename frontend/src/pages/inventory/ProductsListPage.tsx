@@ -21,6 +21,13 @@ interface Product {
   salePrice: number | null;
   stockQty: number;
   minStock: number;
+  defaultSupplierId: string | null;
+  active: boolean;
+}
+
+interface Supplier {
+  id: string;
+  name: string;
   active: boolean;
 }
 
@@ -57,6 +64,7 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
   const onlyLowStock = searchParams.get('lowStock') === '1';
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -84,6 +92,7 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
   const [salePrice, setSalePrice] = useState('');
   const [stockQty, setStockQty] = useState('0');
   const [minStock, setMinStock] = useState('0');
+  const [defaultSupplierId, setDefaultSupplierId] = useState('');
 
   useEffect(() => {
     if (!usePackage) return;
@@ -109,6 +118,13 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
   };
 
   useEffect(load, [onlyLowStock]);
+
+  useEffect(() => {
+    if (productType !== 'RAW_MATERIAL') return;
+    apiClient
+      .get<Supplier[]>('/partners')
+      .then((res) => setSuppliers(res.data.filter((p: any) => p.type !== 'CUSTOMER' && p.active)));
+  }, [productType]);
 
   const byType = products.filter((p) => p.type === productType);
 
@@ -218,6 +234,7 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
     setSalePrice('');
     setStockQty('0');
     setMinStock('0');
+    setDefaultSupplierId('');
     setError(null);
   };
 
@@ -238,6 +255,7 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
     setCostPrice(String(product.costPrice));
     setSalePrice(product.salePrice != null ? String(product.salePrice) : '');
     setMinStock(String(product.minStock));
+    setDefaultSupplierId(product.defaultSupplierId ?? '');
     setError(null);
     setShowModal(true);
   };
@@ -272,6 +290,7 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
           costPrice: Number(costPrice),
           salePrice: salePrice ? Number(salePrice) : null,
           minStock: Number(minStock),
+          defaultSupplierId: productType === 'RAW_MATERIAL' ? defaultSupplierId || null : undefined,
         });
       } else {
         await apiClient.post('/products', {
@@ -283,6 +302,7 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
           salePrice: salePrice ? Number(salePrice) : undefined,
           stockQty: Number(stockQty),
           minStock: Number(minStock),
+          defaultSupplierId: productType === 'RAW_MATERIAL' ? defaultSupplierId || undefined : undefined,
         });
       }
       setShowModal(false);
@@ -536,6 +556,19 @@ export default function ProductsListPage({ productType, title, storageKey }: Pro
                   ))}
                 </select>
               </div>
+              {productType === 'RAW_MATERIAL' && (
+                <div className="form-field">
+                  <label>Fornecedor padrão</label>
+                  <select value={defaultSupplierId} onChange={(e) => setDefaultSupplierId(e.target.value)}>
+                    <option value="">Nenhum</option>
+                    {suppliers.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {productType === 'RAW_MATERIAL' && (
                 <div className="form-field" style={{ gridColumn: '1 / -1' }}>
                   <label>

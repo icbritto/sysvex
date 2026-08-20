@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, MinLength, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsIn, IsOptional, IsString, MinLength, ValidateIf } from 'class-validator';
 import { PartnerPersonType, PartnerType } from '../partner.entity';
 
 export class CreatePartnerDto {
@@ -24,7 +24,9 @@ export class CreatePartnerDto {
   @IsOptional()
   document?: string;
 
-  @IsEnum(PartnerType)
+  // "BOTH" segue sendo um valor válido no banco (dados legados), mas não é
+  // mais aceito em cadastros/edições novos — cada tela cria só o tipo dela.
+  @IsIn([PartnerType.CUSTOMER, PartnerType.SUPPLIER], { message: 'Tipo deve ser Cliente ou Fornecedor.' })
   type: PartnerType;
 
   @IsEmail()

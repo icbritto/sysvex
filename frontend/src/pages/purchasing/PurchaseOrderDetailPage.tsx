@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import apiClient, { extractErrorMessage } from '../../api/client';
 import StatusBadge from '../../components/StatusBadge';
 import Spinner from '../../components/Spinner';
@@ -18,7 +18,7 @@ interface Product {
   name: string;
   sku: string;
   unit: string;
-  salePrice: number | null;
+  costPrice: number;
 }
 
 interface OrderItem {
@@ -27,58 +27,45 @@ interface OrderItem {
   unitPrice: string;
 }
 
-interface SalesOrder {
+interface PurchaseOrder {
   id: string;
   orderNumber: string;
-  customer: Partner;
+  supplier: Partner;
   orderDate: string;
-  status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
+  status: 'DRAFT' | 'CONFIRMED' | 'RECEIVED' | 'CANCELLED';
   totalAmount: number;
   paymentMethod: PaymentMethod;
   items: { productId: string; quantity: number; unitPrice: number; product?: Product }[];
-  deliveryStatus: 'PENDING' | 'SHIPPED' | 'DELIVERED';
-  shippedAt: string | null;
-  deliveredAt: string | null;
-  deliveryNotes: string | null;
 }
-
-const DELIVERY_STATUS_LABELS: Record<string, string> = {
-  PENDING: 'Pendente',
-  SHIPPED: 'Enviado',
-  DELIVERED: 'Entregue',
-};
-
-const formatDate = (value: string | null) => (value ? new Date(value).toLocaleString('pt-BR') : '—');
 
 const emptyItem = (): OrderItem => ({ productId: '', quantity: '1', unitPrice: '0' });
 
-export default function SalesOrderDetailPage() {
+export default function PurchaseOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const notify = useNotify();
 
-  const [order, setOrder] = useState<SalesOrder | null>(null);
-  const [customers, setCustomers] = useState<Partner[]>([]);
+  const [order, setOrder] = useState<PurchaseOrder | null>(null);
+  const [suppliers, setSuppliers] = useState<Partner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [customerId, setCustomerId] = useState('');
+  const [supplierId, setSupplierId] = useState('');
   const [orderDate, setOrderDate] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('PIX');
   const [items, setItems] = useState<OrderItem[]>([emptyItem()]);
 
   const load = () => {
     if (!id) return;
-    apiClient.get<SalesOrder>(`/sales-orders/${id}`).then((res) => setOrder(res.data));
+    apiClient.get<PurchaseOrder>(`/purchase-orders/${id}`).then((res) => setOrder(res.data));
   };
 
   useEffect(() => {
     load();
     apiClient
       .get<Partner[]>('/partners')
-      .then((res) => setCustomers(res.data.filter((p: any) => p.type !== 'SUPPLIER' && p.active)));
-    apiClient.get<Product[]>('/products').then((res) => setProducts(res.data.filter((p: any) => p.type === 'FINISHED_GOOD')));
+      .then((res) => setSuppliers(res.data.filter((p: any) => p.type !== 'CUSTOMER' && p.active)));
+    apiClient.get<Product[]>('/products').then((res) => setProducts(res.data.filter((p: any) => p.type === 'RAW_MATERIAL')));
   }, [id]);
 
   const updateItem = (index: number, patch: Partial<OrderItem>) => {
@@ -89,7 +76,7 @@ export default function SalesOrderDetailPage() {
 
   const startEditing = () => {
     if (!order) return;
-    setCustomerId(order.customer?.id ?? '');
+    setSupplierId(order.supplier?.id ?? '');
     setOrderDate(order.orderDate);
     setPaymentMethod(order.paymentMethod);
     setItems(
@@ -108,8 +95,8 @@ export default function SalesOrderDetailPage() {
     if (!order) return;
     setError(null);
     try {
-      await apiClient.patch(`/sales-orders/${order.id}`, {
-        customerId,
+      await apiClient.patch(`/purchase-orders/${order.id}`, {
+        supplierId,
         orderDate,
         paymentMethod,
         items: items.map((it) => ({
@@ -125,10 +112,10 @@ export default function SalesOrderDetailPage() {
     }
   };
 
-  const handleConfirm = async () => {
+  const handleReceive = async () => {
     if (!order) return;
     try {
-      await apiClient.patch(`/sales-orders/${order.id}/confirm`);
+      await apiClient.patch(`/purchase-orders/${order.id}/receive`);
       load();
     } catch (err) {
       notify(extractErrorMessage(err));
@@ -138,7 +125,7 @@ export default function SalesOrderDetailPage() {
   const handleCancel = async () => {
     if (!order) return;
     try {
-      await apiClient.patch(`/sales-orders/${order.id}/cancel`);
+      await apiClient.patch(`/purchase-orders/${order.id}/cancel`);
       load();
     } catch (err) {
       notify(extractErrorMessage(err));
@@ -155,8 +142,8 @@ export default function SalesOrderDetailPage() {
 
   return (
     <div>
-      <Link to="/sales-orders" className="page-header__back">
-        <ArrowLeftIcon size={12} style={{ verticalAlign: -1.5 }} /> Pedidos de Venda
+      <Link to="/purchase-orders" className="page-header__back">
+        <ArrowLeftIcon size={12} style={{ verticalAlign: -1.5 }} /> Pedidos de Compra
       </Link>
       <div className="page-header">
         <h1>Pedido {order.orderNumber}</h1>
@@ -168,21 +155,23 @@ export default function SalesOrderDetailPage() {
       {!editing ? (
         <>
           <div className="toolbar">
-            <Link
-              className="toolbar-btn"
-              to={`/sales-orders/${order.id}/receipt`}
-              title="Ver Recibo"
-              aria-label="Ver Recibo"
-            >
-              <InspectionIcon size={16} />
-            </Link>
+            {order.status === 'RECEIVED' && (
+              <Link
+                className="toolbar-btn"
+                to={`/purchase-orders/${order.id}/receipt`}
+                title="Ver Recibo"
+                aria-label="Ver Recibo"
+              >
+                <InspectionIcon size={16} />
+              </Link>
+            )}
             {order.status === 'DRAFT' && (
               <>
                 <button className="toolbar-btn" onClick={startEditing}>
                   Editar
                 </button>
-                <button className="toolbar-btn" onClick={handleConfirm}>
-                  Confirmar
+                <button className="toolbar-btn" onClick={handleReceive}>
+                  Receber
                 </button>
                 <button className="toolbar-btn" onClick={handleCancel}>
                   Cancelar
@@ -194,8 +183,8 @@ export default function SalesOrderDetailPage() {
           <div className="card">
             <div className="form-grid">
               <div className="form-field">
-                <label>Cliente</label>
-                <p style={{ margin: 0, fontSize: 13 }}>{order.customer?.name}</p>
+                <label>Fornecedor</label>
+                <p style={{ margin: 0, fontSize: 13 }}>{order.supplier?.name}</p>
               </div>
               <div className="form-field">
                 <label>Data</label>
@@ -211,7 +200,7 @@ export default function SalesOrderDetailPage() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Produto</th>
+                    <th>Insumo</th>
                     <th>Quantidade</th>
                     <th>Preço unitário</th>
                     <th>Subtotal</th>
@@ -231,47 +220,18 @@ export default function SalesOrderDetailPage() {
             </div>
             <p style={{ fontWeight: 600, marginTop: 12 }}>Total: R$ {order.totalAmount.toFixed(2)}</p>
           </div>
-
-          {order.status === 'CONFIRMED' && (
-            <div className="card" style={{ marginTop: 16 }}>
-              <div className="page-header" style={{ marginBottom: 12 }}>
-                <h3 style={{ fontSize: 13, margin: 0 }}>Entrega</h3>
-                <StatusBadge status={order.deliveryStatus} />
-              </div>
-              <div className="form-grid">
-                <div className="form-field">
-                  <label>Status</label>
-                  <p style={{ margin: 0, fontSize: 13 }}>{DELIVERY_STATUS_LABELS[order.deliveryStatus]}</p>
-                </div>
-                <div className="form-field">
-                  <label>Enviado em</label>
-                  <p style={{ margin: 0, fontSize: 13 }}>{formatDate(order.shippedAt)}</p>
-                </div>
-                <div className="form-field">
-                  <label>Entregue em</label>
-                  <p style={{ margin: 0, fontSize: 13 }}>{formatDate(order.deliveredAt)}</p>
-                </div>
-                {order.deliveryNotes && (
-                  <div className="form-field">
-                    <label>Observações</label>
-                    <p style={{ margin: 0, fontSize: 13 }}>{order.deliveryNotes}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </>
       ) : (
         <div className="card">
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-field">
-                <label>Cliente *</label>
-                <select value={customerId} onChange={(e) => setCustomerId(e.target.value)} required>
+                <label>Fornecedor *</label>
+                <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} required>
                   <option value="">Selecione...</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+                  {suppliers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
                     </option>
                   ))}
                 </select>
@@ -296,14 +256,14 @@ export default function SalesOrderDetailPage() {
             {items.map((it, idx) => (
               <div className="form-grid" key={idx} style={{ alignItems: 'end' }}>
                 <div className="form-field">
-                  <label>Produto</label>
+                  <label>Insumo</label>
                   <select
                     value={it.productId}
                     onChange={(e) => {
                       const prod = products.find((p) => p.id === e.target.value);
                       updateItem(idx, {
                         productId: e.target.value,
-                        unitPrice: prod?.salePrice != null ? String(prod.salePrice) : it.unitPrice,
+                        unitPrice: prod ? String(prod.costPrice) : it.unitPrice,
                       });
                     }}
                     required

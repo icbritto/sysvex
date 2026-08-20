@@ -17,16 +17,21 @@ interface Partner {
   legalName: string | null;
   tradeName: string | null;
   document: string | null;
-  type: 'CUSTOMER' | 'SUPPLIER';
+  type: 'CUSTOMER' | 'SUPPLIER' | 'BOTH';
   email: string | null;
   phone: string | null;
   address: string | null;
   active: boolean;
 }
 
+// "BOTH" (parceiro cadastrado como Cliente e Fornecedor antes dessa tela
+// restringir o cadastro por tipo) não pode mais ser criado, mas parceiros
+// legados com esse tipo continuam aparecendo aqui, então o rótulo precisa
+// existir para não ficar em branco na tabela.
 const TYPE_LABELS: Record<string, string> = {
   CUSTOMER: 'Cliente',
   SUPPLIER: 'Fornecedor',
+  BOTH: 'Cliente/Fornecedor',
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -94,7 +99,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
 
   useEffect(load, []);
 
-  const byType = partners.filter((p) => p.type === partnerType);
+  const byType = partners.filter((p) => p.type === partnerType || p.type === 'BOTH');
 
   const filteredPartners = byType.filter((p) => {
     if (filterName) {

@@ -23,6 +23,11 @@ export class ProductionController {
     return this.productionService.findById(id);
   }
 
+  @Get(':id/requirements')
+  getRequirements(@Param('id') id: string) {
+    return this.productionService.getRequirements(id);
+  }
+
   @Roles(UserRole.SX_PRODUCTION)
   @Post()
   create(@Body() dto: CreateProductionOrderDto, @CurrentUser() actor: AuthenticatedUser) {

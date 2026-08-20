@@ -502,7 +502,7 @@ export default function SalesOrdersPage() {
 
             <h3 style={{ fontSize: 13, marginBottom: 8 }}>Itens</h3>
             {items.map((it, idx) => (
-              <div className="form-grid" key={idx}>
+              <div className="form-grid" key={idx} style={{ alignItems: 'end' }}>
                 <div className="form-field">
                   <label>Produto</label>
                   <select
@@ -531,6 +531,16 @@ export default function SalesOrdersPage() {
                 <div className="form-field">
                   <label>Preço unitário</label>
                   <input type="number" step="0.01" min="0" value={it.unitPrice} onChange={(e) => updateItem(idx, { unitPrice: e.target.value })} required />
+                </div>
+                <div className="form-field">
+                  <button
+                    type="button"
+                    className="btn btn--danger btn--sm"
+                    disabled={items.length === 1}
+                    onClick={() => setItems((prev) => prev.filter((_, i) => i !== idx))}
+                  >
+                    Remover
+                  </button>
                 </div>
               </div>
             ))}

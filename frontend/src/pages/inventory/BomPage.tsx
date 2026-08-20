@@ -22,6 +22,7 @@ interface BomRecipe {
   id: string;
   name: string;
   isDefault: boolean;
+  outputQuantity: number;
   items: BomItem[];
 }
 
@@ -33,7 +34,9 @@ export default function BomPage() {
   const [rawMaterials, setRawMaterials] = useState<Product[]>([]);
 
   const [newRecipeName, setNewRecipeName] = useState('');
+  const [newRecipeOutputQty, setNewRecipeOutputQty] = useState('1');
   const [renameValue, setRenameValue] = useState('');
+  const [outputQtyValue, setOutputQtyValue] = useState('1');
   const [rawMaterialId, setRawMaterialId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -57,14 +60,20 @@ export default function BomPage() {
 
   useEffect(() => {
     setRenameValue(selectedRecipe?.name ?? '');
-  }, [selectedRecipe?.id, selectedRecipe?.name]);
+    setOutputQtyValue(selectedRecipe ? String(selectedRecipe.outputQuantity) : '1');
+  }, [selectedRecipe?.id, selectedRecipe?.name, selectedRecipe?.outputQuantity]);
 
   const handleCreateRecipe = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      const res = await apiClient.post<BomRecipe>('/bom/recipes', { finishedProductId: productId, name: newRecipeName });
+      const res = await apiClient.post<BomRecipe>('/bom/recipes', {
+        finishedProductId: productId,
+        name: newRecipeName,
+        outputQuantity: Number(newRecipeOutputQty),
+      });
       setNewRecipeName('');
+      setNewRecipeOutputQty('1');
       setSelectedRecipeId(res.data.id);
       load();
     } catch (err) {
@@ -77,7 +86,10 @@ export default function BomPage() {
     if (!selectedRecipe) return;
     setError(null);
     try {
-      await apiClient.patch(`/bom/recipes/${selectedRecipe.id}`, { name: renameValue });
+      await apiClient.patch(`/bom/recipes/${selectedRecipe.id}`, {
+        name: renameValue,
+        outputQuantity: Number(outputQtyValue),
+      });
       load();
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -154,7 +166,7 @@ export default function BomPage() {
                   onClick={() => setSelectedRecipeId(r.id)}
                 >
                   {r.name}
-                  {r.isDefault ? ' (Padrão)' : ''}
+                  {r.isDefault ? ' (Padrão)' : ''} — rende {r.outputQuantity} {product.unit}
                 </button>
               ))}
             </div>
@@ -170,6 +182,17 @@ export default function BomPage() {
                   required
                 />
               </div>
+              <div className="form-field">
+                <label>Rendimento ({product.unit})</label>
+                <input
+                  type="number"
+                  step="0.0001"
+                  min="0.0001"
+                  value={newRecipeOutputQty}
+                  onChange={(e) => setNewRecipeOutputQty(e.target.value)}
+                  required
+                />
+              </div>
               <div className="form-field" style={{ alignSelf: 'end' }}>
                 <button className="btn btn--secondary" type="submit">
                   + Adicionar receita
@@ -182,14 +205,25 @@ export default function BomPage() {
             <>
               <div className="card">
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                  <form onSubmit={handleRename} className="form-field" style={{ flex: 1, minWidth: 220 }}>
-                    <label>Nome da receita</label>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                  <form onSubmit={handleRename} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                    <div className="form-field" style={{ flex: 1, minWidth: 220 }}>
+                      <label>Nome da receita</label>
                       <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} required />
-                      <button className="btn btn--secondary btn--sm" type="submit">
-                        Salvar nome
-                      </button>
                     </div>
+                    <div className="form-field" style={{ minWidth: 140 }}>
+                      <label>Rendimento ({product.unit})</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        min="0.0001"
+                        value={outputQtyValue}
+                        onChange={(e) => setOutputQtyValue(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <button className="btn btn--secondary btn--sm" type="submit">
+                      Salvar
+                    </button>
                   </form>
                   {!selectedRecipe.isDefault && (
                     <button className="btn btn--secondary btn--sm" onClick={handleSetDefault}>
