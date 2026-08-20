@@ -3,7 +3,6 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 export enum PartnerType {
   CUSTOMER = 'CUSTOMER',
   SUPPLIER = 'SUPPLIER',
-  BOTH = 'BOTH',
 }
 
 export enum PartnerPersonType {

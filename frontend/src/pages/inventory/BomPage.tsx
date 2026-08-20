@@ -250,7 +250,15 @@ export default function BomPage() {
                       </select>
                     </div>
                     <div className="form-field">
-                      <label>Quantidade por unidade *</label>
+                      <label>
+                        Quantidade por unidade *
+                        {rawMaterialId && (
+                          <span style={{ fontWeight: 400 }}>
+                            {' '}
+                            (em {rawMaterials.find((rm) => rm.id === rawMaterialId)?.unit})
+                          </span>
+                        )}
+                      </label>
                       <input type="number" step="0.000001" min="0.000001" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
                     </div>
                   </div>

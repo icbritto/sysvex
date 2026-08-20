@@ -1,5 +1,5 @@
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min, MinLength } from 'class-validator';
-import { ProductType } from '../product.entity';
+import { ProductType, ProductUnit } from '../product.entity';
 
 export class CreateProductDto {
   @IsString()
@@ -9,8 +9,13 @@ export class CreateProductDto {
   @IsEnum(ProductType)
   type: ProductType;
 
-  @IsString()
-  unit: string;
+  @IsEnum(ProductUnit)
+  unit: ProductUnit;
+
+  @IsNumber()
+  @Min(0.000001)
+  @IsOptional()
+  packageQty?: number;
 
   @IsNumber()
   @Min(0)

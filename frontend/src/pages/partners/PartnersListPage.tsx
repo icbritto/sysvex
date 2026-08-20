@@ -17,7 +17,7 @@ interface Partner {
   legalName: string | null;
   tradeName: string | null;
   document: string | null;
-  type: 'CUSTOMER' | 'SUPPLIER' | 'BOTH';
+  type: 'CUSTOMER' | 'SUPPLIER';
   email: string | null;
   phone: string | null;
   address: string | null;
@@ -27,8 +27,9 @@ interface Partner {
 const TYPE_LABELS: Record<string, string> = {
   CUSTOMER: 'Cliente',
   SUPPLIER: 'Fornecedor',
-  BOTH: 'Cliente/Fornecedor',
 };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const PERSON_TYPE_LABELS: Record<string, string> = {
   INDIVIDUAL: 'Pessoa Física',
@@ -79,7 +80,6 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
   const [legalName, setLegalName] = useState('');
   const [tradeName, setTradeName] = useState('');
   const [document, setDocument] = useState('');
-  const [type, setType] = useState<'CUSTOMER' | 'SUPPLIER' | 'BOTH'>(partnerType);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -94,7 +94,7 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
 
   useEffect(load, []);
 
-  const byType = partners.filter((p) => p.type === partnerType || p.type === 'BOTH');
+  const byType = partners.filter((p) => p.type === partnerType);
 
   const filteredPartners = byType.filter((p) => {
     if (filterName) {
@@ -200,7 +200,6 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
     setLegalName('');
     setTradeName('');
     setDocument('');
-    setType(partnerType);
     setEmail('');
     setPhone('');
     setAddress('');
@@ -220,7 +219,6 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
     setLegalName(partner.legalName ?? '');
     setTradeName(partner.tradeName ?? '');
     setDocument(partner.document ?? '');
-    setType(partner.type);
     setEmail(partner.email ?? '');
     setPhone(partner.phone ?? '');
     setAddress(partner.address ?? '');
@@ -239,11 +237,15 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (email && !EMAIL_PATTERN.test(email)) {
+      setError('Informe um e-mail válido (ex.: nome@empresa.com).');
+      return;
+    }
     setError(null);
     const payload = {
       personType,
       document: document || null,
-      type,
+      type: partnerType,
       email: email || null,
       phone: phone || null,
       address: address || null,
@@ -517,14 +519,6 @@ export default function PartnersListPage({ partnerType, title, storageKey }: Par
                   </div>
                 </>
               )}
-              <div className="form-field">
-                <label>Tipo *</label>
-                <select value={type} onChange={(e) => setType(e.target.value as typeof type)}>
-                  <option value="CUSTOMER">Cliente</option>
-                  <option value="SUPPLIER">Fornecedor</option>
-                  <option value="BOTH">Cliente e Fornecedor</option>
-                </select>
-              </div>
               <div className="form-field">
                 <label>CPF/CNPJ</label>
                 <input value={document} onChange={(e) => setDocument(formatCpfCnpj(e.target.value))} inputMode="numeric" />
