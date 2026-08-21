@@ -30,6 +30,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-sysvex}
       DB_NAME: ${DB_NAME:-sysvex}
       DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-true}
+      SYSVEX_ENV: ${SYSVEX_ENV:-}
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no arquivo .env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME:-admin}

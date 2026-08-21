@@ -15,6 +15,7 @@ export interface LoginResult {
     email: string;
     role: string;
     effectiveRoles: string[];
+    sysvexEnv: string | null;
   };
 }
 
@@ -63,6 +64,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         effectiveRoles,
+        sysvexEnv: process.env.SYSVEX_ENV ?? null,
       },
     };
   }

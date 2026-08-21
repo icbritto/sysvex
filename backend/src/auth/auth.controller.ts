@@ -27,7 +27,7 @@ export class AuthController {
     const user = await this.usersService.findById(currentUser.id);
     const { passwordHash: _passwordHash, ...safe } = user;
     const effectiveRoles = await this.securityService.getEffectiveRoles(user.id, user.role);
-    return { ...safe, effectiveRoles };
+    return { ...safe, effectiveRoles, sysvexEnv: process.env.SYSVEX_ENV ?? null };
   }
 
   @UseGuards(JwtAuthGuard)

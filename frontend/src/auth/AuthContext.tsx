@@ -17,6 +17,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   effectiveRoles: UserRole[];
+  sysvexEnv: string | null;
 }
 
 export interface AppSummary {

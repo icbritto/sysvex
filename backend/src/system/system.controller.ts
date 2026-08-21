@@ -56,6 +56,7 @@ export class SystemController {
     return {
       appVersion: readAppVersion(),
       environment: process.env.NODE_ENV ?? 'development',
+      sysvexEnv: process.env.SYSVEX_ENV ?? null,
       serverTime: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),
       database: dbStatus,

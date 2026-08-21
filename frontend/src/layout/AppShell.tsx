@@ -16,6 +16,11 @@ import {
   TileIcon,
 } from '../icons';
 
+const LANDSCAPE_ENV_LABELS: Record<string, string> = {
+  dev: 'Ambiente de Desenvolvimento (DEV)',
+  qas: 'Ambiente de Qualidade (QAS)',
+};
+
 export const ROLE_LABELS: Record<string, string> = {
   SX_ADMIN: 'Administrador',
   SX_FINANCE: 'Financeiro',
@@ -138,8 +143,11 @@ export default function AppShell() {
     });
   };
 
+  const landscapeLabel = user?.sysvexEnv ? LANDSCAPE_ENV_LABELS[user.sysvexEnv] : undefined;
+
   return (
     <div className="app-shell">
+      {landscapeLabel && <div className={`landscape-banner landscape-banner--${user!.sysvexEnv}`}>{landscapeLabel}</div>}
       <header className="app-topbar" ref={headerRef}>
         <div className="app-topbar__row">
           <div className="app-topbar__row-left">
