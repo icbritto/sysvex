@@ -121,6 +121,11 @@ workflow do GitHub Actions entra no seu tailnet via Tailscale (sem expor SSH
 na internet) e roda o deploy com um usuário dedicado de privilégios
 mínimos, com backup automático do banco antes de cada atualização.
 
+Quer manter ambientes separados de desenvolvimento, qualidade e produção,
+promovendo cada atualização de um para o outro antes de chegar nos usuários
+reais? Veja
+[`deploy/LANDSCAPE_DEV_QAS_PRD.md`](deploy/LANDSCAPE_DEV_QAS_PRD.md).
+
 Resumo rápido, já dentro da LXC com Docker instalado:
 
 ```bash
