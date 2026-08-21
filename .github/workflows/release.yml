@@ -1,0 +1,83 @@
+name: Release
+
+# Só roda quando disparado manualmente (aba Actions > Release > Run workflow),
+# nunca em push — cada release é uma decisão explícita.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão da release, sem o "v" na frente (ex.: 1.0.0)'
+        required: true
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validar formato da versão
+        run: |
+          if ! [[ "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Versão inválida: '${{ inputs.version }}'. Use o formato X.Y.Z (ex.: 1.0.0)." >&2
+            exit 1
+          fi
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build e push da imagem do backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/sysvex-backend:${{ inputs.version }}
+            ghcr.io/${{ github.repository_owner }}/sysvex-backend:latest
+
+      - name: Build e push da imagem do frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/sysvex-frontend:${{ inputs.version }}
+            ghcr.io/${{ github.repository_owner }}/sysvex-frontend:latest
+
+      - name: Montar pacote de instalação
+        run: |
+          set -euo pipefail
+          rm -rf sysvex
+          mkdir sysvex
+          sed \
+            -e "s|__SYSVEX_BACKEND_IMAGE__|ghcr.io/${{ github.repository_owner }}/sysvex-backend:${{ inputs.version }}|" \
+            -e "s|__SYSVEX_FRONTEND_IMAGE__|ghcr.io/${{ github.repository_owner }}/sysvex-frontend:${{ inputs.version }}|" \
+            deploy/release/docker-compose.yml > sysvex/docker-compose.yml
+          cp .env.example sysvex/.env.example
+          cp deploy/release/install.sh sysvex/install.sh
+          chmod +x sysvex/install.sh
+          tar -czf sysvex.tar.gz sysvex
+
+      - name: Criar tag
+        run: |
+          git tag "v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+
+      - name: Criar Release no GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: SYSVEX ${{ inputs.version }}
+          generate_release_notes: true
+          files: sysvex.tar.gz

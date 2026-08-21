@@ -131,6 +131,38 @@ docker compose up -d --build
 docker compose exec backend node dist/seed/seed.js
 ```
 
+## Instalando a partir de uma Release
+
+Para instalar em um servidor novo sem precisar clonar o repositório nem
+esperar o build local, cada Release publica um pacote pronto com as imagens
+Docker já compiladas:
+
+```bash
+curl -L https://github.com/icbritto/sysvex/releases/latest/download/sysvex.tar.gz | tar xz
+cd sysvex
+./install.sh
+```
+
+O `install.sh` gera automaticamente as senhas e o `JWT_SECRET` (se o `.env`
+ainda não existir), baixa as imagens, sobe os containers e roda o seed —
+ao final ele imprime a URL de acesso e a senha do usuário `admin` gerada.
+Edite o `.env` depois, se quiser mudar a porta ou as senhas, e rode
+`docker compose up -d` novamente para aplicar.
+
+> **Nota:** as imagens ficam no GitHub Container Registry
+> (`ghcr.io/icbritto/sysvex-backend` e `sysvex-frontend`). Depois da
+> primeira Release, marque os dois pacotes como **Public** nas configurações
+> do GHCR (Package settings > Change visibility) — sem isso o
+> `docker compose pull` do instalador exige login no registry.
+
+### Publicando uma nova Release
+
+Não é automático: a Release só é criada quando alguém dispara manualmente o
+workflow **Release** na aba *Actions* do GitHub (`workflow_dispatch`),
+informando a versão (ex.: `1.0.0`). O workflow builda e publica as imagens
+no GHCR, empacota `docker-compose.yml` + `.env.example` + `install.sh` em
+`sysvex.tar.gz`, cria a tag `vX.Y.Z` e a Release com esse arquivo anexado.
+
 ## Roles de usuário
 
 | Role             | Pode fazer                                                        |
