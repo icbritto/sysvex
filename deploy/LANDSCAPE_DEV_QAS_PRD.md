@@ -49,15 +49,16 @@ curl -L https://github.com/icbritto/sysvex/releases/download/v1.0.0/sysvex.tar.g
 ```
 
 Repita em cada LXC (DEV, QAS e, quando for a hora — seção 4 —, PRD),
-sempre com a mesma versão nas três, até promover a próxima.
+sempre com a mesma versão nas três, até promover a próxima. O
+`install.sh` já habilita o boot automático sozinho (via `sysvex.service`,
+incluído no pacote da Release) — não é preciso repetir a seção 8 do guia
+da LXC.
 
-Depois, habilite o boot automático como de costume (seção 8 do guia da
-LXC):
+Depois, defina o rótulo de ambiente correto e reaplique:
 
 ```bash
-cp /opt/sysvex/deploy/sysvex.service /etc/systemd/system/sysvex.service
-systemctl daemon-reload
-systemctl enable --now sysvex.service
+sed -i 's/^SYSVEX_ENV=.*/SYSVEX_ENV=dev/' .env   # ou qas / prd, conforme o ambiente
+docker compose up -d
 ```
 
 ## 3. Refresh de dados (PRD → DEV/QAS)
