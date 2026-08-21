@@ -149,9 +149,10 @@ cd sysvex
 ```
 
 O `install.sh` gera automaticamente as senhas e o `JWT_SECRET` (se o `.env`
-ainda não existir), baixa as imagens, sobe os containers e roda o seed —
-ao final ele imprime a URL de acesso e a senha do usuário `admin` gerada.
-Edite o `.env` depois, se quiser mudar a porta ou as senhas, e rode
+ainda não existir), baixa as imagens, sobe os containers, roda o seed e
+habilita o SYSVEX para iniciar sozinho no boot (via `systemd`) — ao final
+ele imprime a URL de acesso e a senha do usuário `admin` gerada. Edite o
+`.env` depois, se quiser mudar a porta ou as senhas, e rode
 `docker compose up -d` novamente para aplicar.
 
 > **Nota:** as imagens ficam no GitHub Container Registry
@@ -165,8 +166,9 @@ Edite o `.env` depois, se quiser mudar a porta ou as senhas, e rode
 Não é automático: a Release só é criada quando alguém dispara manualmente o
 workflow **Release** na aba *Actions* do GitHub (`workflow_dispatch`),
 informando a versão (ex.: `1.0.0`). O workflow builda e publica as imagens
-no GHCR, empacota `docker-compose.yml` + `.env.example` + `install.sh` em
-`sysvex.tar.gz`, cria a tag `vX.Y.Z` e a Release com esse arquivo anexado.
+no GHCR, empacota `docker-compose.yml` + `.env.example` + `install.sh` +
+`sysvex.service` em `sysvex.tar.gz`, cria a tag `vX.Y.Z` e a Release com
+esse arquivo anexado.
 
 ## Roles de usuário
 

@@ -72,6 +72,7 @@ jobs:
             deploy/release/docker-compose.yml > sysvex/docker-compose.yml
           cp .env.example sysvex/.env.example
           cp deploy/release/install.sh sysvex/install.sh
+          cp deploy/sysvex.service sysvex/sysvex.service
           chmod +x sysvex/install.sh
           tar -czf sysvex.tar.gz sysvex
 

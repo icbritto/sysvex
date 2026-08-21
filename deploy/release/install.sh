@@ -52,6 +52,14 @@ fi
 echo "Criando o usuário administrador e dados de exemplo..."
 docker compose exec -T backend node dist/seed/seed.js
 
+if [ -f sysvex.service ] && command -v systemctl >/dev/null 2>&1; then
+  echo "Configurando para iniciar automaticamente no boot..."
+  INSTALL_DIR="$(pwd)"
+  sed "s|WorkingDirectory=.*|WorkingDirectory=${INSTALL_DIR}|" sysvex.service > /etc/systemd/system/sysvex.service
+  systemctl daemon-reload
+  systemctl enable --now sysvex.service >/dev/null 2>&1 || echo "Aviso: não foi possível habilitar o serviço systemd automaticamente — veja deploy/PROXMOX_LXC_SETUP.md (seção 8)." >&2
+fi
+
 HTTP_PORT="$(grep -E '^HTTP_PORT=' .env | cut -d= -f2)"
 ADMIN_USER="$(grep -E '^SEED_ADMIN_USERNAME=' .env | cut -d= -f2)"
 ADMIN_PASSWORD="$(grep -E '^SEED_ADMIN_PASSWORD=' .env | cut -d= -f2)"
