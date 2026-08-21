@@ -6,6 +6,7 @@ import Spinner from '../../components/Spinner';
 import { buildPixPayload } from '../../utils/pixPayload';
 import { PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { PIX_KEY_TYPE_LABELS, PixKeyType } from '../../constants/pixKeyTypes';
+import { formatMoney } from '../../utils/money';
 import '../../styles/receipt.css';
 
 interface ReceiptProduct {
@@ -252,8 +253,8 @@ export default function ReceiptPage({ kind }: { kind: 'sales' | 'purchase' }) {
                 <td>
                   {item.quantity} {item.product.unit}
                 </td>
-                <td>R$ {item.unitPrice.toFixed(2)}</td>
-                <td>R$ {(item.quantity * item.unitPrice).toFixed(2)}</td>
+                <td>R$ {formatMoney(item.unitPrice)}</td>
+                <td>R$ {formatMoney(item.quantity * item.unitPrice)}</td>
               </tr>
             ))}
           </tbody>

@@ -6,6 +6,7 @@ import Spinner from '../../components/Spinner';
 import { ArrowLeftIcon, InspectionIcon } from '../../icons';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PaymentMethod } from '../../constants/paymentMethods';
 import { useNotify } from '../../notifications/NotificationContext';
+import { formatMoney, sumLineAmounts } from '../../utils/money';
 
 interface Partner {
   id: string;
@@ -85,7 +86,7 @@ export default function SalesOrderDetailPage() {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
   };
 
-  const editTotal = items.reduce((sum, it) => sum + Number(it.quantity || 0) * Number(it.unitPrice || 0), 0);
+  const editTotal = sumLineAmounts(items);
 
   const startEditing = () => {
     if (!order) return;
@@ -223,7 +224,7 @@ export default function SalesOrderDetailPage() {
                       <td>{it.product?.name ?? it.productId}</td>
                       <td>{it.quantity}</td>
                       <td>R$ {it.unitPrice.toFixed(2)}</td>
-                      <td>R$ {(it.quantity * it.unitPrice).toFixed(2)}</td>
+                      <td>R$ {formatMoney(it.quantity * it.unitPrice)}</td>
                     </tr>
                   ))}
                 </tbody>

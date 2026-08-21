@@ -242,7 +242,7 @@ export default function BomPage() {
                     <thead>
                       <tr>
                         <th>Insumo</th>
-                        <th>Quantidade por unidade produzida</th>
+                        <th>Quantidade na receita</th>
                         <th></th>
                       </tr>
                     </thead>
@@ -285,7 +285,7 @@ export default function BomPage() {
                     </div>
                     <div className="form-field">
                       <label>
-                        Quantidade por unidade *
+                        Quantidade na receita *
                         {rawMaterialId && (
                           <span style={{ fontWeight: 400 }}>
                             {' '}
@@ -296,6 +296,10 @@ export default function BomPage() {
                       <input type="number" step="0.000001" min="0.000001" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
                     </div>
                   </div>
+                  <p style={{ fontSize: 12, color: 'var(--sysvex-text-muted)' }}>
+                    Quantidade total do insumo usada para produzir toda a receita (que rende {selectedRecipe.outputQuantity}{' '}
+                    {product.unit}), não por unidade individual.
+                  </p>
                   <div className="form-actions">
                     <button className="btn" type="submit">
                       Adicionar

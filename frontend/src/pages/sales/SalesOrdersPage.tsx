@@ -11,6 +11,7 @@ import { ColumnDef, useColumnVisibility } from '../../hooks/useColumnVisibility'
 import { useSort } from '../../hooks/useSort';
 import SortModal from '../../components/SortModal';
 import { FilterIcon, ListIcon, SortIcon } from '../../icons';
+import { sumLineAmounts } from '../../utils/money';
 
 const COLUMNS: ColumnDef[] = [
   { key: 'orderNumber', label: 'Número' },
@@ -196,7 +197,7 @@ export default function SalesOrdersPage() {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
   };
 
-  const total = items.reduce((sum, it) => sum + Number(it.quantity || 0) * Number(it.unitPrice || 0), 0);
+  const total = sumLineAmounts(items);
 
   const resetForm = () => {
     setCustomerId('');
