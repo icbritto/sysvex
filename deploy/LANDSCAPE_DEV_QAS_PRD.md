@@ -78,6 +78,12 @@ atuais do ambiente local e substituí-los pelo dump do PRD — é destrutivo
 para o ambiente de destino, mas nunca toca no PRD. Exige que a LXC de
 destino consiga se conectar via SSH na do PRD (chave ou senha).
 
+Depois de restaurar o dump, o script **mascara automaticamente os dados
+pessoais dos parceiros** (nome, documento, e-mail, telefone, endereço) —
+valores financeiros, pedidos, estoque e receitas continuam reais, para que
+o teste ainda reflita volumes e valores realistas sem expor dados de
+clientes/fornecedores reais em DEV/QAS.
+
 ## 4. Promovendo uma atualização (DEV → QAS → PRD)
 
 1. Solicite a mudança normalmente — ela é desenvolvida, revisada e

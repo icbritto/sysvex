@@ -1156,6 +1156,22 @@ table.data-table {
   font-size: 13px;
   margin-bottom: 14px;
 }
+.landscape-banner {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 5px 12px;
+}
+.landscape-banner--dev {
+  background: var(--sysvex-warning);
+  color: #1a1a1a;
+}
+.landscape-banner--qas {
+  background: var(--sysvex-highlight);
+  color: #fff;
+}
+
 .alert--error {
   background: color-mix(in srgb, var(--sysvex-danger) 16%, var(--sysvex-surface));
   color: var(--sysvex-danger-ink);

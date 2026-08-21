@@ -5,6 +5,7 @@ import Spinner from '../../components/Spinner';
 interface SystemStatus {
   appVersion: string;
   environment: string;
+  sysvexEnv: string | null;
   serverTime: string;
   uptimeSeconds: number;
   database: { ok: boolean; latencyMs?: number; error?: string };
@@ -18,6 +19,12 @@ interface SystemStatus {
     financeEntries: number;
   };
 }
+
+const LANDSCAPE_LABELS: Record<string, string> = {
+  dev: 'Desenvolvimento (DEV)',
+  qas: 'Qualidade (QAS)',
+  prd: 'Produção (PRD)',
+};
 
 const RECORD_LABELS: Record<keyof SystemStatus['recordCounts'], string> = {
   users: 'Usuários',
@@ -74,6 +81,12 @@ export default function SystemStatusPage() {
             <div className="kpi-tile">
               <div className="kpi-tile__label">Ambiente</div>
               <div className="kpi-tile__value">{status.environment}</div>
+            </div>
+            <div className="kpi-tile">
+              <div className="kpi-tile__label">Ambiente da Paisagem</div>
+              <div className="kpi-tile__value">
+                {status.sysvexEnv ? (LANDSCAPE_LABELS[status.sysvexEnv] ?? status.sysvexEnv) : 'Não definido'}
+              </div>
             </div>
             <div className="kpi-tile">
               <div className="kpi-tile__label">Banco de Dados</div>

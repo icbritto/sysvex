@@ -37,6 +37,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Gravar a versão da Release no package.json do backend
+        # Só no checkout local desta run, nunca commitado de volta — é o que
+        # faz o System Status de cada ambiente mostrar a versão real
+        # instalada em vez de um valor estático desatualizado.
+        run: npm --prefix backend version "${{ inputs.version }}" --no-git-tag-version --allow-same-version
+
       - name: Build e push da imagem do backend
         uses: docker/build-push-action@v6
         with:

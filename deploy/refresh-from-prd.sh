@@ -24,7 +24,9 @@ DB_USERNAME="${DB_USERNAME:-sysvex}"
 DB_NAME="${DB_NAME:-sysvex}"
 
 echo "Isso vai APAGAR os dados atuais deste ambiente e substituir por uma cópia"
-echo "do PRD (${PRD_TARGET}:${PRD_PATH}). Essa ação não pode ser desfeita."
+echo "do PRD (${PRD_TARGET}:${PRD_PATH}), com os dados pessoais dos parceiros"
+echo "mascarados (nome, documento, e-mail, telefone, endereço). Essa ação não"
+echo "pode ser desfeita."
 read -rp "Digite REFRESH para confirmar: " CONFIRM
 if [ "$CONFIRM" != "REFRESH" ]; then
   echo "Cancelado."
@@ -37,6 +39,20 @@ ssh "$PRD_TARGET" "cd '$PRD_PATH' && \
   DB_NAME=\$(grep -E '^DB_NAME=' .env | tail -n1 | cut -d= -f2-); \
   docker compose exec -T db pg_dump --clean --if-exists -U \"\${DB_USERNAME:-sysvex}\" \"\${DB_NAME:-sysvex}\"" \
   | docker compose exec -T db psql -U "$DB_USERNAME" -d "$DB_NAME"
+
+echo "==> Mascarando dados pessoais dos parceiros (nome, documento, e-mail,"
+echo "    telefone, endereço) — valores financeiros, pedidos, estoque e"
+echo "    receitas continuam reais para os testes."
+docker compose exec -T db psql -U "$DB_USERNAME" -d "$DB_NAME" <<'SQL'
+UPDATE partners SET
+  name = 'Parceiro de Teste ' || left(id::text, 8),
+  "legalName" = CASE WHEN "legalName" IS NOT NULL THEN 'Empresa de Teste ' || left(id::text, 8) END,
+  "tradeName" = CASE WHEN "tradeName" IS NOT NULL THEN 'Fantasia Teste ' || left(id::text, 8) END,
+  document = CASE WHEN document IS NOT NULL THEN lpad(left(replace(id::text, '-', ''), 11), 11, '0') END,
+  email = 'parceiro+' || left(id::text, 8) || '@teste.invalid',
+  phone = CASE WHEN phone IS NOT NULL THEN '+5511900000000' END,
+  address = CASE WHEN address IS NOT NULL THEN 'Endereço de teste, s/n' END;
+SQL
 
 echo "==> Reiniciando o backend para garantir estado limpo..."
 docker compose restart backend
