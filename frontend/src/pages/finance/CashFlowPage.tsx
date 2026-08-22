@@ -83,11 +83,15 @@ export default function CashFlowPage() {
             </div>
           </div>
           <div className="kpi-tile">
-            <div className="kpi-tile__label">A receber em aberto</div>
+            <div className="kpi-tile__label">
+              A receber em aberto (até {new Date(`${summary.endDate}T00:00:00`).toLocaleDateString('pt-BR')})
+            </div>
             <div className="kpi-tile__value">R$ {summary.openReceivables.toFixed(2)}</div>
           </div>
           <div className="kpi-tile">
-            <div className="kpi-tile__label">A pagar em aberto</div>
+            <div className="kpi-tile__label">
+              A pagar em aberto (até {new Date(`${summary.endDate}T00:00:00`).toLocaleDateString('pt-BR')})
+            </div>
             <div className="kpi-tile__value">R$ {summary.openPayables.toFixed(2)}</div>
           </div>
         </div>

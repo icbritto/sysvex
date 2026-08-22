@@ -147,7 +147,14 @@ export class FinanceService {
       .filter((e) => e.type === FinanceEntryType.PAYABLE)
       .reduce((sum, e) => sum + e.amount, 0);
 
-    const open = await this.repo.find({ where: { status: FinanceEntryStatus.OPEN } });
+    // Saldo em aberto "como estava" no fim do período selecionado — não a
+    // foto de hoje — por isso considera só vencimentos até endDate, não
+    // todo lançamento OPEN existente no banco.
+    const open = await this.repo
+      .createQueryBuilder('e')
+      .where('e.status = :status', { status: FinanceEntryStatus.OPEN })
+      .andWhere('e.due_date <= :end', { end: endDate })
+      .getMany();
     const openReceivables = open
       .filter((e) => e.type === FinanceEntryType.RECEIVABLE)
       .reduce((sum, e) => sum + e.amount, 0);
