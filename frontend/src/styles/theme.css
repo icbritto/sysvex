@@ -1171,6 +1171,10 @@ table.data-table {
   background: var(--sysvex-highlight);
   color: #fff;
 }
+.landscape-banner--prd {
+  background: var(--sysvex-success);
+  color: #fff;
+}
 
 .alert--error {
   background: color-mix(in srgb, var(--sysvex-danger) 16%, var(--sysvex-surface));

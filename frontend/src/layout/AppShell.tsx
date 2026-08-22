@@ -19,6 +19,7 @@ import {
 const LANDSCAPE_ENV_LABELS: Record<string, string> = {
   dev: 'Ambiente de Desenvolvimento (DEV)',
   qas: 'Ambiente de Qualidade (QAS)',
+  prd: 'Ambiente de Produção (PRD)',
 };
 
 export const ROLE_LABELS: Record<string, string> = {
