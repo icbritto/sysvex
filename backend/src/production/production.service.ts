@@ -245,7 +245,16 @@ export class ProductionService {
       const productRepo = manager.getRepository(Product);
       const finishedProduct = await productRepo.findOne({ where: { id: order.productId } });
       if (finishedProduct) {
-        finishedProduct.costPrice = round4(totalCost / order.quantity);
+        // Custo médio ponderado: pondera o custo deste lote com o que já
+        // existia em estoque, em vez de sobrescrever com o custo do último
+        // lote (que faria as unidades antigas "mudarem de preço" retroativamente).
+        // finishedProduct.stockQty já inclui a entrada deste lote (recordMovement
+        // acima), então o estoque anterior é a diferença.
+        const batchUnitCost = totalCost / order.quantity;
+        const stockBefore = finishedProduct.stockQty - order.quantity;
+        finishedProduct.costPrice = round4(
+          (stockBefore * finishedProduct.costPrice + order.quantity * batchUnitCost) / finishedProduct.stockQty,
+        );
         await productRepo.save(finishedProduct);
       }
 
