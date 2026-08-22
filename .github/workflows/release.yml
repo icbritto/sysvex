@@ -73,7 +73,8 @@ jobs:
           cp .env.example sysvex/.env.example
           cp deploy/release/install.sh sysvex/install.sh
           cp deploy/sysvex.service sysvex/sysvex.service
-          chmod +x sysvex/install.sh
+          cp deploy/refresh-from-prd.sh sysvex/refresh-from-prd.sh
+          chmod +x sysvex/install.sh sysvex/refresh-from-prd.sh
           tar -czf sysvex.tar.gz sysvex
 
       - name: Criar tag

@@ -167,7 +167,8 @@ Não é automático: a Release só é criada quando alguém dispara manualmente 
 workflow **Release** na aba *Actions* do GitHub (`workflow_dispatch`),
 informando a versão (ex.: `1.0.0`). O workflow builda e publica as imagens
 no GHCR, empacota `docker-compose.yml` + `.env.example` + `install.sh` +
-`sysvex.service` em `sysvex.tar.gz`, cria a tag `vX.Y.Z` e a Release com
+`sysvex.service` + `refresh-from-prd.sh` em `sysvex.tar.gz`, cria a tag
+`vX.Y.Z` e a Release com
 esse arquivo anexado.
 
 ## Roles de usuário
