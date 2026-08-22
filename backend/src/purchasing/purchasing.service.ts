@@ -12,7 +12,8 @@ import { FinanceService } from '../finance/finance.service';
 import { FinanceEntryType } from '../finance/finance-entry.entity';
 import { AuditLogService } from '../audit/audit-log.service';
 import { SequenceService } from '../common/sequence.service';
-import { sumLineAmounts } from '../common/money';
+import { roundMoney, sumLineAmounts } from '../common/money';
+import { Product } from '../products/product.entity';
 
 type Actor = { id: string; username: string };
 
@@ -124,6 +125,7 @@ export class PurchasingService {
         throw new BadRequestException('Não é possível receber um pedido de compra cancelado.');
       }
 
+      const productRepo = manager.getRepository(Product);
       for (const item of po.items) {
         await this.inventoryService.recordMovement(manager, {
           productId: item.productId,
@@ -133,6 +135,18 @@ export class PurchasingService {
           referenceType: 'PURCHASE_ORDER',
           referenceId: po.id,
         });
+
+        // Recarrega depois do movimento (que já atualizou stockQty) para não
+        // sobrescrever esse valor com uma cópia desatualizada do produto.
+        const product = await productRepo.findOne({ where: { id: item.productId } });
+        if (product) {
+          // Custo médio ponderado: pondera o preço desta compra com o que já
+          // existia em estoque, em vez de deixar o costPrice parado no valor
+          // cadastrado manualmente (não refletindo reajustes de preço).
+          const stockBefore = product.stockQty - item.quantity;
+          product.costPrice = roundMoney((stockBefore * product.costPrice + item.quantity * item.unitPrice) / product.stockQty);
+          await productRepo.save(product);
+        }
       }
 
       const dueDate = new Date();
