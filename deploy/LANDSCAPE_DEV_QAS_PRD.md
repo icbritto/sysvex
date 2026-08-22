@@ -71,8 +71,12 @@ puxa dados, nunca envia):
 
 ```bash
 cd /opt/sysvex
-/opt/sysvex/deploy/refresh-from-prd.sh root@IP-DA-LXC-PRD
+./refresh-from-prd.sh root@IP-DA-LXC-PRD
 ```
+
+(o `refresh-from-prd.sh` já vem incluído no pacote da Release, junto com
+`docker-compose.yml`/`install.sh`/`sysvex.service` — não precisa buscar
+separado do repositório.)
 
 O script pede confirmação explícita (`REFRESH`) antes de apagar os dados
 atuais do ambiente local e substituí-los pelo dump do PRD — é destrutivo
